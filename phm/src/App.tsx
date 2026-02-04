@@ -1,0 +1,55 @@
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { HomePage } from './pages/HomePage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ParentDashboardMobilePage } from './pages/ParentDashboardMobilePage';
+import { ParentDashboardDesktopPage } from './pages/ParentDashboardDesktopPage';
+import { PhmDashboardPage } from './pages/PhmDashboardPage';
+import { ChildProfileSchedulePage } from './pages/ChildProfileSchedulePage';
+import { GrowthChartPage } from './pages/GrowthChartPage';
+import { MohAnalyticsDashboardPage } from './pages/MohAnalyticsDashboardPage';
+import { BabyRegistrationPage } from './pages/BabyRegistrationPage';
+import { AddChildPage } from './pages/AddChildPage';
+import { RecordVaccinationPage } from './pages/RecordVaccinationPage';
+import { EditVaccinationPage } from './pages/EditVaccinationPage';
+import { RecordGrowthDataPage } from './pages/RecordGrowthDataPage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { ViewAreaChildrenPage } from './pages/ViewAreaChildrenPage';
+import { GenerateReportsPage } from './pages/GenerateReportsPage';
+import { AuditLogsPage } from './pages/AuditLogsPage';
+import { SettingsPage } from './pages/SettingsPage';
+
+const App: React.FC = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      
+      {/* Parent Routes */}
+      <Route path="/parent-dashboard-mobile" element={<ParentDashboardMobilePage />} />
+      <Route path="/parent-dashboard-desktop" element={<ParentDashboardDesktopPage />} />
+      <Route path="/add-child" element={<AddChildPage />} />
+      <Route path="/child-profile-schedule" element={<ChildProfileSchedulePage />} />
+      <Route path="/growth-chart" element={<GrowthChartPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      
+      {/* PHM Routes */}
+      <Route path="/phm-dashboard" element={<PhmDashboardPage />} />
+      <Route path="/baby-registration" element={<BabyRegistrationPage />} />
+      <Route path="/record-vaccination" element={<RecordVaccinationPage />} />
+      <Route path="/edit-vaccination" element={<EditVaccinationPage />} />
+      <Route path="/record-growth-data" element={<RecordGrowthDataPage />} />
+      <Route path="/view-area-children" element={<ViewAreaChildrenPage />} />
+      
+      {/* MOH Routes */}
+      <Route path="/moh-analytics-dashboard" element={<MohAnalyticsDashboardPage />} />
+      <Route path="/generate-reports" element={<GenerateReportsPage />} />
+      <Route path="/audit-logs" element={<AuditLogsPage />} />
+    </Routes>
+  );
+};
+
+export default App;

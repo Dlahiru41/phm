@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SuwaCare LK - National Child Vaccination Management System</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="src/js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="src/css/common.css">
+    <style>
+        .page-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .page-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        a[data-route].active {
+            background-color: rgba(19, 127, 236, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

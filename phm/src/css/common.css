@@ -1,0 +1,21 @@
+/* Common Styles for SuwaCare LK */
+body {
+    font-family: "Public Sans", sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.active-nav {
+    background-color: #e7edf3;
+}
