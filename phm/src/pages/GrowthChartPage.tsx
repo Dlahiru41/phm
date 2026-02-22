@@ -1,113 +1,11 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { AuthService } from '../services/AuthService';
+import { ParentLayout } from '../components/ParentLayout';
 
-export const GrowthChartPage: React.FC = () => {
-    return (
-        <>
-            <div className="layout-container flex flex-col min-h-screen">
-
-                <header
-                    className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3 sticky top-0 z-50">
-                    <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-4 text-primary">
-                            <div className="size-6">
-                                <span className="material-symbols-outlined text-3xl">vaccines</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <h2 className="text-[#0d141b] dark:text-slate-50 text-lg font-bold leading-tight tracking-[-0.015em]">
-                                    SuwaCare LK
-                                </h2>
-                                <p className="text-[11px] font-medium text-[#4c739a] dark:text-slate-400">
-                                    National Child Vaccination Management System
-                                </p>
-                            </div>
-                        </div>
-                        <label className="flex flex-col min-w-40 h-10 max-w-64">
-                            <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
-                                <div
-                                    className="text-[#4c739a] flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg"
-                                    data-icon="search">
-                                    <span className="material-symbols-outlined text-lg">search</span>
-                                </div>
-                                <input
-                                    className="form-input flex w-full min-w-0 flex-1 rounded-lg text-[#0d141b] dark:text-slate-50 focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 h-full placeholder:text-[#4c739a] px-4 rounded-l-none pl-2 text-sm font-normal"
-                                    placeholder="Search children, clinics..." value=""/>
-                            </div>
-                        </label>
-                    </div>
-                    <div className="flex flex-1 justify-end gap-8">
-                        <nav className="flex items-center gap-9">
-                            <Link to="/parent-dashboard-desktop" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
-                                Dashboard
-                            </Link>
-                            <Link to="/child-profile-schedule" className="text-[#0d141b] dark:text-slate-50 text-sm font-bold border-b-2 border-primary py-1">
-                                Children
-                            </Link>
-                            <Link to="/phm-dashboard" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
-                                Clinics
-                            </Link>
-                            <Link to="/generate-reports" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
-                                Reports
-                            </Link>
-                        </nav>
-                        <div className="flex items-center gap-4">
-                            <button
-                                className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold tracking-[0.015em]">
-                                <span className="truncate">PHM Profile</span>
-                            </button>
-                            <div
-                                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-slate-200"
-                                data-alt="User avatar of healthcare professional"
-                                style={{"backgroundImage": "url('https://via.placeholder.com/150')"}}></div>
-                        </div>
-                    </div>
-                </header>
-                <div className="flex flex-1">
-
-                    <aside
-                        className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex flex-col justify-between">
-                        <div className="flex flex-col gap-6">
-                            <div className="flex flex-col border-b border-slate-100 dark:border-slate-800 pb-4">
-                                <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-normal">Samadhi
-                                    Perera</h1>
-                                <p className="text-[#4c739a] dark:text-slate-500 text-xs font-medium">ID: CV-89234 • 14
-                                    Months</p>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <Link to="/parent-dashboard-desktop" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                    <span className="material-symbols-outlined text-xl">grid_view</span>
-                                    <p className="text-sm font-medium">Overview</p>
-                                </Link>
-                                <Link to="/child-profile-schedule" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                    <span className="material-symbols-outlined text-xl">medical_information</span>
-                                    <p className="text-sm font-medium">Vaccination Card</p>
-                                </Link>
-                                <Link to="/growth-chart" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary">
-                                    <span className="material-symbols-outlined text-xl"
-                                          style={{"fontVariationSettings": "FILL 1"}}>monitoring</span>
-                                    <p className="text-sm font-bold">Growth Chart</p>
-                                </Link>
-                                <Link to="/notifications" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                    <span className="material-symbols-outlined text-xl">calendar_month</span>
-                                    <p className="text-sm font-medium">Clinic Visits</p>
-                                </Link>
-                                <Link to="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                    <span className="material-symbols-outlined text-xl">menu_book</span>
-                                    <p className="text-sm font-medium">Parent Resources</p>
-                                </Link>
-                            </div>
-                        </div>
-                        <button
-                            className="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm shadow-primary/20">
-                            <span className="material-symbols-outlined text-lg">add_circle</span>
-                            <span className="truncate">Add Measurement</span>
-                        </button>
-                    </aside>
-
-                    <main className="flex-1 overflow-y-auto">
-                        <div className="max-w-[1200px] mx-auto p-8">
-
-                            <nav className="flex flex-wrap gap-2 mb-4">
+const GrowthChartMainContent: React.FC = () => (
+    <div className="max-w-[1200px] mx-auto p-8">
+        <nav className="flex flex-wrap gap-2 mb-4">
                                 <Link to="/parent-dashboard-desktop" className="text-[#4c739a] text-sm font-medium hover:underline">Home</Link>
                                 <span className="text-[#4c739a] text-sm font-medium">/</span>
                                 <Link to="/child-profile-schedule" className="text-[#4c739a] text-sm font-medium hover:underline">Children
@@ -362,7 +260,95 @@ export const GrowthChartPage: React.FC = () => {
                                     </table>
                                 </div>
                             </div>
+    </div>
+);
+
+export const GrowthChartPage: React.FC = () => {
+    const isParent = AuthService.isParent();
+
+    if (isParent) {
+        return (
+            <ParentLayout activeNav="growth-chart">
+                <GrowthChartMainContent />
+            </ParentLayout>
+        );
+    }
+
+    return (
+        <>
+            <div className="layout-container flex flex-col min-h-screen">
+                <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3 sticky top-0 z-50">
+                    <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-4 text-primary">
+                            <div className="size-6">
+                                <span className="material-symbols-outlined text-3xl">vaccines</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <h2 className="text-[#0d141b] dark:text-slate-50 text-lg font-bold leading-tight tracking-[-0.015em]">SuwaCare LK</h2>
+                                <p className="text-[11px] font-medium text-[#4c739a] dark:text-slate-400">National Child Vaccination Management System</p>
+                            </div>
                         </div>
+                        <label className="flex flex-col min-w-40 h-10 max-w-64">
+                            <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
+                                <div className="text-[#4c739a] flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg" data-icon="search">
+                                    <span className="material-symbols-outlined text-lg">search</span>
+                                </div>
+                                <input className="form-input flex w-full min-w-0 flex-1 rounded-lg text-[#0d141b] dark:text-slate-50 focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 h-full placeholder:text-[#4c739a] px-4 rounded-l-none pl-2 text-sm font-normal" placeholder="Search children, clinics..." value="" />
+                            </div>
+                        </label>
+                    </div>
+                    <div className="flex flex-1 justify-end gap-8">
+                        <nav className="flex items-center gap-9">
+                            <Link to="/parent-dashboard-desktop" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">Dashboard</Link>
+                            <Link to="/child-profile-schedule" className="text-[#0d141b] dark:text-slate-50 text-sm font-bold border-b-2 border-primary py-1">Children</Link>
+                            <Link to="/phm-dashboard" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">Clinics</Link>
+                            <Link to="/generate-reports" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">Reports</Link>
+                        </nav>
+                        <div className="flex items-center gap-4">
+                            <button className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold tracking-[0.015em]">
+                                <span className="truncate">PHM Profile</span>
+                            </button>
+                            <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-slate-200" data-alt="User avatar" style={{ backgroundImage: "url('https://via.placeholder.com/150')" }} />
+                        </div>
+                    </div>
+                </header>
+                <div className="flex flex-1">
+                    <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex flex-col justify-between">
+                        <div className="flex flex-col gap-6">
+                            <div className="flex flex-col border-b border-slate-100 dark:border-slate-800 pb-4">
+                                <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-normal">Samadhi Perera</h1>
+                                <p className="text-[#4c739a] dark:text-slate-500 text-xs font-medium">ID: CV-89234 • 14 Months</p>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <Link to="/parent-dashboard-desktop" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                    <span className="material-symbols-outlined text-xl">grid_view</span>
+                                    <p className="text-sm font-medium">Overview</p>
+                                </Link>
+                                <Link to="/child-profile-schedule" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                    <span className="material-symbols-outlined text-xl">medical_information</span>
+                                    <p className="text-sm font-medium">Vaccination Card</p>
+                                </Link>
+                                <Link to="/growth-chart" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary">
+                                    <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: 'FILL 1' }}>monitoring</span>
+                                    <p className="text-sm font-bold">Growth Chart</p>
+                                </Link>
+                                <Link to="/notifications" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                    <span className="material-symbols-outlined text-xl">calendar_month</span>
+                                    <p className="text-sm font-medium">Clinic Visits</p>
+                                </Link>
+                                <Link to="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                    <span className="material-symbols-outlined text-xl">menu_book</span>
+                                    <p className="text-sm font-medium">Parent Resources</p>
+                                </Link>
+                            </div>
+                        </div>
+                        <button className="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm shadow-primary/20">
+                            <span className="material-symbols-outlined text-lg">add_circle</span>
+                            <span className="truncate">Add Measurement</span>
+                        </button>
+                    </aside>
+                    <main className="flex-1 overflow-y-auto">
+                        <GrowthChartMainContent />
                     </main>
                 </div>
             </div>
