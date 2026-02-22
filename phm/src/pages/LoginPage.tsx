@@ -9,13 +9,12 @@ export const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
 
-        const user = AuthService.login(username, password);
+        const user = await AuthService.login(username, password);
         if (user) {
-            // Redirect based on user role
             const dashboardPath = AuthService.getDashboardPath();
             navigate(dashboardPath);
         } else {

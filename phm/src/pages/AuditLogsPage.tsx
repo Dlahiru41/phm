@@ -1,90 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface AuditLog {
-  id: string;
-  timestamp: string;
-  user: string;
-  userRole: 'parent' | 'phm' | 'moh';
-  action: string;
-  entityType: string;
-  entityId: string;
-  details: string;
-  ipAddress: string;
-}
+import { AuditLog as AuditLogType } from '../types/models';
+import { dataService } from '../services/DataService';
+import { AuthService } from '../services/AuthService';
 
 export const AuditLogsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterAction, setFilterAction] = useState<string>('all');
+  const [auditLogs, setAuditLogs] = useState<AuditLogType[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
-  const [auditLogs] = useState<AuditLog[]>([
-    {
-      id: '1',
-      timestamp: '2024-01-15T10:30:00',
-      user: 'Dr. Perera',
-      userRole: 'phm',
-      action: 'Record Vaccination',
-      entityType: 'Vaccination',
-      entityId: 'VAC-001',
-      details: 'Recorded Pentavalent (3rd Dose) for Kavindu Perera',
-      ipAddress: '192.168.1.100'
-    },
-    {
-      id: '2',
-      timestamp: '2024-01-15T09:15:00',
-      user: 'Amara Perera',
-      userRole: 'parent',
-      action: 'View Records',
-      entityType: 'Child Profile',
-      entityId: 'CHILD-001',
-      details: 'Viewed vaccination records for Kavindu Perera',
-      ipAddress: '192.168.1.101'
-    },
-    {
-      id: '3',
-      timestamp: '2024-01-14T16:45:00',
-      user: 'Dr. Silva',
-      userRole: 'moh',
-      action: 'Generate Report',
-      entityType: 'Report',
-      entityId: 'RPT-2024-001',
-      details: 'Generated Vaccination Coverage Report for Colombo District',
-      ipAddress: '192.168.1.102'
-    },
-    {
-      id: '4',
-      timestamp: '2024-01-14T14:20:00',
-      user: 'Dr. Perera',
-      userRole: 'phm',
-      action: 'Register Baby',
-      entityType: 'Child',
-      entityId: 'CHILD-003',
-      details: 'Registered new baby: Arjun Perera',
-      ipAddress: '192.168.1.100'
-    },
-    {
-      id: '5',
-      timestamp: '2024-01-14T11:10:00',
-      user: 'Dr. Perera',
-      userRole: 'phm',
-      action: 'Update Vaccination',
-      entityType: 'Vaccination',
-      entityId: 'VAC-002',
-      details: 'Updated vaccination record for Nimasha Perera',
-      ipAddress: '192.168.1.100'
-    }
-  ]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    const params: Record<string, string> = { page: String(page), limit: '50' };
+    if (filterRole !== 'all') params.userRole = filterRole;
+    if (filterAction !== 'all') params.action = filterAction;
+    if (searchTerm.trim()) params.search = searchTerm.trim();
+    dataService.getAuditLogs(params).then((res) => {
+      if (!cancelled) {
+        setAuditLogs(res.data);
+        setTotal(res.total);
+      }
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [page, filterRole, filterAction, searchTerm]);
 
-  const filteredLogs = auditLogs.filter(log => {
-    const matchesSearch = log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         log.details.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || log.userRole === filterRole;
-    const matchesAction = filterAction === 'all' || log.action.toLowerCase().includes(filterAction.toLowerCase());
-    return matchesSearch && matchesRole && matchesAction;
-  });
+  useEffect(() => {
+    setPage(1);
+  }, [filterRole, filterAction, searchTerm]);
+
+  const displayLogs = auditLogs;
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -175,25 +126,25 @@ export const AuditLogsPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e7edf3] dark:divide-slate-700">
-                {filteredLogs.length === 0 ? (
+                {displayLogs.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-[#4c739a] dark:text-slate-400">
                       No audit logs found matching your search criteria.
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-[#f6f7f8] dark:hover:bg-slate-800 transition-colors">
+                  displayLogs.map((log) => (
+                    <tr key={log.logId} className="hover:bg-[#f6f7f8] dark:hover:bg-slate-800 transition-colors">
                       <td className="px-6 py-4">
                         <p className="text-sm text-[#0d141b] dark:text-white">
-                          {new Date(log.timestamp).toLocaleString()}
+                          {log.timestamp instanceof Date ? log.timestamp.toLocaleString() : new Date(log.timestamp as any).toLocaleString()}
                         </p>
                       </td>
                       <td className="px-6 py-4">
                         <div>
-                          <p className="text-sm font-bold text-[#0d141b] dark:text-white">{log.user}</p>
-                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${getRoleColor(log.userRole)}`}>
-                            {log.userRole.toUpperCase()}
+                          <p className="text-sm font-bold text-[#0d141b] dark:text-white">{log.userName || log.userId}</p>
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${getRoleColor(log.userRole || '')}`}>
+                            {(log.userRole || '').toUpperCase()}
                           </span>
                         </div>
                       </td>
@@ -206,7 +157,7 @@ export const AuditLogsPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm text-[#0d141b] dark:text-white">{log.details}</p>
+                        <p className="text-sm text-[#0d141b] dark:text-white">{log.details || ''}</p>
                         <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">
                           {log.entityType} - {log.entityId}
                         </p>
@@ -223,17 +174,35 @@ export const AuditLogsPage: React.FC = () => {
         </div>
 
         <div className="mt-6 flex items-center justify-between text-sm text-[#4c739a] dark:text-slate-400">
-          <p>Showing {filteredLogs.length} of {auditLogs.length} audit logs</p>
-          <button
-            onClick={() => {
-              // In a real app, this would export the audit logs
-              alert('Exporting audit logs...');
-            }}
+          <p>{loading ? 'Loading...' : `Showing ${displayLogs.length} of ${total} audit logs`}</p>
+          <a
+            href={dataService.getAuditLogExportUrl({
+              userRole: filterRole !== 'all' ? filterRole : '',
+              action: filterAction !== 'all' ? filterAction : '',
+              search: searchTerm,
+              format: 'csv',
+            })}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            onClick={(e) => {
+              const token = AuthService.getToken();
+              if (token) {
+                e.preventDefault();
+                const url = (e.currentTarget as HTMLAnchorElement).href;
+                fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+                  .then((r) => r.blob())
+                  .then((blob) => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'audit-logs.csv';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                  });
+              }
+            }}
           >
             <span className="material-symbols-outlined">download</span>
             Export Logs
-          </button>
+          </a>
         </div>
       </div>
     </div>

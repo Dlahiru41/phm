@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dataService } from '../services/DataService';
 
 export const BabyRegistrationPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,24 +21,46 @@ export const BabyRegistrationPage: React.FC = () => {
   });
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-
-    // Generate unique registration number (format: NCVMS-YYYY-MMDD-XXXX)
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    const regNumber = `NCVMS-${year}-${month}${day}-${random}`;
-
-    setRegistrationNumber(regNumber);
-    
-    // In a real app, this would save to backend
-    // For now, we'll just show the registration number
+    const weight = parseFloat(formData.birthWeight);
+    const height = parseFloat(formData.birthHeight);
+    if (isNaN(weight) || isNaN(height)) {
+      setError('Please enter valid birth weight and height.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await dataService.registerChild({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        birthWeight: weight,
+        birthHeight: height,
+        motherName: formData.motherName,
+        motherNIC: formData.motherNIC,
+        fatherName: formData.fatherName,
+        fatherNIC: formData.fatherNIC,
+        district: formData.district,
+        dsDivision: formData.dsDivision,
+        gnDivision: formData.gnDivision,
+        address: formData.address,
+      });
+      if (res?.registrationNumber) {
+        setRegistrationNumber(res.registrationNumber);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    } catch {
+      setError('Registration failed. Please check your details and try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

@@ -113,10 +113,9 @@ export class Router {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
         
-        // Import AuthService dynamically
         const { AuthService } = await import('../services/AuthService');
-        
-        if (AuthService.login(username, password)) {
+        const user = await AuthService.login(username, password);
+        if (user) {
           // Hide error if shown
           if (errorDiv) {
             errorDiv.classList.add('hidden');

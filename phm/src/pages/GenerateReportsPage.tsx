@@ -1,5 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dataService } from '../services/DataService';
+import { AuthService } from '../services/AuthService';
 
 export const GenerateReportsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,30 +14,61 @@ export const GenerateReportsPage: React.FC = () => {
   const [dsDivision, setDsDivision] = useState('');
   const [generating, setGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
+  const [generatedReportId, setGeneratedReportId] = useState<string | null>(null);
+  const [generateError, setGenerateError] = useState('');
 
   const reportTypes = [
-    { value: 'vaccination-coverage', label: 'Vaccination Coverage Report', icon: 'bar_chart' },
-    { value: 'vaccination-status', label: 'Vaccination Status Report', icon: 'assignment' },
-    { value: 'missed-vaccinations', label: 'Missed Vaccinations Report', icon: 'warning' },
-    { value: 'upcoming-vaccinations', label: 'Upcoming Vaccinations Report', icon: 'event_upcoming' },
-    { value: 'demographics', label: 'Demographics Report', icon: 'people' },
-    { value: 'audit', label: 'Audit Report', icon: 'history' }
+    { value: 'vaccination_coverage', label: 'Vaccination Coverage Report', icon: 'bar_chart' },
+    { value: 'area_performance', label: 'Area Performance Report', icon: 'assignment' },
+    { value: 'audit_report', label: 'Audit Report', icon: 'history' },
+    { value: 'growth_analysis', label: 'Growth Analysis Report', icon: 'trending_up' },
+    { value: 'monthly_summary', label: 'Monthly Summary Report', icon: 'event_upcoming' },
   ];
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setGenerateError('');
     setGenerating(true);
-
-    // Simulate report generation
-    setTimeout(() => {
+    try {
+      const res = await dataService.generateReport({
+        reportType,
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        district: district || undefined,
+        dsDivision: dsDivision || undefined,
+        format: 'pdf',
+      });
+      if (res?.reportId) {
+        setGeneratedReportId(res.reportId);
+        setReportGenerated(true);
+      } else {
+        setGenerateError('Failed to generate report.');
+      }
+    } catch {
+      setGenerateError('Failed to generate report. Please try again.');
+    } finally {
       setGenerating(false);
-      setReportGenerated(true);
-    }, 2000);
+    }
   };
 
-  const handleDownload = (format: 'pdf' | 'excel' | 'csv') => {
-    // In a real app, this would download the report
-    alert(`Downloading report as ${format.toUpperCase()}...`);
+  const handleDownload = async (format: 'pdf' | 'excel' | 'csv') => {
+    if (!generatedReportId) return;
+    const token = AuthService.getToken();
+    const url = `/api/v1/reports/${encodeURIComponent(generatedReportId)}/download?format=${format}`;
+    try {
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `report-${generatedReportId}.${format === 'pdf' ? 'pdf' : format === 'excel' ? 'xlsx' : 'csv'}`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      alert(`Download as ${format.toUpperCase()} failed.`);
+    }
   };
 
   if (reportGenerated) {
@@ -59,6 +92,7 @@ export const GenerateReportsPage: React.FC = () => {
                     {reportTypes.find(r => r.value === reportType)?.label}
                   </span>
                 </div>
+                {generateError && <p className="text-sm text-red-600 dark:text-red-400 mb-2">{generateError}</p>}
                 {dateRange.startDate && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Date Range:</span>
@@ -104,6 +138,7 @@ export const GenerateReportsPage: React.FC = () => {
               <button
                 onClick={() => {
                   setReportGenerated(false);
+                  setGeneratedReportId(null);
                   setReportType('');
                   setDateRange({ startDate: '', endDate: '' });
                   setDistrict('');

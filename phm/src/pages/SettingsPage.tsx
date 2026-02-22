@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { api } from '../services/apiClient';
+import { ParentLayout } from '../components/ParentLayout';
+
+const langToCode: Record<string, string> = { english: 'en', sinhala: 'si', tamil: 'ta' };
+const codeToLang: Record<string, string> = { en: 'english', si: 'sinhala', ta: 'tamil' };
 
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const isParent = AuthService.isParent();
   const [language, setLanguage] = useState('english');
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -12,6 +18,20 @@ export const SettingsPage: React.FC = () => {
     push: true
   });
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const storedLang = localStorage.getItem('language') || 'english';
+    const storedDark = localStorage.getItem('darkMode') === 'true';
+    const storedNotif = localStorage.getItem('notifications');
+    setLanguage(storedLang);
+    setDarkMode(storedDark);
+    if (storedNotif) {
+      try {
+        setNotifications(JSON.parse(storedNotif));
+      } catch {}
+    }
+  }, []);
 
   const languages = [
     { value: 'english', label: 'English', flag: '🇬🇧' },
@@ -19,32 +39,40 @@ export const SettingsPage: React.FC = () => {
     { value: 'tamil', label: 'தமிழ்', flag: '🇱🇰' }
   ];
 
-  const handleSave = () => {
-    // In a real app, this would save settings to backend
+  const handleSave = async () => {
     localStorage.setItem('language', language);
     localStorage.setItem('darkMode', darkMode.toString());
     localStorage.setItem('notifications', JSON.stringify(notifications));
-    
-    // Apply dark mode
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setLoading(true);
+    try {
+      await api.put('/users/me/settings', {
+        languagePreference: langToCode[language] || 'en',
+        notifications: { email: notifications.email, sms: notifications.sms, push: notifications.push },
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLogout = () => {
-    AuthService.logout();
+  const handleLogout = async () => {
+    await AuthService.logout();
     navigate('/login');
   };
 
-  return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <div className="w-full max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-8">
+  const content = (
+    <div className="w-full max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-8">
+        {!isParent && (
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
@@ -52,9 +80,10 @@ export const SettingsPage: React.FC = () => {
             <span className="material-symbols-outlined">arrow_back</span>
             <span className="text-sm font-medium">Back</span>
           </button>
-          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Settings</h1>
-          <p className="text-[#4c739a] dark:text-slate-400">Manage your SuwaCare LK account settings and preferences.</p>
-        </div>
+        )}
+        <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Settings</h1>
+        <p className="text-[#4c739a] dark:text-slate-400">Manage your SuwaCare LK account settings and preferences.</p>
+      </div>
 
         <div className="space-y-6">
           {/* Language Settings */}
@@ -194,7 +223,8 @@ export const SettingsPage: React.FC = () => {
           <div className="flex gap-4">
             <button
               onClick={handleSave}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+              disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70"
             >
               {saved ? (
                 <>
@@ -211,6 +241,19 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
+  );
+
+  if (isParent) {
+    return (
+      <ParentLayout activeNav="settings">
+        {content}
+      </ParentLayout>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+      {content}
     </div>
   );
 };

@@ -1,60 +1,16 @@
-import { User, UserRole, Parent, PHM, MOHOfficer } from '../types/models';
+import { UserRole } from '../types/models';
+import { api } from './apiClient';
 
-// Hardcoded credentials for development
-// Three user roles: Parent, PHM (Midwife), and MOH (Ministry of Health)
-const HARDCODED_CREDENTIALS = {
-  parent: {
-    userId: 'user-parent-001',
-    username: 'parent',
-    password: 'parent123',
-    email: 'parent@ncvms.gov.lk',
-    nic: '987654321V',
-    passwordHash: 'hashed_parent123',
-    role: UserRole.PARENT,
-    languagePreference: 'en',
-    createdAt: new Date('2023-01-01'),
-    phoneNumber: '+94771234567',
-    address: '123 Main Street, Colombo',
-    name: 'Amara Perera'
-  },
-  phm: {
-    userId: 'user-phm-001',
-    username: 'phm',
-    password: 'phm123',
-    email: 'phm@ncvms.gov.lk',
-    nic: '123456789V',
-    passwordHash: 'hashed_phm123',
-    role: UserRole.PHM,
-    languagePreference: 'en',
-    createdAt: new Date('2023-01-01'),
-    phmId: 'phm-001',
-    areaCode: 'COL-01',
-    assignedRegion: 'Colombo West',
-    name: 'Dr. Perera'
-  },
-  moh: {
-    userId: 'user-moh-001',
-    username: 'moh',
-    password: 'moh123',
-    email: 'moh@ncvms.gov.lk',
-    nic: '555555555V',
-    passwordHash: 'hashed_moh123',
-    role: UserRole.MOH_OFFICER,
-    languagePreference: 'en',
-    createdAt: new Date('2023-01-01'),
-    officerId: 'moh-001',
-    officeLocation: 'Colombo MOH Office',
-    jurisdiction: 'Western Province',
-    name: 'Dr. Silva'
-  }
-};
-
-// Extended User interface for frontend use
-export interface UserWithDetails extends User {
-  username?: string;
+export interface UserWithDetails {
+  userId: string;
+  email: string;
+  nic: string;
+  role: UserRole | string;
   name?: string;
   phoneNumber?: string;
   address?: string;
+  languagePreference?: string;
+  createdAt?: string;
   phmId?: string;
   areaCode?: string;
   assignedRegion?: string;
@@ -63,98 +19,75 @@ export interface UserWithDetails extends User {
   jurisdiction?: string;
 }
 
+interface LoginResponse {
+  token: string;
+  user: UserWithDetails;
+}
+
 export class AuthService {
-  private static isAuthenticated: boolean = false;
-  private static currentUser: UserWithDetails | null = null;
-
-  static login(usernameOrEmail: string, password: string): UserWithDetails | null {
-    // Check against all user credentials
-    for (const [role, creds] of Object.entries(HARDCODED_CREDENTIALS)) {
-      const isValid = 
-        (usernameOrEmail === creds.username || 
-         usernameOrEmail === creds.email ||
-         usernameOrEmail === creds.nic) &&
-        password === creds.password;
-
-      if (isValid) {
-        this.isAuthenticated = true;
-        this.currentUser = {
-          ...creds,
-          username: creds.username,
-          name: creds.name
-        };
-        
-        // Store in sessionStorage
-        sessionStorage.setItem('isAuthenticated', 'true');
-        sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-        sessionStorage.setItem('userRole', creds.role);
-        
-        return this.currentUser;
-      }
-    }
-
-    return null;
+  static getToken(): string | null {
+    return sessionStorage.getItem('token');
   }
 
-  static logout(): void {
-    this.isAuthenticated = false;
-    this.currentUser = null;
-    sessionStorage.removeItem('isAuthenticated');
+  static async login(usernameOrEmail: string, password: string): Promise<UserWithDetails | null> {
+    try {
+      const res = await api.post<LoginResponse>('/auth/login', {
+        usernameOrEmail: usernameOrEmail.trim(),
+        password,
+      });
+      if (!res?.token || !res?.user) return null;
+      sessionStorage.setItem('token', res.token);
+      sessionStorage.setItem('currentUser', JSON.stringify(res.user));
+      sessionStorage.setItem('isAuthenticated', 'true');
+      sessionStorage.setItem('userRole', res.user.role);
+      return res.user;
+    } catch {
+      return null;
+    }
+  }
+
+  static async logout(): Promise<void> {
+    const token = this.getToken();
+    if (token) {
+      try {
+        await api.post('/auth/logout');
+      } catch {
+        // ignore
+      }
+    }
+    sessionStorage.removeItem('token');
     sessionStorage.removeItem('currentUser');
+    sessionStorage.removeItem('isAuthenticated');
     sessionStorage.removeItem('userRole');
   }
 
   static checkAuth(): boolean {
-    // Check sessionStorage first
-    const stored = sessionStorage.getItem('isAuthenticated');
-    if (stored === 'true') {
-      this.isAuthenticated = true;
-      const userStr = sessionStorage.getItem('currentUser');
-      if (userStr) {
-        try {
-          this.currentUser = JSON.parse(userStr);
-        } catch (e) {
-          // Handle parse error
-        }
-      }
-      return true;
-    }
-    return this.isAuthenticated;
+    return sessionStorage.getItem('isAuthenticated') === 'true' && !!this.getToken();
   }
 
   static getCurrentUser(): UserWithDetails | null {
-    if (this.currentUser) {
-      return this.currentUser;
-    }
     const userStr = sessionStorage.getItem('currentUser');
-    if (userStr) {
-      try {
-        const parsed = JSON.parse(userStr);
-        // Convert date strings back to Date objects
-        if (parsed.createdAt) {
-          parsed.createdAt = new Date(parsed.createdAt);
-        }
-        return parsed;
-      } catch (e) {
-        return null;
-      }
+    if (!userStr) return null;
+    try {
+      return JSON.parse(userStr) as UserWithDetails;
+    } catch {
+      return null;
     }
-    return null;
   }
 
   static getUserRole(): UserRole | null {
     const user = this.getCurrentUser();
-    return user ? user.role : null;
+    return user ? (user.role as UserRole) : null;
   }
-  
+
   static isParent(): boolean {
     return this.getUserRole() === UserRole.PARENT;
   }
-  
+
   static isPHM(): boolean {
     return this.getUserRole() === UserRole.PHM;
   }
-  
+
   static isMOH(): boolean {
     return this.getUserRole() === UserRole.MOH_OFFICER;
   }
@@ -166,14 +99,26 @@ export class AuthService {
   static getDashboardPath(): string {
     const role = this.getUserRole();
     switch (role) {
-      case 'parent':
+      case UserRole.PARENT:
         return '/parent-dashboard-desktop';
-      case 'phm':
+      case UserRole.PHM:
         return '/phm-dashboard';
-      case 'moh':
+      case UserRole.MOH_OFFICER:
         return '/moh-analytics-dashboard';
       default:
         return '/';
+    }
+  }
+
+  static async refreshProfile(): Promise<UserWithDetails | null> {
+    try {
+      const user = await api.get<UserWithDetails>('/users/me');
+      if (user) {
+        sessionStorage.setItem('currentUser', JSON.stringify(user));
+      }
+      return user;
+    } catch {
+      return this.getCurrentUser();
     }
   }
 }

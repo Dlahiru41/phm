@@ -1,57 +1,85 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { dataService } from '../services/DataService';
 
 export const EditVaccinationPage: React.FC = () => {
   const location = useLocation();
-  const vaccinationId = location.state?.vaccinationId || null;
+  const recordId = location.state?.recordId || location.state?.vaccinationId || null;
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    vaccinationType: '',
-    vaccineName: '',
+    vaccineId: '',
     doseNumber: '',
     dateGiven: '',
     batchNumber: '',
     administeredBy: '',
+    location: '',
     site: '',
     nextDueDate: '',
     notes: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(!!recordId);
+  const [submitting, setSubmitting] = useState(false);
+  const [vaccines, setVaccines] = useState<{ vaccineId: string; name: string }[]>([]);
 
   useEffect(() => {
-    // In a real app, fetch vaccination data by ID
-    if (vaccinationId) {
-      // Mock data - in real app, fetch from API
-      setFormData({
-        vaccinationType: 'pentavalent',
-        vaccineName: 'Pentavalent (DPT-HepB-Hib)',
-        doseNumber: '3',
-        dateGiven: '2023-08-22',
-        batchNumber: 'BATCH-2023-001',
-        administeredBy: 'Dr. Perera',
-        site: 'left-thigh',
-        nextDueDate: '2023-10-22',
-        notes: 'No adverse reactions observed.'
-      });
-    }
-  }, [vaccinationId]);
+    dataService.getAllVaccines().then((list) => setVaccines(list));
+  }, []);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (!recordId) return;
+    dataService.getVaccinationRecord(recordId).then((rec) => {
+      if (rec) {
+        setFormData({
+          vaccineId: rec.vaccineId,
+          doseNumber: rec.doseNumber != null ? String(rec.doseNumber) : '',
+          dateGiven: rec.administeredDate instanceof Date ? rec.administeredDate.toISOString().split('T')[0] : String(rec.administeredDate).split('T')[0],
+          batchNumber: rec.batchNumber || '',
+          administeredBy: rec.administeredBy || '',
+          location: rec.location || '',
+          site: rec.site || '',
+          nextDueDate: rec.nextDueDate instanceof Date ? rec.nextDueDate.toISOString().split('T')[0] : (rec.nextDueDate ? String(rec.nextDueDate).split('T')[0] : ''),
+          notes: rec.notes || '',
+        });
+      }
+      setLoading(false);
+    });
+  }, [recordId]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-
-    if (!formData.vaccinationType || !formData.vaccineName || !formData.dateGiven) {
+    if (!recordId || !formData.vaccineId || !formData.dateGiven) {
       setError('Please fill in all required fields');
       return;
     }
-
-    // Simulate updating vaccination record
-    setSuccess(true);
-    setTimeout(() => {
-      navigate('/phm-dashboard');
-    }, 2000);
+    setSubmitting(true);
+    try {
+      const ok = await dataService.updateVaccinationRecord(recordId, {
+        vaccineId: formData.vaccineId,
+        administeredDate: formData.dateGiven,
+        batchNumber: formData.batchNumber || undefined,
+        administeredBy: formData.administeredBy || undefined,
+        location: formData.location || undefined,
+        site: formData.site || undefined,
+        doseNumber: formData.doseNumber ? parseInt(formData.doseNumber, 10) : undefined,
+        nextDueDate: formData.nextDueDate || undefined,
+        status: 'administered',
+        notes: formData.notes || undefined,
+      });
+      if (ok) {
+        setSuccess(true);
+        setTimeout(() => navigate('/view-area-children'), 2000);
+      } else {
+        setError('Failed to update record. Please try again.');
+      }
+    } catch {
+      setError('Failed to update record. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -100,38 +128,19 @@ export const EditVaccinationPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccination Type *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccine *</p>
                 <select
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                  name="vaccinationType"
-                  value={formData.vaccinationType}
+                  name="vaccineId"
+                  value={formData.vaccineId}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Select type</option>
-                  <option value="bcg">BCG</option>
-                  <option value="opv">OPV (Oral Polio Vaccine)</option>
-                  <option value="pentavalent">Pentavalent (DPT-HepB-Hib)</option>
-                  <option value="ipv">IPV (Inactivated Polio Vaccine)</option>
-                  <option value="measles">Measles</option>
-                  <option value="mmr">MMR (Measles, Mumps, Rubella)</option>
-                  <option value="dtp">DTP Booster</option>
-                  <option value="other">Other</option>
+                  <option value="">Select vaccine</option>
+                  {vaccines.map((v) => (
+                    <option key={v.vaccineId} value={v.vaccineId}>{v.name}</option>
+                  ))}
                 </select>
-              </label>
-            </div>
-
-            <div>
-              <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccine Name *</p>
-                <input
-                  className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                  type="text"
-                  name="vaccineName"
-                  value={formData.vaccineName}
-                  onChange={handleChange}
-                  required
-                />
               </label>
             </div>
 
@@ -145,7 +154,6 @@ export const EditVaccinationPage: React.FC = () => {
                   name="doseNumber"
                   value={formData.doseNumber}
                   onChange={handleChange}
-                  required
                 />
               </label>
             </div>
@@ -187,7 +195,6 @@ export const EditVaccinationPage: React.FC = () => {
                   name="administeredBy"
                   value={formData.administeredBy}
                   onChange={handleChange}
-                  required
                 />
               </label>
             </div>

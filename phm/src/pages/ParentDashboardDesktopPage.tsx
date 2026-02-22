@@ -52,8 +52,8 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                             <p className="text-sm font-medium">Help Center</p>
                         </Link>
                         <button 
-                            onClick={() => {
-                                AuthService.logout();
+                            onClick={async () => {
+                                await AuthService.logout();
                                 navigate('/login');
                             }}
                             className="flex items-center gap-3 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left w-full">

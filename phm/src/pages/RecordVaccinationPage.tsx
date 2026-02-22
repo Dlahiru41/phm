@@ -1,52 +1,72 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { dataService } from '../services/DataService';
+import { AuthService } from '../services/AuthService';
+import { Child, Vaccine } from '../types/models';
 
 export const RecordVaccinationPage: React.FC = () => {
   const location = useLocation();
-  const childId = location.state?.childId || null;
+  const childIdFromState = location.state?.childId || null;
   const navigate = useNavigate();
 
+  const [children, setChildren] = useState<Child[]>([]);
+  const [vaccines, setVaccines] = useState<Vaccine[]>([]);
   const [formData, setFormData] = useState({
-    childId: childId || '',
-    childName: '',
-    vaccinationType: '',
-    vaccineName: '',
+    childId: childIdFromState || '',
+    vaccineId: '',
     doseNumber: '',
     dateGiven: '',
     batchNumber: '',
     administeredBy: '',
+    location: '',
     site: '',
     nextDueDate: '',
     notes: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const vaccinationTypes = [
-    { value: 'bcg', label: 'BCG' },
-    { value: 'opv', label: 'OPV (Oral Polio Vaccine)' },
-    { value: 'pentavalent', label: 'Pentavalent (DPT-HepB-Hib)' },
-    { value: 'ipv', label: 'IPV (Inactivated Polio Vaccine)' },
-    { value: 'measles', label: 'Measles' },
-    { value: 'mmr', label: 'MMR (Measles, Mumps, Rubella)' },
-    { value: 'dtp', label: 'DTP Booster' },
-    { value: 'other', label: 'Other' }
-  ];
+  useEffect(() => {
+    const user = AuthService.getCurrentUser();
+    const phmId = (user as any)?.phmId || user?.userId || '';
+    dataService.getChildrenByPHM(phmId).then(setChildren);
+    dataService.getAllVaccines().then(setVaccines);
+  }, []);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-
-    if (!formData.vaccinationType || !formData.vaccineName || !formData.dateGiven) {
+    if (!formData.childId || !formData.vaccineId || !formData.dateGiven) {
       setError('Please fill in all required fields');
       return;
     }
-
-    // Simulate saving vaccination record
-    setSuccess(true);
-    setTimeout(() => {
-      navigate('/phm-dashboard');
-    }, 2000);
+    setSubmitting(true);
+    try {
+      const res = await dataService.createVaccinationRecord({
+        childId: formData.childId,
+        vaccineId: formData.vaccineId,
+        administeredDate: formData.dateGiven,
+        batchNumber: formData.batchNumber || undefined,
+        administeredBy: formData.administeredBy || undefined,
+        location: formData.location || undefined,
+        site: formData.site || undefined,
+        doseNumber: formData.doseNumber ? parseInt(formData.doseNumber, 10) : undefined,
+        nextDueDate: formData.nextDueDate || undefined,
+        status: 'administered',
+        notes: formData.notes || undefined,
+      });
+      if (res?.recordId) {
+        setSuccess(true);
+        setTimeout(() => navigate('/view-area-children'), 2000);
+      } else {
+        setError('Failed to record vaccination. Please try again.');
+      }
+    } catch {
+      setError('Failed to record vaccination. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -104,26 +124,10 @@ export const RecordVaccinationPage: React.FC = () => {
                   required
                 >
                   <option value="">Select a child</option>
-                  <option value="1">Kavindu Perera - 4 years</option>
-                  <option value="2">Nimasha Perera - 8 months</option>
-                  <option value="3">Arjun Perera - 2 years</option>
-                </select>
-              </label>
-            </div>
-
-            <div>
-              <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccination Type *</p>
-                <select
-                  className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                  name="vaccinationType"
-                  value={formData.vaccinationType}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select type</option>
-                  {vaccinationTypes.map(type => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
+                  {children.map((c) => (
+                    <option key={c.childId} value={c.childId}>
+                      {c.firstName} {c.lastName} - {c.registrationNumber}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -131,16 +135,19 @@ export const RecordVaccinationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccine Name *</p>
-                <input
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccine *</p>
+                <select
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                  type="text"
-                  name="vaccineName"
-                  value={formData.vaccineName}
+                  name="vaccineId"
+                  value={formData.vaccineId}
                   onChange={handleChange}
-                  placeholder="e.g., BCG Vaccine"
                   required
-                />
+                >
+                  <option value="">Select vaccine</option>
+                  {vaccines.map((v) => (
+                    <option key={v.vaccineId} value={v.vaccineId}>{v.name}</option>
+                  ))}
+                </select>
               </label>
             </div>
 
@@ -154,7 +161,6 @@ export const RecordVaccinationPage: React.FC = () => {
                   name="doseNumber"
                   value={formData.doseNumber}
                   onChange={handleChange}
-                  required
                 />
               </label>
             </div>
@@ -196,7 +202,6 @@ export const RecordVaccinationPage: React.FC = () => {
                   name="administeredBy"
                   value={formData.administeredBy}
                   onChange={handleChange}
-                  required
                 />
               </label>
             </div>

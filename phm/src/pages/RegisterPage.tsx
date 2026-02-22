@@ -1,5 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../services/apiClient';
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -15,9 +16,10 @@ export const RegisterPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
 
@@ -31,11 +33,24 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
-    // Simulate registration
-    setSuccess(true);
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
+    setLoading(true);
+    try {
+      await api.post('/auth/register', {
+        fullName: formData.fullName,
+        nic: formData.nic,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        role: formData.userType,
+      });
+      setSuccess(true);
+      setTimeout(() => navigate('/login'), 2000);
+    } catch (err: any) {
+      setError(err?.message || 'Registration failed. Email or NIC may already be registered.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -96,6 +111,7 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            {loading && <p className="text-sm text-primary">Creating account...</p>}
             <div className="px-4">
               <label className="flex flex-col">
                 <p className="text-[#0d141b] dark:text-white text-base font-medium leading-normal pb-2">User Type</p>

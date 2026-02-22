@@ -1,49 +1,70 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dataService } from '../services/DataService';
+import { AuthService } from '../services/AuthService';
+import { Child } from '../types/models';
 
 export const RecordGrowthDataPage: React.FC = () => {
   const navigate = useNavigate();
-
+  const [children, setChildren] = useState<Child[]>([]);
   const [formData, setFormData] = useState({
     childId: '',
-    childName: '',
     dateOfVisit: '',
     height: '',
     weight: '',
     headCircumference: '',
+    recordedBy: '',
     notes: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const user = AuthService.getCurrentUser();
+    const phmId = (user as any)?.phmId || user?.userId || '';
+    dataService.getChildrenByPHM(phmId).then(setChildren);
+  }, []);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-
     if (!formData.childId || !formData.dateOfVisit || !formData.height || !formData.weight) {
       setError('Please fill in all required fields');
       return;
     }
-
-    // Validate measurements
     const height = parseFloat(formData.height);
     const weight = parseFloat(formData.weight);
-
     if (height <= 0 || height > 200) {
       setError('Please enter a valid height (0-200 cm)');
       return;
     }
-
     if (weight <= 0 || weight > 100) {
       setError('Please enter a valid weight (0-100 kg)');
       return;
     }
-
-    // Simulate saving growth data
-    setSuccess(true);
-    setTimeout(() => {
-      navigate('/phm-dashboard');
-    }, 2000);
+    setSubmitting(true);
+    try {
+      const res = await dataService.createGrowthRecord({
+        childId: formData.childId,
+        recordedDate: formData.dateOfVisit,
+        height,
+        weight: parseFloat(formData.weight),
+        headCircumference: formData.headCircumference ? parseFloat(formData.headCircumference) : undefined,
+        recordedBy: formData.recordedBy || undefined,
+        notes: formData.notes || undefined,
+      });
+      if (res?.recordId) {
+        setSuccess(true);
+        setTimeout(() => navigate('/phm-dashboard'), 2000);
+      } else {
+        setError('Failed to record growth data. Please try again.');
+      }
+    } catch {
+      setError('Failed to record growth data. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -101,9 +122,11 @@ export const RecordGrowthDataPage: React.FC = () => {
                   required
                 >
                   <option value="">Select a child</option>
-                  <option value="1">Kavindu Perera - 4 years</option>
-                  <option value="2">Nimasha Perera - 8 months</option>
-                  <option value="3">Arjun Perera - 2 years</option>
+                  {children.map((c) => (
+                    <option key={c.childId} value={c.childId}>
+                      {c.firstName} {c.lastName} - {c.registrationNumber}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>

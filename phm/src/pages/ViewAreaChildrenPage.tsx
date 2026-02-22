@@ -24,6 +24,7 @@ export const ViewAreaChildrenPage: React.FC = () => {
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
     const currentUser = AuthService.getCurrentUser();
     if (!currentUser) return;
 
@@ -32,53 +33,50 @@ export const ViewAreaChildrenPage: React.FC = () => {
     setIsPHM(userIsPHM);
     setIsMOH(userIsMOH);
 
-    let baseChildren: Child[] = [];
-
-    if (userIsPHM) {
-      // PHM: only children in their own area (registered by this PHM)
-      const phmId = (currentUser as any).phmId || currentUser.userId;
-      baseChildren = dataService.getChildrenByPHM(phmId);
-    } else if (userIsMOH) {
-      // MOH: can see all children across all areas
-      baseChildren = dataService.getAllChildren();
-    } else {
-      // Parent or other: fall back to children linked to this user
-      baseChildren = dataService.getChildrenByParent(currentUser.userId);
-    }
-
-    // Convert to display format with vaccination status
-    const childrenWithStatus: ChildWithStatus[] = baseChildren.map(child => {
-      const records = dataService.getVaccinationRecordsByChild(child.childId);
-      const schedules = dataService.getScheduleItemsByChild(child.childId);
-      const upcomingSchedule = schedules.find(
-        s => s.status === 'pending' || s.status === 'scheduled'
-      );
-
-      // Determine status based on records and schedules
-      let status: 'on-track' | 'behind' | 'up-to-date' = 'on-track';
-      if (records.length === 0 && schedules.length > 0) {
-        status = 'behind';
-      } else if (records.length > 0 && schedules.length === 0) {
-        status = 'up-to-date';
+    (async () => {
+      let baseChildren: Child[] = [];
+      if (userIsPHM) {
+        const phmId = (currentUser as any).phmId || currentUser.userId;
+        baseChildren = await dataService.getChildrenByPHM(phmId);
+      } else if (userIsMOH) {
+        const res = await dataService.getAllChildren({ limit: 500 });
+        baseChildren = res.data;
+      } else {
+        baseChildren = await dataService.getChildrenByParent(currentUser.userId);
       }
+      if (cancelled) return;
 
-      return {
-        ...child,
-        vaccinationStatus: status,
-        lastVaccination: records.length > 0 ? records[records.length - 1].administeredDate : undefined,
-        nextDue: upcomingSchedule ? upcomingSchedule.dueDate : undefined,
-        areaLabel: child.areaName
-      };
-    });
-
-    setChildren(childrenWithStatus);
-
-    if (userIsMOH) {
-      const areas = Array.from(
-        new Set(childrenWithStatus.map(c => c.areaLabel).filter(Boolean) as string[])
-      ).sort();
-      setAvailableAreas(areas);
-    }
+      const childrenWithStatus: ChildWithStatus[] = await Promise.all(
+        baseChildren.map(async (child) => {
+          const [records, schedules] = await Promise.all([
+            dataService.getVaccinationRecordsByChild(child.childId),
+            dataService.getScheduleItemsByChild(child.childId),
+          ]);
+          const upcomingSchedule = schedules.find(
+            (s) => s.status === 'pending' || s.status === 'scheduled'
+          );
+          let status: 'on-track' | 'behind' | 'up-to-date' = 'on-track';
+          if (records.length === 0 && schedules.length > 0) status = 'behind';
+          else if (records.length > 0 && schedules.length === 0) status = 'up-to-date';
+          return {
+            ...child,
+            vaccinationStatus: status,
+            lastVaccination: records.length > 0 ? records[records.length - 1].administeredDate : undefined,
+            nextDue: upcomingSchedule ? upcomingSchedule.dueDate : undefined,
+            areaLabel: child.areaName,
+          };
+        })
+      );
+      if (cancelled) return;
+      setChildren(childrenWithStatus);
+      if (userIsMOH) {
+        const areas = Array.from(
+          new Set(childrenWithStatus.map((c) => c.areaLabel).filter(Boolean) as string[])
+        ).sort();
+        setAvailableAreas(areas);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const filteredChildren = children.filter(child => {

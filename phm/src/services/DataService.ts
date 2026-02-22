@@ -1,4 +1,4 @@
-// Data service for managing entities according to UML class diagram
+import { api } from './apiClient';
 import {
   Child,
   Vaccine,
@@ -6,328 +6,638 @@ import {
   VaccinationRecord,
   GrowthRecord,
   Notification,
-  Report,
   AuditLog,
   ScheduleStatus,
   VaccinationStatus,
   NotificationType,
-  ReportType,
-  Gender
+  Gender,
 } from '../types/models';
 
-// Mock data storage (in a real app, this would be API calls)
+function parseDate(v: string | Date | undefined): Date {
+  if (!v) return new Date(0);
+  if (v instanceof Date) return v;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+}
+
+function childFromApi(a: any): Child {
+  return {
+    childId: a.childId,
+    registrationNumber: a.registrationNumber || '',
+    firstName: a.firstName,
+    lastName: a.lastName,
+    dateOfBirth: parseDate(a.dateOfBirth),
+    gender: (a.gender === 'female' ? Gender.FEMALE : Gender.MALE) as Gender,
+    bloodGroup: a.bloodGroup || '',
+    birthWeight: a.birthWeight,
+    birthHeight: a.birthHeight,
+    headCircumference: a.headCircumference,
+    parentId: a.parentId || '',
+    registeredBy: a.registeredBy || '',
+    areaCode: a.areaCode || '',
+    areaName: a.areaName || '',
+  };
+}
+
+function scheduleFromApi(a: any): ScheduleItem {
+  return {
+    scheduleId: a.scheduleId,
+    childId: a.childId,
+    vaccineId: a.vaccineId,
+    vaccineName: (a as any).vaccineName,
+    scheduledDate: parseDate(a.scheduledDate),
+    dueDate: parseDate(a.dueDate),
+    status: (a.status as ScheduleStatus) || ScheduleStatus.PENDING,
+    reminderSent: !!a.reminderSent,
+  };
+}
+
+function vaccinationRecordFromApi(a: any): VaccinationRecord {
+  return {
+    recordId: a.recordId,
+    childId: a.childId,
+    vaccineId: a.vaccineId,
+    vaccineName: (a as any).vaccineName,
+    administeredDate: parseDate(a.administeredDate),
+    batchNumber: a.batchNumber || '',
+    administeredBy: a.administeredBy || '',
+    location: a.location || '',
+    site: (a as any).site,
+    doseNumber: (a as any).doseNumber,
+    nextDueDate: (a as any).nextDueDate ? parseDate((a as any).nextDueDate) : undefined,
+    status: (a.status as VaccinationStatus) || VaccinationStatus.PENDING,
+    notes: a.notes || '',
+    createdAt: parseDate(a.createdAt),
+  };
+}
+
+function growthRecordFromApi(a: any): GrowthRecord {
+  return {
+    recordId: a.recordId,
+    childId: a.childId,
+    recordedDate: parseDate(a.recordedDate),
+    height: a.height,
+    weight: a.weight,
+    headCircumference: a.headCircumference,
+    recordedBy: a.recordedBy || '',
+    notes: a.notes || '',
+    createdAt: parseDate(a.createdAt),
+  };
+}
+
+function notificationFromApi(a: any): Notification {
+  return {
+    notificationId: a.notificationId,
+    recipientId: a.recipientId,
+    type: (a.type as NotificationType) || NotificationType.INFO,
+    message: a.message || '',
+    relatedChildId: a.relatedChildId || null,
+    sentDate: parseDate(a.sentDate),
+    isRead: !!a.isRead,
+  };
+}
+
+function auditLogFromApi(a: any): AuditLog {
+  return {
+    logId: a.logId,
+    userId: a.userId,
+    userRole: a.userRole,
+    userName: a.userName,
+    action: a.action,
+    entityType: a.entityType,
+    entityId: a.entityId,
+    details: a.details,
+    timestamp: parseDate(a.timestamp),
+    ipAddress: a.ipAddress || '',
+  };
+}
+
 class DataService {
-  private children: Child[] = [];
-  private vaccines: Vaccine[] = [];
-  private scheduleItems: ScheduleItem[] = [];
-  private vaccinationRecords: VaccinationRecord[] = [];
-  private growthRecords: GrowthRecord[] = [];
-  private notifications: Notification[] = [];
-  private reports: Report[] = [];
-  private auditLogs: AuditLog[] = [];
-
-  // Child operations
-  getChild(childId: string): Child | null {
-    return this.children.find(c => c.childId === childId) || null;
-  }
-
-  getChildrenByParent(parentId: string): Child[] {
-    return this.children.filter(c => c.parentId === parentId);
-  }
-
-  getChildrenByPHM(phmId: string): Child[] {
-    return this.children.filter(c => c.registeredBy === phmId);
-  }
-
-  getAllChildren(): Child[] {
-    return this.children;
-  }
-
-  registerChild(child: Child): string {
-    child.registrationNumber = this.generateRegistrationNumber();
-    this.children.push(child);
-    this.logAudit('CREATE', 'Child', child.childId, 'Child registered');
-    return child.registrationNumber;
-  }
-
-  private generateRegistrationNumber(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `NCVMS-${year}-${month}${day}-${random}`;
-  }
-
-  // Vaccine operations
-  getVaccine(vaccineId: string): Vaccine | null {
-    return this.vaccines.find(v => v.vaccineId === vaccineId) || null;
-  }
-
-  getAllVaccines(): Vaccine[] {
-    return this.vaccines.filter(v => v.isActive);
-  }
-
-  // ScheduleItem operations
-  getScheduleItemsByChild(childId: string): ScheduleItem[] {
-    return this.scheduleItems.filter(s => s.childId === childId);
-  }
-
-  createScheduleItem(item: ScheduleItem): void {
-    this.scheduleItems.push(item);
-    this.logAudit('CREATE', 'ScheduleItem', item.scheduleId, 'Schedule item created');
-  }
-
-  updateScheduleStatus(scheduleId: string, status: ScheduleStatus): void {
-    const item = this.scheduleItems.find(s => s.scheduleId === scheduleId);
-    if (item) {
-      item.status = status;
-      this.logAudit('UPDATE', 'ScheduleItem', scheduleId, `Status updated to ${status}`);
+  async getChild(childId: string): Promise<Child | null> {
+    try {
+      const a = await api.get<any>(`/children/${encodeURIComponent(childId)}`);
+      return a ? childFromApi(a) : null;
+    } catch {
+      return null;
     }
   }
 
-  // VaccinationRecord operations
-  getVaccinationRecordsByChild(childId: string): VaccinationRecord[] {
-    return this.vaccinationRecords.filter(r => r.childId === childId);
-  }
-
-  getAllVaccinationRecords(): VaccinationRecord[] {
-    return this.vaccinationRecords;
-  }
-
-  createVaccinationRecord(record: VaccinationRecord): void {
-    this.vaccinationRecords.push(record);
-    // Update corresponding schedule item
-    const scheduleItem = this.scheduleItems.find(
-      s => s.childId === record.childId && s.vaccineId === record.vaccineId
-    );
-    if (scheduleItem) {
-      scheduleItem.status = ScheduleStatus.COMPLETED;
-    }
-    this.logAudit('CREATE', 'VaccinationRecord', record.recordId, 'Vaccination recorded');
-  }
-
-  updateVaccinationRecord(recordId: string, updates: Partial<VaccinationRecord>): void {
-    const record = this.vaccinationRecords.find(r => r.recordId === recordId);
-    if (record) {
-      Object.assign(record, updates);
-      this.logAudit('UPDATE', 'VaccinationRecord', recordId, 'Vaccination record updated');
+  async getChildrenByParent(parentId: string): Promise<Child[]> {
+    try {
+      const list = await api.get<any[]>('/children', { parentId });
+      return Array.isArray(list) ? list.map(childFromApi) : [];
+    } catch {
+      return [];
     }
   }
 
-  // GrowthRecord operations
-  getGrowthRecordsByChild(childId: string): GrowthRecord[] {
-    return this.growthRecords.filter(r => r.childId === childId);
-  }
-
-  createGrowthRecord(record: GrowthRecord): void {
-    this.growthRecords.push(record);
-    this.logAudit('CREATE', 'GrowthRecord', record.recordId, 'Growth data recorded');
-  }
-
-  // Notification operations
-  getNotificationsByRecipient(recipientId: string): Notification[] {
-    return this.notifications.filter(n => n.recipientId === recipientId);
-  }
-
-  getUnreadNotifications(recipientId: string): Notification[] {
-    return this.notifications.filter(n => n.recipientId === recipientId && !n.isRead);
-  }
-
-  createNotification(notification: Notification): boolean {
-    this.notifications.push(notification);
-    return true;
-  }
-
-  markNotificationAsRead(notificationId: string): void {
-    const notification = this.notifications.find(n => n.notificationId === notificationId);
-    if (notification) {
-      notification.isRead = true;
+  async getChildrenByPHM(phmId: string): Promise<Child[]> {
+    try {
+      const list = await api.get<any[]>('/children', { phmId });
+      return Array.isArray(list) ? list.map(childFromApi) : [];
+    } catch {
+      return [];
     }
   }
 
-  markAllNotificationsAsRead(recipientId: string): void {
-    this.notifications
-      .filter(n => n.recipientId === recipientId && !n.isRead)
-      .forEach(n => n.isRead = true);
+  async getAllChildren(params?: {
+    areaCode?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ total: number; page: number; limit: number; data: Child[] }> {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.areaCode) p.areaCode = params.areaCode;
+      if (params?.status) p.status = params.status;
+      if (params?.search) p.search = params.search;
+      if (params?.page != null) p.page = String(params.page);
+      if (params?.limit != null) p.limit = String(params.limit);
+      const res = await api.get<{ total: number; page: number; limit: number; data: any[] }>('/children', p);
+      const data = Array.isArray(res?.data) ? res.data.map(childFromApi) : [];
+      return {
+        total: res?.total ?? 0,
+        page: res?.page ?? 1,
+        limit: res?.limit ?? 20,
+        data,
+      };
+    } catch {
+      return { total: 0, page: 1, limit: 20, data: [] };
+    }
   }
 
-  // Report operations
-  generateReport(report: Report): Report {
-    this.reports.push(report);
-    this.logAudit('CREATE', 'Report', report.reportId, `Report generated: ${report.reportType}`);
-    return report;
+  async searchChildByRegistration(registrationNumber: string): Promise<Child | null> {
+    try {
+      const a = await api.get<any>('/children/search', { registrationNumber });
+      return a ? childFromApi(a) : null;
+    } catch {
+      return null;
+    }
   }
 
-  getReportsByUser(userId: string): Report[] {
-    return this.reports.filter(r => r.generatedBy === userId);
+  async registerChild(body: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    gender: string;
+    birthWeight: number;
+    birthHeight: number;
+    headCircumference?: number;
+    bloodGroup?: string;
+    motherName: string;
+    motherNIC: string;
+    fatherName: string;
+    fatherNIC: string;
+    district: string;
+    dsDivision: string;
+    gnDivision: string;
+    address: string;
+  }): Promise<{ childId: string; registrationNumber: string } | null> {
+    try {
+      const res = await api.post<{ childId: string; registrationNumber: string }>('/children', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
   }
 
-  // AuditLog operations
-  getAuditLogs(filter?: {
+  async updateChild(childId: string, body: Partial<Child>): Promise<boolean> {
+    try {
+      const payload: any = {};
+      if (body.firstName !== undefined) payload.firstName = body.firstName;
+      if (body.lastName !== undefined) payload.lastName = body.lastName;
+      if (body.bloodGroup !== undefined) payload.bloodGroup = body.bloodGroup;
+      if (body.address !== undefined) payload.address = body.address;
+      await api.put(`/children/${encodeURIComponent(childId)}`, payload);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async linkChildToParent(childId: string, registrationNumber: string): Promise<boolean> {
+    try {
+      await api.post(`/children/${encodeURIComponent(childId)}/link-parent`, { registrationNumber });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getVaccine(vaccineId: string): Promise<Vaccine | null> {
+    try {
+      const a = await api.get<any>(`/vaccines/${encodeURIComponent(vaccineId)}`);
+      return a ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getAllVaccines(): Promise<Vaccine[]> {
+    try {
+      const list = await api.get<any[]>('/vaccines');
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getScheduleItemsByChild(childId: string): Promise<ScheduleItem[]> {
+    try {
+      const list = await api.get<any[]>('/schedules', { childId });
+      return Array.isArray(list) ? list.map(scheduleFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async createScheduleItem(body: {
+    childId: string;
+    vaccineId: string;
+    scheduledDate: string;
+    dueDate: string;
+  }): Promise<{ scheduleId: string } | null> {
+    try {
+      const res = await api.post<{ scheduleId: string }>('/schedules', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async updateScheduleStatus(scheduleId: string, status: ScheduleStatus): Promise<boolean> {
+    try {
+      await api.put(`/schedules/${encodeURIComponent(scheduleId)}/status`, { status });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async sendScheduleReminder(scheduleId: string): Promise<boolean> {
+    try {
+      await api.post(`/schedules/${encodeURIComponent(scheduleId)}/send-reminder`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getVaccinationRecordsByChild(childId: string): Promise<VaccinationRecord[]> {
+    try {
+      const list = await api.get<any[]>('/vaccination-records', { childId });
+      return Array.isArray(list) ? list.map(vaccinationRecordFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getAllVaccinationRecords(params?: {
+    areaCode?: string;
+    vaccineId?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ total: number; page: number; limit: number; data: VaccinationRecord[] }> {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.areaCode) p.areaCode = params.areaCode;
+      if (params?.vaccineId) p.vaccineId = params.vaccineId;
+      if (params?.status) p.status = params.status;
+      if (params?.startDate) p.startDate = params.startDate;
+      if (params?.endDate) p.endDate = params.endDate;
+      if (params?.page != null) p.page = String(params.page);
+      if (params?.limit != null) p.limit = String(params.limit);
+      const res = await api.get<{ total: number; page: number; limit: number; data: any[] }>('/vaccination-records', p);
+      const data = Array.isArray(res?.data) ? res.data.map(vaccinationRecordFromApi) : [];
+      return { total: res?.total ?? 0, page: res?.page ?? 1, limit: res?.limit ?? 20, data };
+    } catch {
+      return { total: 0, page: 1, limit: 20, data: [] };
+    }
+  }
+
+  async getVaccinationRecord(recordId: string): Promise<VaccinationRecord | null> {
+    try {
+      const a = await api.get<any>(`/vaccination-records/${encodeURIComponent(recordId)}`);
+      return a ? vaccinationRecordFromApi(a) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async createVaccinationRecord(body: {
+    childId: string;
+    vaccineId: string;
+    administeredDate: string;
+    batchNumber?: string;
+    administeredBy?: string;
+    location?: string;
+    site?: string;
+    doseNumber?: number;
+    nextDueDate?: string;
+    status?: string;
+    notes?: string;
+  }): Promise<{ recordId: string } | null> {
+    try {
+      const res = await api.post<{ recordId: string }>('/vaccination-records', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async updateVaccinationRecord(
+    recordId: string,
+    body: Partial<{
+      vaccineId: string;
+      administeredDate: string;
+      batchNumber: string;
+      administeredBy: string;
+      location: string;
+      site: string;
+      doseNumber: number;
+      nextDueDate: string;
+      status: string;
+      notes: string;
+    }>
+  ): Promise<boolean> {
+    try {
+      await api.put(`/vaccination-records/${encodeURIComponent(recordId)}`, body);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async deleteVaccinationRecord(recordId: string): Promise<boolean> {
+    try {
+      await api.delete(`/vaccination-records/${encodeURIComponent(recordId)}`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getGrowthRecordsByChild(
+    childId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<GrowthRecord[]> {
+    try {
+      const p: Record<string, string> = { childId };
+      if (startDate) p.startDate = startDate;
+      if (endDate) p.endDate = endDate;
+      const list = await api.get<any[]>('/growth-records', p);
+      return Array.isArray(list) ? list.map(growthRecordFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async createGrowthRecord(body: {
+    childId: string;
+    recordedDate: string;
+    height: number;
+    weight: number;
+    headCircumference?: number;
+    recordedBy?: string;
+    notes?: string;
+  }): Promise<{ recordId: string } | null> {
+    try {
+      const res = await api.post<{ recordId: string }>('/growth-records', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getNotifications(params?: {
+    unread?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<{ total: number; unreadCount: number; data: Notification[] }> {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.unread !== undefined) p.unread = String(params.unread);
+      if (params?.page != null) p.page = String(params.page);
+      if (params?.limit != null) p.limit = String(params.limit);
+      const res = await api.get<{ total: number; unreadCount: number; data: any[] }>('/notifications', p);
+      const data = Array.isArray(res?.data) ? res.data.map(notificationFromApi) : [];
+      return {
+        total: res?.total ?? 0,
+        unreadCount: res?.unreadCount ?? 0,
+        data,
+      };
+    } catch {
+      return { total: 0, unreadCount: 0, data: [] };
+    }
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<boolean> {
+    try {
+      await api.put(`/notifications/${encodeURIComponent(notificationId)}/read`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async markAllNotificationsAsRead(): Promise<boolean> {
+    try {
+      await api.put('/notifications/read-all');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async createNotification(body: {
+    recipientId: string;
+    type: string;
+    message: string;
+    relatedChildId?: string;
+  }): Promise<{ notificationId: string } | null> {
+    try {
+      const res = await api.post<{ notificationId: string }>('/notifications', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async generateReport(body: {
+    reportType: string;
+    startDate: string;
+    endDate: string;
+    district?: string;
+    dsDivision?: string;
+    vaccineId?: string;
+    format: string;
+  }): Promise<{
+    reportId: string;
+    reportType: string;
+    generatedBy: string;
+    generatedDate: string;
+    startDate: string;
+    endDate: string;
+    downloadUrl: string;
+  } | null> {
+    try {
+      const res = await api.post<any>('/reports/generate', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getReports(params?: { reportType?: string; page?: number; limit?: number }): Promise<
+    Array<{
+      reportId: string;
+      reportType: string;
+      generatedDate: string;
+      startDate: string;
+      endDate: string;
+      downloadUrl: string;
+    }>
+  > {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.reportType) p.reportType = params.reportType;
+      if (params?.page != null) p.page = String(params.page);
+      if (params?.limit != null) p.limit = String(params.limit);
+      const list = await api.get<any[]>('/reports', p);
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  getReportDownloadUrl(reportId: string, format?: string): string {
+    const q = format ? `?format=${encodeURIComponent(format)}` : '';
+    return `/api/v1/reports/${encodeURIComponent(reportId)}/download${q}`;
+  }
+
+  async getAuditLogs(params?: {
     userId?: string;
+    userRole?: string;
     entityType?: string;
-    startDate?: Date;
-    endDate?: Date;
     action?: string;
-  }): AuditLog[] {
-    let logs = [...this.auditLogs];
-    
-    if (filter) {
-      if (filter.userId) {
-        logs = logs.filter(l => l.userId === filter.userId);
-      }
-      if (filter.entityType) {
-        logs = logs.filter(l => l.entityType === filter.entityType);
-      }
-      if (filter.action) {
-        logs = logs.filter(l => l.action === filter.action);
-      }
-      if (filter.startDate) {
-        logs = logs.filter(l => l.timestamp >= filter.startDate!);
-      }
-      if (filter.endDate) {
-        logs = logs.filter(l => l.timestamp <= filter.endDate!);
-      }
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ total: number; page: number; limit: number; data: AuditLog[] }> {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.userId) p.userId = params.userId;
+      if (params?.userRole) p.userRole = params.userRole;
+      if (params?.entityType) p.entityType = params.entityType;
+      if (params?.action) p.action = params.action;
+      if (params?.startDate) p.startDate = params.startDate;
+      if (params?.endDate) p.endDate = params.endDate;
+      if (params?.search) p.search = params.search;
+      if (params?.page != null) p.page = String(params.page);
+      if (params?.limit != null) p.limit = String(params.limit);
+      const res = await api.get<{ total: number; page: number; limit: number; data: any[] }>('/audit-logs', p);
+      const data = Array.isArray(res?.data) ? res.data.map(auditLogFromApi) : [];
+      return {
+        total: res?.total ?? 0,
+        page: res?.page ?? 1,
+        limit: res?.limit ?? 50,
+        data,
+      };
+    } catch {
+      return { total: 0, page: 1, limit: 50, data: [] };
     }
-    
-    return logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 
-  private logAudit(action: string, entityType: string, entityId: string, description: string): void {
-    const log: AuditLog = {
-      logId: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      userId: this.getCurrentUserId(),
-      action,
-      entityType,
-      entityId,
-      timestamp: new Date(),
-      ipAddress: '127.0.0.1' // In real app, get from request
-    };
-    this.auditLogs.push(log);
+  getAuditLogExportUrl(params?: Record<string, string>): string {
+    const search = params ? new URLSearchParams(params).toString() : '';
+    return `/api/v1/audit-logs/export${search ? `?${search}` : ''}`;
   }
 
-  private getCurrentUserId(): string {
-    const userStr = sessionStorage.getItem('currentUser');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        return user.userId || 'unknown';
-      } catch (e) {
-        return 'unknown';
-      }
+  async getMOHDashboard(params?: { areaCode?: string; period?: string }): Promise<{
+    totalChildren: number;
+    vaccinatedCount: number;
+    coveragePercentage: number;
+    missedVaccinations: number;
+    upcomingVaccinations: number;
+    newRegistrationsThisMonth: number;
+    growthRecordsThisMonth: number;
+  } | null> {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.areaCode) p.areaCode = params.areaCode;
+      if (params?.period) p.period = params.period;
+      const res = await api.get<any>('/analytics/dashboard', p);
+      return res ?? null;
+    } catch {
+      return null;
     }
-    return 'unknown';
   }
 
-  // Initialize with sample data
-  initializeSampleData(): void {
-    // Sample vaccines
-    this.vaccines = [
-      {
-        vaccineId: 'vaccine-001',
-        name: 'BCG',
-        manufacturer: 'Serum Institute',
-        dosageInfo: '0.05ml',
-        recommendedAge: 0,
-        intervalDays: 0,
-        description: 'Bacillus Calmette-Guérin vaccine',
-        isActive: true
-      },
-      {
-        vaccineId: 'vaccine-002',
-        name: 'OPV',
-        manufacturer: 'WHO',
-        dosageInfo: '2 drops',
-        recommendedAge: 60,
-        intervalDays: 60,
-        description: 'Oral Polio Vaccine',
-        isActive: true
-      },
-      {
-        vaccineId: 'vaccine-003',
-        name: 'Pentavalent',
-        manufacturer: 'Serum Institute',
-        dosageInfo: '0.5ml',
-        recommendedAge: 60,
-        intervalDays: 60,
-        description: 'DPT-HepB-Hib combined vaccine',
-        isActive: true
-      }
-    ];
+  async getPHMDashboard(): Promise<{
+    totalChildrenInArea: number;
+    vaccinatedCount: number;
+    missedVaccinations: number;
+    upcomingVaccinations: number;
+    growthRecordsThisMonth: number;
+    recentRegistrations: number;
+  } | null> {
+    try {
+      const res = await api.get<any>('/analytics/phm-dashboard');
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
 
-    // Sample children distributed across PHM/MOH areas
-    // PHM user in AuthService has phmId = 'phm-001' and areaCode 'COL-01' (Colombo West)
-    this.children = [
-      {
-        childId: 'child-001',
-        registrationNumber: this.generateRegistrationNumber(),
-        firstName: 'Kavindu',
-        lastName: 'Perera',
-        dateOfBirth: new Date('2020-04-15'),
-        gender: Gender.MALE,
-        bloodGroup: 'B+',
-        birthWeight: 3.2,
-        birthHeight: 50,
-        headCircumference: 34,
-        parentId: 'user-parent-001',
-        registeredBy: 'phm-001',
-        areaCode: 'COL-01',
-        areaName: 'Colombo 01'
-      },
-      {
-        childId: 'child-002',
-        registrationNumber: this.generateRegistrationNumber(),
-        firstName: 'Nimasha',
-        lastName: 'Perera',
-        dateOfBirth: new Date('2023-01-10'),
-        gender: Gender.FEMALE,
-        bloodGroup: 'O+',
-        birthWeight: 3.0,
-        birthHeight: 49,
-        headCircumference: 33,
-        parentId: 'user-parent-001',
-        registeredBy: 'phm-001',
-        areaCode: 'COL-01',
-        areaName: 'Colombo 01'
-      },
-      // Children in other PHM areas – visible only to MOH via area filter
-      {
-        childId: 'child-003',
-        registrationNumber: this.generateRegistrationNumber(),
-        firstName: 'Arjun',
-        lastName: 'Silva',
-        dateOfBirth: new Date('2021-06-05'),
-        gender: Gender.MALE,
-        bloodGroup: 'A+',
-        birthWeight: 3.4,
-        birthHeight: 51,
-        headCircumference: 35,
-        parentId: 'parent-dehiwala-001',
-        registeredBy: 'phm-002',
-        areaCode: 'DEH-01',
-        areaName: 'Dehiwala'
-      },
-      {
-        childId: 'child-004',
-        registrationNumber: this.generateRegistrationNumber(),
-        firstName: 'Lihini',
-        lastName: 'Fernando',
-        dateOfBirth: new Date('2019-11-20'),
-        gender: Gender.FEMALE,
-        bloodGroup: 'AB+',
-        birthWeight: 3.1,
-        birthHeight: 50,
-        headCircumference: 34,
-        parentId: 'parent-ratmalana-001',
-        registeredBy: 'phm-003',
-        areaCode: 'RAT-01',
-        areaName: 'Ratmalana'
-      }
-    ];
+  async getParentDashboard(): Promise<{
+    children: Array<{
+      childId: string;
+      name: string;
+      age: string;
+      nextVaccinationDate: string | null;
+      nextVaccineName: string | null;
+      vaccinationStatus: string;
+      upcomingCount: number;
+      missedCount: number;
+    }>;
+    unreadNotifications: number;
+  } | null> {
+    try {
+      const res = await api.get<any>('/analytics/parent-dashboard');
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getVaccinationCoverage(params?: {
+    areaCode?: string;
+    vaccineId?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<any> {
+    try {
+      return await api.get<any>('/analytics/vaccination-coverage', params as Record<string, string>);
+    } catch {
+      return null;
+    }
+  }
+
+  async getAreaPerformance(params?: { startDate?: string; endDate?: string }): Promise<any[]> {
+    try {
+      const list = await api.get<any[]>('/analytics/area-performance', params as Record<string, string>);
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
   }
 }
 
 export const dataService = new DataService();
-// Initialize sample data on module load
-dataService.initializeSampleData();

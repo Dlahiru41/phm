@@ -126,7 +126,7 @@ export interface Child {
   areaCode: string;
   areaName: string;
   birthHeight: number;
-  headCircumference: number;
+  headCircumference?: number;
 }
 
 // Child methods
@@ -158,6 +158,7 @@ export interface ScheduleItem {
   scheduleId: string;
   childId: string;
   vaccineId: string;
+  vaccineName?: string;
   scheduledDate: Date;
   dueDate: Date;
   status: ScheduleStatus;
@@ -175,10 +176,14 @@ export interface VaccinationRecord {
   recordId: string;
   childId: string;
   vaccineId: string;
+  vaccineName?: string;
   administeredDate: Date;
   batchNumber: string;
   administeredBy: string;
   location: string;
+  site?: string;
+  doseNumber?: number;
+  nextDueDate?: Date;
   status: VaccinationStatus;
   notes: string;
   createdAt: Date;
@@ -197,8 +202,10 @@ export interface GrowthRecord {
   recordedDate: Date;
   height: number;
   weight: number;
+  headCircumference?: number;
   recordedBy: string;
   notes: string;
+  createdAt?: Date;
 }
 
 // GrowthRecord methods
@@ -244,9 +251,12 @@ export interface ReportMethods {
 export interface AuditLog {
   logId: string;
   userId: string;
+  userName?: string;
+  userRole?: string;
   action: string;
   entityType: string;
   entityId: string;
+  details?: string;
   timestamp: Date;
   ipAddress: string;
 }

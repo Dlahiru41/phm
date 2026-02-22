@@ -1,13 +1,16 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthService } from '../services/AuthService';
+import { ParentSidebar } from '../components/ParentLayout';
 
 export const ChildProfileSchedulePage: React.FC = () => {
     const navigate = useNavigate();
-    
-    return (
-        <>
-            <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    const isParent = AuthService.isParent();
+
+    const content = (
+        <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
                 <div className="layout-container flex h-full grow flex-col">
+                    {!isParent && (
                     <header
                         className="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e7edf3] dark:border-slate-800 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-50">
                         <div className="flex items-center gap-8">
@@ -57,9 +60,22 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                 style={{"backgroundImage": "url('https://via.placeholder.com/150')"}}></div>
                         </div>
                     </header>
-                    <main className="flex-1 flex justify-center py-8">
+                    )}
+                    <main className="flex-1 flex flex-col items-center py-8">
+                        {isParent && (
+                            <div className="w-full max-w-[1200px] px-6 mb-4">
+                                <button
+                                    onClick={() => navigate('/parent-dashboard-desktop')}
+                                    className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors"
+                                >
+                                    <span className="material-symbols-outlined">arrow_back</span>
+                                    <span className="text-sm font-medium">Back to Dashboard</span>
+                                </button>
+                            </div>
+                        )}
                         <div className="flex w-full max-w-[1200px] gap-8 px-6">
-                            <aside className="hidden lg:flex flex-col w-64 gap-2">
+                            {!isParent && (
+                            <aside className="hidden lg:flex flex-col w-64 gap-2 shrink-0">
                                 <div
                                     className="flex flex-col gap-2 p-2 bg-white dark:bg-slate-900 rounded-xl border border-[#e7edf3] dark:border-slate-800">
                                     <div
@@ -89,7 +105,8 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                     </div>
                                 </div>
                             </aside>
-                            <div className="flex-1 flex flex-col gap-6">
+                            )}
+                            <div className="flex-1 flex flex-col gap-6 min-w-0">
                                 <div
                                     className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-[#e7edf3] dark:border-slate-800">
                                     <div className="flex @container">
@@ -297,6 +314,14 @@ export const ChildProfileSchedulePage: React.FC = () => {
                     </main>
                 </div>
             </div>
-        </>
     );
+
+    return isParent ? (
+        <div className="flex min-h-screen">
+            <ParentSidebar activeNav="health-records" />
+            <div className="flex-1 overflow-y-auto min-w-0">
+                {content}
+            </div>
+        </div>
+    ) : content;
 };

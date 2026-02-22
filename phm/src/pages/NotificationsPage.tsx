@@ -3,32 +3,34 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Notification, NotificationType } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
+import { ParentLayout } from '../components/ParentLayout';
 
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
+  const isParent = AuthService.isParent();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    const currentUser = AuthService.getCurrentUser();
-    if (currentUser) {
-      const userNotifications = dataService.getNotificationsByRecipient(currentUser.userId);
-      setNotifications(userNotifications);
-    }
+    let cancelled = false;
+    (async () => {
+      const res = await dataService.getNotifications();
+      if (!cancelled) setNotifications(res.data);
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const markAsRead = (notificationId: string) => {
-    dataService.markNotificationAsRead(notificationId);
-    setNotifications(notifications.map(n => 
-      n.notificationId === notificationId ? { ...n, isRead: true } : n
-    ));
+  const markAsRead = async (notificationId: string) => {
+    const ok = await dataService.markNotificationAsRead(notificationId);
+    if (ok) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.notificationId === notificationId ? { ...n, isRead: true } : n))
+      );
+    }
   };
 
-  const markAllAsRead = () => {
-    const currentUser = AuthService.getCurrentUser();
-    if (currentUser) {
-      dataService.markAllNotificationsAsRead(currentUser.userId);
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-    }
+  const markAllAsRead = async () => {
+    const ok = await dataService.markAllNotificationsAsRead();
+    if (ok) setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
   const getNotificationIcon = (type: NotificationType) => {
@@ -82,18 +84,17 @@ export const NotificationsPage: React.FC = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <div className="w-full max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back</span>
-          </button>
-          <div className="flex items-center justify-between">
+  const content = (
+    <div className="w-full max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-8">
+        <button
+          onClick={() => (isParent ? navigate('/parent-dashboard-desktop') : navigate(-1))}
+          className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+          <span className="text-sm font-medium">{isParent ? 'Back to Dashboard' : 'Back'}</span>
+        </button>
+        <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-1">Notifications</h1>
               <p className="text-xs font-medium text-[#4c739a] dark:text-slate-400 mb-1">
@@ -199,6 +200,19 @@ export const NotificationsPage: React.FC = () => {
           )}
         </div>
       </div>
+  );
+
+  if (isParent) {
+    return (
+      <ParentLayout activeNav="notifications">
+        {content}
+      </ParentLayout>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+      {content}
     </div>
   );
 };
