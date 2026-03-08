@@ -55,8 +55,12 @@ export const AddChildPage: React.FC = () => {
     }
   };
 
-  const childName = childInfo ? `${childInfo.firstName} ${childInfo.lastName}`.trim() || '—';
-  const childDob = childInfo?.dateOfBirth ? (childInfo.dateOfBirth instanceof Date ? childInfo.dateOfBirth : new Date(childInfo.dateOfBirth)).toLocaleDateString() : '—';
+  const childName = childInfo && (childInfo.firstName || childInfo.lastName)
+    ? `${childInfo.firstName ?? ''} ${childInfo.lastName ?? ''}`.trim() || '—'
+    : '—';
+  const rawDob = childInfo?.dateOfBirth;
+  const dobDate = rawDob != null ? new Date(rawDob as string | number | Date) : null;
+  const childDob = dobDate != null && !isNaN(dobDate.getTime()) ? dobDate.toLocaleDateString() : '—';
   const childGender = childInfo?.gender ? (String(childInfo.gender) === 'female' ? 'Female' : 'Male') : '—';
 
   if (success && childInfo) {

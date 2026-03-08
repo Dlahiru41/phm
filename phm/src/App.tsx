@@ -19,6 +19,7 @@ import { ViewAreaChildrenPage } from './pages/ViewAreaChildrenPage';
 import { GenerateReportsPage } from './pages/GenerateReportsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { VaccineGuidePage } from './pages/VaccineGuidePage';
 
 const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
       <Route path="/growth-chart" element={<GrowthChartPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/vaccine-guide" element={<VaccineGuidePage />} />
       
       {/* PHM Routes */}
       <Route path="/phm-dashboard" element={<PhmDashboardPage />} />

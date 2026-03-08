@@ -179,8 +179,8 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                 <Link to="/settings" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
                                     Contact Support
                                 </Link>
-                                <Link to="/moh-analytics-dashboard" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
-                                    MOH Finder
+                                <Link to="/vaccine-guide" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
+                                    Vaccine Guide
                                 </Link>
                             </div>
                             <div className="h-6 w-px bg-[#e7edf3] dark:bg-slate-700"></div>
