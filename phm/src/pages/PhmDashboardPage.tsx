@@ -120,16 +120,21 @@ export const PhmDashboardPage: React.FC = () => {
                             <span className="material-symbols-outlined">notifications</span>
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" aria-hidden />
                         </Link>
-                        <div
-                            className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden border border-slate-200 dark:border-slate-700"
-                            role="img"
-                            aria-label="Profile"
-                        >
-                            <img
-                                alt=""
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfiEgUgExs6o58pFxf8BPZ12k4tOgZ-kRYSl72nvDv9-8aTNr9HClzWBIle7Pw1IvH0ZuCSm7QdO6EWiOYWzb3MC4RmiUv6lDb_9nswc5XbPl9c_WIi5ZO98zF9MuqDx6zPAGt_9bQvICDF2EeD1VjhSxQ-odsQHPUgHbURdQbTplZ04eVTRswhaOSZkRA2NgpLly1UwHWNr7VOR5GQoId2z4kJilJyn-xPpoax_stCfJWgPMsrPISOZL9G0kAjdr9fkTE6Qq0TKOf"
-                                className="w-full h-full object-cover"
-                            />
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate max-w-[140px] sm:max-w-[180px]" title={currentUser?.name || currentUser?.email || ''}>
+                                {currentUser?.name || currentUser?.email || 'PHM User'}
+                            </span>
+                            <div
+                                className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold shrink-0 border border-slate-200 dark:border-slate-700"
+                                role="img"
+                                aria-label={currentUser?.name ? `Profile: ${currentUser.name}` : 'Profile'}
+                            >
+                                {currentUser?.name
+                                    ? currentUser.name.trim().split(/\s+/).map((s) => s[0]).slice(0, 2).join('').toUpperCase()
+                                    : currentUser?.email
+                                        ? currentUser.email.slice(0, 2).toUpperCase()
+                                        : '—'}
+                            </div>
                         </div>
                     </div>
                 </header>
