@@ -447,26 +447,23 @@ All fields except optional ones are required. The authenticated user must have r
 
 ---
 
-### 3.5a Get My Children (JWT-based)
+### 3.5a Get Children by Registered By (PHM)
 
-| Field  | Value                        |
-|--------|------------------------------|
-| Method | `GET`                        |
-| URL    | `/children/my`               |
-| Auth   | Required (any role)          |
+| Field  | Value                                          |
+|--------|------------------------------------------------|
+| Method | `GET`                                          |
+| URL    | `/children?registeredBy=user-phm-657e6271`     |
+| Auth   | Required (Bearer token)                        |
 
-Returns the children list for the **current user** identified by the JWT. No query param for user id is needed.
+Returns all children **registered by** the given PHM user id. The frontend sends the logged-in PHM’s `userId` (e.g. `user-phm-657e6271`) as `registeredBy` and the backend returns children where `registeredBy` equals that id.
 
-- **Parent:** children linked to that parent.
-- **PHM:** children registered by that PHM (e.g. where `registeredBy` = authenticated user id).
-- **MOH:** implementation-defined (e.g. all children or by area).
+**Query Parameters**
 
-**Query Parameters** *(optional)*
-
-| Param   | Type     | Required | Description            |
-|---------|----------|----------|------------------------|
-| `page`  | `number` | No       | Page number (default: 1) |
-| `limit` | `number` | No       | Items per page (default: 10) |
+| Param          | Type     | Required | Description                          |
+|----------------|----------|----------|--------------------------------------|
+| `registeredBy` | `string` | Yes      | PHM user ID (e.g. `user-phm-657e6271`) |
+| `page`         | `number` | No       | Page number (default: 1)              |
+| `limit`        | `number` | No       | Items per page (default: 10)         |
 
 **Response `200 OK`**
 

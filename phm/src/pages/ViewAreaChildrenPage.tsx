@@ -54,7 +54,8 @@ export const ViewAreaChildrenPage: React.FC = () => {
     (async () => {
       let baseChildren: Child[] = [];
       if (userIsPHM) {
-        baseChildren = await dataService.getMyChildren();
+        const phmId = (currentUser as any).phmId || currentUser.userId;
+        baseChildren = await dataService.getChildrenByPHM(phmId);
       } else if (userIsMOH) {
         const res = await dataService.getAllChildren({ limit: 500 });
         baseChildren = res.data;

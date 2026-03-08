@@ -47,8 +47,8 @@ export const PhmDashboardPage: React.FC = () => {
             setError(null);
             try {
                 const dashboardPromise = dataService.getPHMDashboard();
-                const childrenPromise = currentUser
-                    ? dataService.getMyChildrenPaginated(page, CHILDREN_PAGE_SIZE)
+                const childrenPromise = phmId
+                    ? dataService.getChildrenByPHMPaginated(phmId, page, CHILDREN_PAGE_SIZE)
                     : Promise.resolve({ total: 0, page: 1, limit: CHILDREN_PAGE_SIZE, data: [] });
                 const [dashboardRes, childrenRes] = await Promise.all([dashboardPromise, childrenPromise]);
                 if (cancelled) return;
@@ -86,7 +86,7 @@ export const PhmDashboardPage: React.FC = () => {
             }
         })();
         return () => { cancelled = true; };
-    }, [currentUser?.userId, page]);
+    }, [phmId, page]);
 
     // All stat values from GET /analytics/phm-dashboard (no mock fallbacks)
     const vaccinationRate = stats && stats.totalChildrenInArea > 0

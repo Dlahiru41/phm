@@ -41,9 +41,9 @@ async function main() {
     console.log('   Status:', e.status, '|', e.data?.error?.message || e.data?.error?.code || '');
   }
 
-  console.log('\n3. GET /children/my?page=1&limit=20 (JWT-based “my” list):');
+  console.log('\n3. GET /children?registeredBy=...&page=1&limit=20:');
   try {
-    const r2 = await request('GET', '/children/my?page=1&limit=20', null, token);
+    const r2 = await request('GET', '/children?registeredBy=' + encodeURIComponent(phmId) + '&page=1&limit=20', null, token);
     const total = r2?.total ?? (Array.isArray(r2) ? r2.length : (r2?.data?.length ?? 0));
     const data = r2?.data ?? (Array.isArray(r2) ? r2 : []);
     console.log('   total:', total, '| data length:', Array.isArray(data) ? data.length : (data ? 1 : 0));
