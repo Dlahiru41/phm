@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { AuthService } from '../services/AuthService';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
@@ -9,6 +10,9 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export const MohLayout: React.FC = () => {
+  const currentUser = AuthService.getCurrentUser();
+  const displayName = currentUser?.name ?? currentUser?.email ?? 'MOH Officer';
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3 sticky top-0 z-50">
@@ -94,7 +98,7 @@ export const MohLayout: React.FC = () => {
         <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between p-4 sticky top-[65px] h-[calc(100vh-65px)] shrink-0">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-1 px-2">
-              <h1 className="text-slate-900 dark:text-white text-base font-bold">Dr. Sarah Johnson</h1>
+              <h1 className="text-slate-900 dark:text-white text-base font-bold">{displayName}</h1>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Regional Medical Officer</p>
             </div>
             <nav className="flex flex-col gap-1">

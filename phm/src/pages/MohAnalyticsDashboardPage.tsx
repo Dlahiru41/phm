@@ -4,7 +4,9 @@ import { AuthService } from '../services/AuthService';
 
 export const MohAnalyticsDashboardPage: React.FC = () => {
     const navigate = useNavigate();
-    
+    const currentUser = AuthService.getCurrentUser();
+    const displayName = currentUser?.name ?? currentUser?.email ?? 'MOH Officer';
+
     return (
         <>
             <div className="flex flex-col min-h-screen">
@@ -72,8 +74,7 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                         className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden lg:flex flex-col justify-between p-4 sticky top-[65px] h-[calc(100vh-65px)]">
                         <div className="flex flex-col gap-6">
                             <div className="flex flex-col gap-1 px-2">
-                                <h1 className="text-slate-900 dark:text-white text-base font-bold">Dr. Sarah
-                                    Johnson</h1>
+                                <h1 className="text-slate-900 dark:text-white text-base font-bold">{displayName}</h1>
                                 <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Regional Medical
                                     Officer</p>
                             </div>
