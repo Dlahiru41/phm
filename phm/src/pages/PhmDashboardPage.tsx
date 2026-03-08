@@ -1,13 +1,106 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthService } from '../services/AuthService';
+import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
+import type { Child } from '../types/models';
+
+type PhmDashboardStats = {
+    totalChildrenInArea: number;
+    vaccinatedCount: number;
+    missedVaccinations: number;
+    upcomingVaccinations: number;
+    growthRecordsThisMonth: number;
+    recentRegistrations: number;
+};
+
+type ChildRow = Child & {
+    lastVaccinationText?: string;
+    statusDisplay: 'completed' | 'upcoming' | 'missed' | 'on-track';
+};
+
+const CHILDREN_PAGE_SIZE = 10;
 
 export const PhmDashboardPage: React.FC = () => {
     const navigate = useNavigate();
+    const currentUser = AuthService.getCurrentUser();
+    const [stats, setStats] = useState<PhmDashboardStats | null>(null);
+    const [children, setChildren] = useState<ChildRow[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [totalChildren, setTotalChildren] = useState(0);
+
+    const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId ?? '';
+    const areaName = (currentUser as { assignedRegion?: string; areaCode?: string })?.assignedRegion
+        ?? (currentUser as { assignedRegion?: string; areaCode?: string })?.areaCode
+        ?? 'My Area';
+
+    const totalPages = Math.max(1, Math.ceil(totalChildren / CHILDREN_PAGE_SIZE));
+    const startItem = totalChildren === 0 ? 0 : (page - 1) * CHILDREN_PAGE_SIZE + 1;
+    const endItem = Math.min(page * CHILDREN_PAGE_SIZE, totalChildren);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const dashboardPromise = dataService.getPHMDashboard();
+                const childrenPromise = phmId
+                    ? dataService.getChildrenByPHMPaginated(phmId, page, CHILDREN_PAGE_SIZE)
+                    : Promise.resolve({ total: 0, page: 1, limit: CHILDREN_PAGE_SIZE, data: [] });
+                const [dashboardRes, childrenRes] = await Promise.all([dashboardPromise, childrenPromise]);
+                if (cancelled) return;
+                setStats(dashboardRes ?? null);
+                setTotalChildren(childrenRes.total);
+                const withLastVacc: ChildRow[] = await Promise.all(
+                    childrenRes.data.map(async (c) => {
+                        const [records, schedules] = await Promise.all([
+                            dataService.getVaccinationRecordsByChild(c.childId),
+                            dataService.getScheduleItemsByChild(c.childId),
+                        ]);
+                        const lastRec = records.length > 0
+                            ? records.sort((a, b) => b.administeredDate.getTime() - a.administeredDate.getTime())[0]
+                            : null;
+                        const hasMissed = schedules.some((s) => s.status === 'missed');
+                        const hasUpcoming = schedules.some((s) => s.status === 'pending' || s.status === 'scheduled');
+                        let statusDisplay: ChildRow['statusDisplay'] = 'on-track';
+                        if (hasMissed) statusDisplay = 'missed';
+                        else if (hasUpcoming && records.length > 0) statusDisplay = 'upcoming';
+                        else if (records.length > 0) statusDisplay = 'completed';
+                        return {
+                            ...c,
+                            lastVaccinationText: lastRec
+                                ? `${lastRec.vaccineName ?? 'Vaccine'} (${lastRec.administeredDate.toLocaleDateString()})`
+                                : undefined,
+                            statusDisplay,
+                        };
+                    })
+                );
+                if (!cancelled) setChildren(withLastVacc);
+            } catch {
+                if (!cancelled) setError('Failed to load dashboard.');
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [phmId, page]);
+
+    // All stat values from GET /analytics/phm-dashboard (no mock fallbacks)
+    const vaccinationRate = stats && stats.totalChildrenInArea > 0
+        ? Math.round((stats.vaccinatedCount / stats.totalChildrenInArea) * 100)
+        : null;
 
     return (
         <PhmLayout activeNav="overview" showBackToDashboard={false}>
             <div className="max-w-[1200px] mx-auto w-full p-4 lg:p-6 space-y-6">
+                {error && (
+                    <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-300 text-sm">
+                        {error}
+                    </div>
+                )}
                 <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">Overview</h2>
                     <div className="flex items-center gap-3">
@@ -44,8 +137,7 @@ export const PhmDashboardPage: React.FC = () => {
 
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-4">
                         <div>
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Assigned Area: Wattala
-                                West</h2>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Assigned Area: {areaName}</h2>
                             <p className="text-slate-500 dark:text-slate-400">Manage child registrations and vaccination
                                 progress.</p>
                         </div>
@@ -62,26 +154,24 @@ export const PhmDashboardPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div
                             className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
-                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Today's Appointments</span>
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Upcoming Vaccinations</span>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">24</span>
-                                <span className="text-xs font-bold text-emerald-600">+5%</span>
+                                <span className="text-2xl font-bold">{loading || !stats ? '—' : stats.upcomingVaccinations}</span>
                             </div>
                             <div
                                 className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-emerald-500 h-full w-[70%]"></div>
+                                <div className="bg-emerald-500 h-full" style={{ width: stats && stats.totalChildrenInArea > 0 ? `${Math.min(100, (stats.upcomingVaccinations / stats.totalChildrenInArea) * 100)}%` : '0%' }}></div>
                             </div>
                         </div>
                         <div
                             className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
-                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Registrations</span>
+                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Recent Registrations</span>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">08</span>
-                                <span className="text-xs font-bold text-rose-500">-2%</span>
+                                <span className="text-2xl font-bold">{loading || !stats ? '—' : stats.recentRegistrations}</span>
                             </div>
                             <div
                                 className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-rose-500 h-full w-[20%]"></div>
+                                <div className="bg-rose-500 h-full" style={{ width: stats && stats.totalChildrenInArea > 0 ? `${Math.min(100, (stats.recentRegistrations / stats.totalChildrenInArea) * 100)}%` : '0%' }}></div>
                             </div>
                         </div>
                         <div
@@ -89,12 +179,11 @@ export const PhmDashboardPage: React.FC = () => {
                             <span
                                 className="text-sm font-medium text-slate-500 dark:text-slate-400">Vaccination Rate</span>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">92%</span>
-                                <span className="text-xs font-bold text-emerald-600">+1.2%</span>
+                                <span className="text-2xl font-bold">{loading || vaccinationRate === null ? '—' : `${vaccinationRate}%`}</span>
                             </div>
                             <div
                                 className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-primary h-full w-[92%]"></div>
+                                <div className="bg-primary h-full" style={{ width: vaccinationRate !== null ? `${vaccinationRate}%` : '0%' }}></div>
                             </div>
                         </div>
                         <div
@@ -102,12 +191,12 @@ export const PhmDashboardPage: React.FC = () => {
                             <span
                                 className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Records</span>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">412</span>
+                                <span className="text-2xl font-bold">{loading || !stats ? '—' : stats.totalChildrenInArea}</span>
                                 <span className="text-xs font-bold text-slate-400">Total</span>
                             </div>
                             <div
                                 className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-slate-400 h-full w-[85%]"></div>
+                                <div className="bg-slate-400 h-full" style={{ width: stats && stats.totalChildrenInArea > 0 ? `${Math.min(100, (stats.vaccinatedCount / stats.totalChildrenInArea) * 100)}%` : '0%' }}></div>
                             </div>
                         </div>
                     </div>
@@ -155,150 +244,117 @@ export const PhmDashboardPage: React.FC = () => {
                                 </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-
-                                <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">AP
-                                            </div>
-                                            <span className="font-semibold text-slate-900 dark:text-slate-200">Arjun Perera</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">Sunil
-                                        Perera
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm italic">2023-05-12</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">BCG
-                                        (at Birth)
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-      <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                              Completed
-                                          </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button className="text-primary hover:underline text-sm font-semibold">Details
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">SK
-                                            </div>
-                                            <span
-                                                className="font-semibold text-slate-900 dark:text-slate-200">Sana Khan</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">M.
-                                        Khan
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm italic">2023-11-02</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">OPV
-                                        1 (Pending)
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-      <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-                                              Upcoming
-                                          </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button className="text-primary hover:underline text-sm font-semibold">Details
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-xs">LS
-                                            </div>
-                                            <span className="font-semibold text-slate-900 dark:text-slate-200">Lara Silva</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">D.
-                                        Silva
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm italic">2023-08-15</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">Pentavalent
-                                        1
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-      <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">
-      <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                                              Missed
-                                          </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button className="text-rose-600 hover:underline text-sm font-semibold">Call
-                                            Parent
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs">MA
-                                            </div>
-                                            <span
-                                                className="font-semibold text-slate-900 dark:text-slate-200">Minu Abey</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">G.
-                                        Abey
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm italic">2024-01-10</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">BCG
-                                        (at Birth)
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-      <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                              Completed
-                                          </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <button className="text-primary hover:underline text-sm font-semibold">Details
-                                        </button>
-                                    </td>
-                                </tr>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                                            Loading…
+                                        </td>
+                                    </tr>
+                                ) : children.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+                                            No children in your area yet.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    children.map((c) => {
+                                        const initials = [c.firstName, c.lastName].map((n) => (n || '').charAt(0)).join('').toUpperCase() || '—';
+                                        const dobStr = c.dateOfBirth instanceof Date ? c.dateOfBirth.toLocaleDateString() : (c.dateOfBirth as unknown as string);
+                                        const statusConfig = {
+                                            completed: { label: 'Completed', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', dot: 'bg-emerald-600' },
+                                            upcoming: { label: 'Upcoming', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', dot: 'bg-amber-600' },
+                                            missed: { label: 'Missed', className: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400', dot: 'bg-rose-600' },
+                                            'on-track': { label: 'On track', className: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400', dot: 'bg-sky-600' },
+                                        };
+                                        const sc = statusConfig[c.statusDisplay];
+                                        return (
+                                            <tr key={c.childId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs">
+                                                            {initials}
+                                                        </div>
+                                                        <span className="font-semibold text-slate-900 dark:text-slate-200">{c.firstName} {c.lastName}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">—</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm italic">{dobStr}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">{c.lastVaccinationText ?? '—'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${sc.className}`}>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`}></span>
+                                                        {sc.label}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                    <button
+                                                        onClick={() => navigate(`/child-profile-schedule?childId=${c.childId}`)}
+                                                        className={c.statusDisplay === 'missed' ? 'text-rose-600 hover:underline text-sm font-semibold' : 'text-primary hover:underline text-sm font-semibold'}
+                                                    >
+                                                        {c.statusDisplay === 'missed' ? 'Call Parent' : 'Details'}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
                                 </tbody>
                             </table>
                         </div>
 
                         <div
                             className="px-6 py-4 bg-slate-50 dark:bg-slate-800/30 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
-                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Showing 1-10 of 412 records</span>
+                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">
+                                {loading ? 'Loading…' : totalChildren === 0 ? 'No records' : `Showing ${startItem}-${endItem} of ${totalChildren} records`}
+                            </span>
                             <div className="flex items-center gap-1">
                                 <button
-                                    className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30"
-                                    disabled="">
+                                    type="button"
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={page <= 1 || loading}
+                                    className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none"
+                                    aria-label="Previous page"
+                                >
                                     <span className="material-symbols-outlined">chevron_left</span>
                                 </button>
-                                <button className="px-3 py-1 text-sm font-bold bg-primary text-white rounded">1</button>
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                    let p: number;
+                                    if (totalPages <= 5) p = i + 1;
+                                    else if (page <= 3) p = i + 1;
+                                    else if (page >= totalPages - 2) p = totalPages - 4 + i;
+                                    else p = page - 2 + i;
+                                    return (
+                                        <button
+                                            key={p}
+                                            type="button"
+                                            onClick={() => setPage(p)}
+                                            disabled={loading}
+                                            className={`px-3 py-1 text-sm font-medium rounded transition-colors disabled:opacity-50 ${page === p ? 'bg-primary text-white' : 'hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    );
+                                })}
+                                {totalPages > 5 && page < totalPages - 2 && (
+                                    <>
+                                        <span className="px-1 text-slate-400">…</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPage(totalPages)}
+                                            disabled={loading}
+                                            className={`px-3 py-1 text-sm font-medium rounded transition-colors disabled:opacity-50 ${page === totalPages ? 'bg-primary text-white' : 'hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                        >
+                                            {totalPages}
+                                        </button>
+                                    </>
+                                )}
                                 <button
-                                    className="px-3 py-1 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors">2
-                                </button>
-                                <button
-                                    className="px-3 py-1 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors">3
-                                </button>
-                                <span className="px-2">...</span>
-                                <button
-                                    className="px-3 py-1 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors">42
-                                </button>
-                                <button className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                                    type="button"
+                                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={page >= totalPages || loading}
+                                    className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none"
+                                    aria-label="Next page"
+                                >
                                     <span className="material-symbols-outlined">chevron_right</span>
                                 </button>
                             </div>
@@ -314,23 +370,18 @@ export const PhmDashboardPage: React.FC = () => {
                                     <span className="material-symbols-outlined text-primary">calendar_month</span>
                                     Next Clinic Day
                                 </h4>
-                                <span className="text-xs font-bold text-slate-400">IN 2 DAYS</span>
                             </div>
-                            <div className="bg-primary/10 rounded-lg p-4">
-                                <p className="text-primary font-bold text-lg">Thursday, Oct 24</p>
-                                <p className="text-sm text-slate-600 dark:text-slate-400">Wattala Community Center</p>
-                                <p className="text-xs mt-2 text-slate-500 font-medium">8:30 AM — 12:30 PM</p>
+                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                                <p className="text-slate-500 dark:text-slate-400 text-sm">Clinic schedule data can be shown here when available from the system.</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
                                     <span>Expected Attendance:</span>
-                                    <span className="font-bold">24 Children</span>
+                                    <span className="font-bold">—</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span>Inventory Check:</span>
-                                    <span className="font-bold text-emerald-600 flex items-center gap-1">
-      <span className="material-symbols-outlined text-[16px]">check_circle</span> Ready
-                                  </span>
+                                    <span className="font-bold">—</span>
                                 </div>
                             </div>
                         </div>
@@ -338,47 +389,7 @@ export const PhmDashboardPage: React.FC = () => {
                         <div
                             className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
                             <h4 className="font-bold mb-4">Recent Area Activity</h4>
-                            <div className="space-y-4">
-                                <div className="flex gap-4">
-                                    <div
-                                        className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                                        <span className="material-symbols-outlined text-blue-500">add_reaction</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm">
-                                            <span className="font-bold">New Baby Registered:</span> K. V. Wickramasinghe
-                                        </p>
-                                        <p className="text-xs text-slate-400">2 hours ago • By Midwife Perera</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div
-                                        className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                                        <span className="material-symbols-outlined text-emerald-500">verified</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm">
-                                            <span className="font-bold">Vaccination Updated:</span> 3 Pentavalent
-                                            completed for S. Jayawardena
-                                        </p>
-                                        <p className="text-xs text-slate-400">Yesterday at 4:30 PM</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div
-                                        className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                                        <span
-                                            className="material-symbols-outlined text-rose-500">notification_important</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm">
-                                            <span className="font-bold">Follow-up Required:</span> Missed OPV-1 for T.
-                                            Kumara
-                                        </p>
-                                        <p className="text-xs text-slate-400">Oct 21, 2024</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">Activity feed can be shown here when an API is available.</p>
                         </div>
                     </div>
                 </main>

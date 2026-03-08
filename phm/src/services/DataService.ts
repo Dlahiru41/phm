@@ -140,6 +140,36 @@ class DataService {
     }
   }
 
+  /**
+   * Paginated children list for PHM area. Uses GET /children?phmId=&page=&limit=.
+   * If backend returns { total, page, limit, data }, uses it; otherwise treats response as array and slices client-side.
+   */
+  async getChildrenByPHMPaginated(
+    phmId: string,
+    page: number,
+    limit: number
+  ): Promise<{ total: number; page: number; limit: number; data: Child[] }> {
+    try {
+      const params: Record<string, string> = { phmId, page: String(page), limit: String(limit) };
+      const res = await api.get<any>('/children', params);
+      if (res && typeof res === 'object' && Array.isArray(res.data) && typeof res.total === 'number') {
+        return {
+          total: res.total,
+          page: res.page ?? page,
+          limit: res.limit ?? limit,
+          data: res.data.map((a: any) => childFromApi(a)),
+        };
+      }
+      const list = Array.isArray(res) ? res : [];
+      const total = list.length;
+      const start = (page - 1) * limit;
+      const data = list.slice(start, start + limit).map((a: any) => childFromApi(a));
+      return { total, page, limit, data };
+    } catch {
+      return { total: 0, page, limit, data: [] };
+    }
+  }
+
   async getAllChildren(params?: {
     areaCode?: string;
     status?: string;

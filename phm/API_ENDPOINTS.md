@@ -451,11 +451,25 @@
 
 **Query Parameters**
 
-| Param     | Type     | Required | Description                   |
-|-----------|----------|----------|-------------------------------|
-| `phmId`   | `string` | Yes      | PHM user ID                   |
+| Param     | Type     | Required | Description                        |
+|-----------|----------|----------|------------------------------------|
+| `phmId`   | `string` | Yes      | PHM user ID                        |
+| `page`    | `number` | No       | Page number (default: 1)           |
+| `limit`   | `number` | No       | Items per page (default: 10)       |
 
-**Response `200 OK`** – same array shape as **3.5**
+**Response `200 OK`**
+
+- If `page` and `limit` are **not** sent: array of child objects (same shape as **3.5**).
+- If `page` and/or `limit` **are** sent: paginated response:
+
+```json
+{
+  "total": 120,
+  "page": 1,
+  "limit": 10,
+  "data": [ "...array of child objects (same shape as 3.5)..." ]
+}
+```
 
 ---
 
