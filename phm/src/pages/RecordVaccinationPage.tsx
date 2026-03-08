@@ -29,9 +29,7 @@ export const RecordVaccinationPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const user = AuthService.getCurrentUser();
-    const phmId = (user as any)?.phmId || user?.userId || '';
-    dataService.getChildrenByPHM(phmId).then(setChildren);
+    dataService.getMyChildren().then(setChildren);
     dataService.getAllVaccines().then(setVaccines);
   }, []);
 

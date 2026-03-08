@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataService } from '../services/DataService';
+import { AuthService } from '../services/AuthService';
 import { PhmLayout } from '../components/PhmLayout';
 
 export const BabyRegistrationPage: React.FC = () => {
@@ -21,6 +22,13 @@ export const BabyRegistrationPage: React.FC = () => {
     gnDivision: ''
   });
   const [registrationNumber, setRegistrationNumber] = useState('');
+  const [lastRegisteredChild, setLastRegisteredChild] = useState<{
+    childId: string;
+    registrationNumber: string;
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+  } | null>(null);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -36,6 +44,9 @@ export const BabyRegistrationPage: React.FC = () => {
     }
     setSubmitting(true);
     try {
+      const currentUser = AuthService.getCurrentUser();
+      const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId;
+      const areaCode = (currentUser as { areaCode?: string })?.areaCode;
       const res = await dataService.registerChild({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -51,14 +62,26 @@ export const BabyRegistrationPage: React.FC = () => {
         dsDivision: formData.dsDivision,
         gnDivision: formData.gnDivision,
         address: formData.address,
+        ...(phmId && { phmId }),
+        ...(areaCode && { areaCode }),
       });
       if (res?.registrationNumber) {
         setRegistrationNumber(res.registrationNumber);
+        setLastRegisteredChild({
+          childId: res.childId ?? (res as { child_id?: string }).child_id ?? '',
+          registrationNumber: res.registrationNumber,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          dateOfBirth: formData.dateOfBirth,
+        });
       } else {
-        setError('Registration failed. Please try again.');
+        setError('Registration failed. Server did not return a registration number.');
       }
-    } catch {
-      setError('Registration failed. Please check your details and try again.');
+    } catch (err: unknown) {
+      const message = err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string'
+        ? (err as { message: string }).message
+        : 'Registration failed. Please check your details and try again.';
+      setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -95,10 +118,20 @@ export const BabyRegistrationPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {lastRegisteredChild && (
+                <button
+                  onClick={() => navigate('/view-area-children', { state: { newlyRegistered: lastRegisteredChild } })}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+                >
+                  <span className="material-symbols-outlined">groups</span>
+                  View Area Children
+                </button>
+              )}
               <button
                 onClick={() => {
                   setRegistrationNumber('');
+                  setLastRegisteredChild(null);
                   setFormData({
                     firstName: '', lastName: '', dateOfBirth: '', gender: '',
                     birthWeight: '', birthHeight: '', motherName: '', motherNIC: '',

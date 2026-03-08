@@ -289,6 +289,8 @@
 
 **Request Body**
 
+All fields except optional ones are required. The authenticated user must have role `phm`; the backend should associate the new child with that PHM (e.g. set `registeredBy` and `areaCode` from the JWT). Optional `phmId` and `areaCode` may be sent by the client so the backend can explicitly associate the child with that PHM area.
+
 ```json
 {
   "firstName": "Kavindu",
@@ -306,9 +308,13 @@
   "district": "Colombo",
   "dsDivision": "Colombo West",
   "gnDivision": "Colombo 01",
-  "address": "123 Main Street, Colombo"
+  "address": "123 Main Street, Colombo",
+  "phmId": "phm-001",
+  "areaCode": "COL-01"
 }
 ```
+
+*Optional: `headCircumference`, `bloodGroup`, `phmId`, `areaCode`.*
 
 **Response `201 Created`**
 
@@ -441,6 +447,43 @@
 
 ---
 
+### 3.5a Get My Children (JWT-based)
+
+| Field  | Value                        |
+|--------|------------------------------|
+| Method | `GET`                        |
+| URL    | `/children/my`               |
+| Auth   | Required (any role)          |
+
+Returns the children list for the **current user** identified by the JWT. No query param for user id is needed.
+
+- **Parent:** children linked to that parent.
+- **PHM:** children registered by that PHM (e.g. where `registeredBy` = authenticated user id).
+- **MOH:** implementation-defined (e.g. all children or by area).
+
+**Query Parameters** *(optional)*
+
+| Param   | Type     | Required | Description            |
+|---------|----------|----------|------------------------|
+| `page`  | `number` | No       | Page number (default: 1) |
+| `limit` | `number` | No       | Items per page (default: 10) |
+
+**Response `200 OK`**
+
+- Without `page`/`limit`: array of child objects (same shape as **3.5**).
+- With `page`/`limit`: paginated response:
+
+```json
+{
+  "total": 120,
+  "page": 1,
+  "limit": 10,
+  "data": [ "...array of child objects (same shape as 3.5)..." ]
+}
+```
+
+---
+
 ### 3.6 Get Children by PHM Area
 
 | Field  | Value                                    |
@@ -449,13 +492,16 @@
 | URL    | `/children?phmId=phm-001`                |
 | Auth   | Required (`phm`, `moh`)                  |
 
+**Backend requirement:** Return only children that belong to this PHM. Typically that means children where **`registeredBy`** (or your equivalent column) equals the given `phmId`. When a child is created via `POST /children`, the backend must set `registeredBy` to the authenticated PHM’s user id (from JWT or from the request body `phmId`). If that is not set, the child will exist in the database but will not appear in this list.
+
 **Query Parameters**
 
-| Param     | Type     | Required | Description                        |
-|-----------|----------|----------|------------------------------------|
-| `phmId`   | `string` | Yes      | PHM user ID                        |
-| `page`    | `number` | No       | Page number (default: 1)           |
-| `limit`   | `number` | No       | Items per page (default: 10)       |
+| Param          | Type     | Required | Description                        |
+|----------------|----------|----------|------------------------------------|
+| `phmId`        | `string` | Yes      | PHM user ID (e.g. `user-phm-657e6271`) |
+| `registeredBy` | `string` | No       | Same as phmId; frontend may send both so backend can filter by either. |
+| `page`         | `number` | No       | Page number (default: 1)           |
+| `limit`        | `number` | No       | Items per page (default: 10)       |
 
 **Response `200 OK`**
 

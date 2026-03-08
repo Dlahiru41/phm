@@ -16,6 +16,12 @@ This document contains the hardcoded login credentials for testing the three use
 - **Dashboard:** `/phm-dashboard`
 - **Use Cases:** Login, Generate Schedule, Record Vaccination, Record Growth Data, View Area Children, Update Vaccination, Register Baby
 
+### Primary PHM test user (verified with API)
+- **Email:** `dlahiru412@outlook.com`
+- **Password:** `dilshan123`
+- **Role:** PHM (backend returns name: "Lahiru Dilshan PHM", userId: e.g. `user-phm-657e6271`)
+- Use this account to verify: Login, Register Baby, PHM Dashboard, View Area Children
+
 ## MOH (Ministry of Health) User
 - **Username/Email/NIC:** `moh`, `moh@ncvms.gov.lk`, or `555555555V`
 - **Password:** `moh123`

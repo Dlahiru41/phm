@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Child, Gender } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 import { PhmLayout } from '../components/PhmLayout';
+
+type NewlyRegisteredState = {
+  childId: string;
+  registrationNumber: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+};
 
 // Extended Child interface for display purposes
 interface ChildWithStatus extends Child {
@@ -14,8 +22,15 @@ interface ChildWithStatus extends Child {
   areaLabel?: string;
 }
 
+function parseDoB(val: string): Date {
+  if (!val) return new Date(0);
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+}
+
 export const ViewAreaChildrenPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [children, setChildren] = useState<ChildWithStatus[]>([]);
@@ -23,6 +38,8 @@ export const ViewAreaChildrenPage: React.FC = () => {
   const [isMOH, setIsMOH] = useState(false);
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
+
+  const newlyRegisteredFromState = location.state?.newlyRegistered as NewlyRegisteredState | undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -37,8 +54,7 @@ export const ViewAreaChildrenPage: React.FC = () => {
     (async () => {
       let baseChildren: Child[] = [];
       if (userIsPHM) {
-        const phmId = (currentUser as any).phmId || currentUser.userId;
-        baseChildren = await dataService.getChildrenByPHM(phmId);
+        baseChildren = await dataService.getMyChildren();
       } else if (userIsMOH) {
         const res = await dataService.getAllChildren({ limit: 500 });
         baseChildren = res.data;
@@ -69,7 +85,36 @@ export const ViewAreaChildrenPage: React.FC = () => {
         })
       );
       if (cancelled) return;
-      setChildren(childrenWithStatus);
+
+      let merged = childrenWithStatus;
+      if (newlyRegisteredFromState?.registrationNumber && newlyRegisteredFromState?.firstName) {
+        const nr = newlyRegisteredFromState;
+        const existingIds = new Set(childrenWithStatus.map((c) => c.childId));
+        const existingRegNums = new Set(childrenWithStatus.map((c) => c.registrationNumber));
+        const alreadyInList =
+          (nr.childId && existingIds.has(nr.childId)) || existingRegNums.has(nr.registrationNumber);
+        if (!alreadyInList) {
+          const newChild: ChildWithStatus = {
+            childId: nr.childId || `new-${nr.registrationNumber}`,
+            registrationNumber: nr.registrationNumber,
+            firstName: nr.firstName,
+            lastName: nr.lastName,
+            dateOfBirth: parseDoB(nr.dateOfBirth),
+            gender: Gender.MALE,
+            bloodGroup: '',
+            birthWeight: 0,
+            birthHeight: 0,
+            parentId: '',
+            registeredBy: '',
+            areaCode: '',
+            areaName: '',
+            vaccinationStatus: 'on-track',
+            areaLabel: '',
+          };
+          merged = [newChild, ...childrenWithStatus];
+        }
+      }
+      setChildren(merged);
       if (userIsMOH) {
         const areas = Array.from(
           new Set(childrenWithStatus.map((c) => c.areaLabel).filter(Boolean) as string[])
@@ -78,7 +123,7 @@ export const ViewAreaChildrenPage: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [newlyRegisteredFromState?.registrationNumber]);
 
   const filteredChildren = children.filter(child => {
     const fullName = `${child.firstName} ${child.lastName}`.toLowerCase();

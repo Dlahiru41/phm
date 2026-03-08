@@ -131,9 +131,13 @@ class DataService {
     }
   }
 
-  async getChildrenByPHM(phmId: string): Promise<Child[]> {
+  /**
+   * Get children for the current user (JWT). Uses GET /children/my.
+   * Backend returns children based on token (PHM: children they registered; Parent: their linked children).
+   */
+  async getMyChildren(): Promise<Child[]> {
     try {
-      const list = await api.get<any[]>('/children', { phmId });
+      const list = await api.get<any[]>('/children/my');
       return Array.isArray(list) ? list.map(childFromApi) : [];
     } catch {
       return [];
@@ -141,8 +145,46 @@ class DataService {
   }
 
   /**
-   * Paginated children list for PHM area. Uses GET /children?phmId=&page=&limit=.
-   * If backend returns { total, page, limit, data }, uses it; otherwise treats response as array and slices client-side.
+   * Paginated list for current user (JWT). Uses GET /children/my?page=&limit=.
+   * Backend returns children based on token; response may be { total, page, limit, data } or array.
+   */
+  async getMyChildrenPaginated(
+    page: number,
+    limit: number
+  ): Promise<{ total: number; page: number; limit: number; data: Child[] }> {
+    try {
+      const params: Record<string, string> = { page: String(page), limit: String(limit) };
+      const res = await api.get<any>('/children/my', params);
+      if (res && typeof res === 'object' && Array.isArray(res.data) && typeof res.total === 'number') {
+        return {
+          total: res.total,
+          page: res.page ?? page,
+          limit: res.limit ?? limit,
+          data: res.data.map((a: any) => childFromApi(a)),
+        };
+      }
+      const list = Array.isArray(res) ? res : [];
+      const total = list.length;
+      const start = (page - 1) * limit;
+      const data = list.slice(start, start + limit).map((a: any) => childFromApi(a));
+      return { total, page, limit, data };
+    } catch {
+      return { total: 0, page, limit, data: [] };
+    }
+  }
+
+  async getChildrenByPHM(phmId: string): Promise<Child[]> {
+    try {
+      const list = await api.get<any[]>('/children', { phmId, registeredBy: phmId });
+      return Array.isArray(list) ? list.map(childFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Paginated children list for PHM area. Prefer getMyChildrenPaginated() when backend supports GET /children/my.
+   * Falls back to GET /children?phmId=&page=&limit=.
    */
   async getChildrenByPHMPaginated(
     phmId: string,
@@ -150,7 +192,12 @@ class DataService {
     limit: number
   ): Promise<{ total: number; page: number; limit: number; data: Child[] }> {
     try {
-      const params: Record<string, string> = { phmId, page: String(page), limit: String(limit) };
+      const params: Record<string, string> = {
+        phmId,
+        registeredBy: phmId,
+        page: String(page),
+        limit: String(limit),
+      };
       const res = await api.get<any>('/children', params);
       if (res && typeof res === 'object' && Array.isArray(res.data) && typeof res.total === 'number') {
         return {
@@ -223,13 +270,18 @@ class DataService {
     dsDivision: string;
     gnDivision: string;
     address: string;
+    phmId?: string;
+    areaCode?: string;
   }): Promise<{ childId: string; registrationNumber: string } | null> {
-    try {
-      const res = await api.post<{ childId: string; registrationNumber: string }>('/children', body);
-      return res ?? null;
-    } catch {
+    const payload = { ...body };
+    const res = await api.post<any>('/children', payload);
+    const raw = res ?? (typeof res === 'object' ? res : {});
+    const childId = raw.childId ?? raw.child_id ?? '';
+    const registrationNumber = raw.registrationNumber ?? raw.registration_number ?? '';
+    if (!registrationNumber) {
       return null;
     }
+    return { childId, registrationNumber };
   }
 
   async updateChild(childId: string, body: Partial<Child>): Promise<boolean> {
