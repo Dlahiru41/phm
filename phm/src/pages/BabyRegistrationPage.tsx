@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataService } from '../services/DataService';
+import { PhmLayout } from '../components/PhmLayout';
 
 export const BabyRegistrationPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -72,7 +73,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
   if (registrationNumber) {
     return (
-      <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+      <PhmLayout activeNav="register-baby" showBackToDashboard={true}>
         <div className="w-full max-w-4xl mx-auto px-6 py-12">
           <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg">
             <div className="text-center mb-8">
@@ -120,21 +121,14 @@ export const BabyRegistrationPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </PhmLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+    <PhmLayout activeNav="register-baby" showBackToDashboard={true}>
       <div className="w-full max-w-4xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/phm-dashboard')}
-            className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </button>
           <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Register New Baby</h1>
           <p className="text-[#4c739a] dark:text-slate-400">Enter child demographic details to register in the system.</p>
         </div>
@@ -374,6 +368,6 @@ export const BabyRegistrationPage: React.FC = () => {
           </div>
         </form>
       </div>
-    </div>
+    </PhmLayout>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
+import { PhmLayout } from '../components/PhmLayout';
 import { Child, Vaccine } from '../types/models';
 
 export const RecordVaccinationPage: React.FC = () => {
@@ -78,35 +79,31 @@ export const RecordVaccinationPage: React.FC = () => {
 
   if (success) {
     return (
-      <div className="flex min-h-screen bg-background-light dark:bg-background-dark items-center justify-center px-6">
-        <div className="w-full max-w-md text-center">
-          <div className="mb-6">
-            <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
+      <PhmLayout activeNav="record-vaccination" showBackToDashboard={true}>
+        <div className="flex min-h-[60vh] items-center justify-center px-6">
+          <div className="w-full max-w-md text-center">
+            <div className="mb-6">
+              <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
+            </div>
+            <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">Vaccination Recorded!</h2>
+            <p className="text-[#4c739a] dark:text-slate-400 mb-6">The vaccination has been successfully recorded in the system.</p>
+            <button
+              type="button"
+              onClick={() => navigate('/phm-dashboard')}
+              className="inline-flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+            >
+              Return to Dashboard
+            </button>
           </div>
-          <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">Vaccination Recorded!</h2>
-          <p className="text-[#4c739a] dark:text-slate-400 mb-6">The vaccination has been successfully recorded in the system.</p>
-          <button
-            onClick={() => navigate('/phm-dashboard')}
-            className="inline-flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
-          >
-            Return to Dashboard
-          </button>
         </div>
-      </div>
+      </PhmLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+    <PhmLayout activeNav="record-vaccination" showBackToDashboard={true}>
       <div className="w-full max-w-4xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/phm-dashboard')}
-            className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </button>
           <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Record Vaccination</h1>
           <p className="text-[#4c739a] dark:text-slate-400">Record vaccination details for a registered child.</p>
         </div>
@@ -276,6 +273,6 @@ export const RecordVaccinationPage: React.FC = () => {
           </div>
         </form>
       </div>
-    </div>
+    </PhmLayout>
   );
 };

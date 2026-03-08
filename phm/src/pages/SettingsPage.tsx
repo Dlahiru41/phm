@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { api } from '../services/apiClient';
 import { ParentLayout } from '../components/ParentLayout';
+import { PhmLayout } from '../components/PhmLayout';
 
 const langToCode: Record<string, string> = { english: 'en', sinhala: 'si', tamil: 'ta' };
 const codeToLang: Record<string, string> = { en: 'english', si: 'sinhala', ta: 'tamil' };
@@ -10,6 +11,7 @@ const codeToLang: Record<string, string> = { en: 'english', si: 'sinhala', ta: '
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const isParent = AuthService.isParent();
+  const isPHM = AuthService.isPHM();
   const [language, setLanguage] = useState('english');
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -83,8 +85,9 @@ export const SettingsPage: React.FC = () => {
   const content = (
     <div className="w-full max-w-4xl mx-auto px-6 py-12">
       <div className="mb-8">
-        {!isParent && (
+        {!isParent && !isPHM && (
           <button
+            type="button"
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
           >
@@ -259,6 +262,14 @@ export const SettingsPage: React.FC = () => {
       <ParentLayout activeNav="settings">
         {content}
       </ParentLayout>
+    );
+  }
+
+  if (isPHM) {
+    return (
+      <PhmLayout activeNav="settings" showBackToDashboard={true}>
+        {content}
+      </PhmLayout>
     );
   }
 

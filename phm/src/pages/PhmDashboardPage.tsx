@@ -1,63 +1,46 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthService } from '../services/AuthService';
+import { PhmLayout } from '../components/PhmLayout';
 
 export const PhmDashboardPage: React.FC = () => {
     const navigate = useNavigate();
-    
-    return (
-        <>
-            <div className="flex flex-col min-h-screen">
 
-                <header
-                    className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                    <div className="max-w-[1200px] mx-auto px-4 lg:px-6 flex items-center justify-between h-16">
-                        <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-primary p-1.5 rounded-lg text-white">
-                                    <span className="material-symbols-outlined text-2xl">health_and_safety</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <h1 className="text-xl font-bold tracking-tight">PHM Dashboard</h1>
-                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">SuwaCare LK</p>
-                                </div>
-                            </div>
-                            <nav className="hidden md:flex items-center gap-6">
-                                <Link to="/phm-dashboard" className="text-sm font-semibold text-primary">Overview</Link>
-                                <Link to="/view-area-children" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
-                                    View Area Children
-                                </Link>
-                                <Link to="/baby-registration" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
-                                    Register Baby
-                                </Link>
-                                <Link to="/record-vaccination" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
-                                    Record Vaccination
-                                </Link>
-                            </nav>
+    return (
+        <PhmLayout activeNav="overview" showBackToDashboard={false}>
+            <div className="max-w-[1200px] mx-auto w-full p-4 lg:p-6 space-y-6">
+                <header className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Overview</h2>
+                    <div className="flex items-center gap-3">
+                        <div className="relative hidden sm:block">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                            <input
+                                className="bg-slate-100 dark:bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:ring-2 focus:ring-primary"
+                                placeholder="Search children or parents..."
+                                type="text"
+                                aria-label="Search"
+                            />
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="relative hidden sm:block">
-                                <span
-                                    className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-                                <input
-                                    className="bg-slate-100 dark:bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:ring-2 focus:ring-primary"
-                                    placeholder="Search children or parents..." type="text"/>
-                            </div>
-                            <button
-                                onClick={() => navigate('/notifications')}
-                                className="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                                <span className="material-symbols-outlined">notifications</span>
-                                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                            </button>
-                            <div className="w-8 h-8 rounded-full bg-slate-300 overflow-hidden border border-slate-200"
-                                 data-alt="Professional profile headshot of a midwife">
-                                <img alt="User Profile"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfiEgUgExs6o58pFxf8BPZ12k4tOgZ-kRYSl72nvDv9-8aTNr9HClzWBIle7Pw1IvH0ZuCSm7QdO6EWiOYWzb3MC4RmiUv6lDb_9nswc5XbPl9c_WIi5ZO98zF9MuqDx6zPAGt_9bQvICDF2EeD1VjhSxQ-odsQHPUgHbURdQbTplZ04eVTRswhaOSZkRA2NgpLly1UwHWNr7VOR5GQoId2z4kJilJyn-xPpoax_stCfJWgPMsrPISOZL9G0kAjdr9fkTE6Qq0TKOf"/>
-                            </div>
+                        <Link
+                            to="/notifications"
+                            className="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        >
+                            <span className="material-symbols-outlined">notifications</span>
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" aria-hidden />
+                        </Link>
+                        <div
+                            className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden border border-slate-200 dark:border-slate-700"
+                            role="img"
+                            aria-label="Profile"
+                        >
+                            <img
+                                alt=""
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfiEgUgExs6o58pFxf8BPZ12k4tOgZ-kRYSl72nvDv9-8aTNr9HClzWBIle7Pw1IvH0ZuCSm7QdO6EWiOYWzb3MC4RmiUv6lDb_9nswc5XbPl9c_WIi5ZO98zF9MuqDx6zPAGt_9bQvICDF2EeD1VjhSxQ-odsQHPUgHbURdQbTplZ04eVTRswhaOSZkRA2NgpLly1UwHWNr7VOR5GQoId2z4kJilJyn-xPpoax_stCfJWgPMsrPISOZL9G0kAjdr9fkTE6Qq0TKOf"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 max-w-[1200px] mx-auto w-full p-4 lg:p-6 space-y-6">
+                <main className="space-y-6">
 
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-4">
                         <div>
@@ -399,10 +382,8 @@ export const PhmDashboardPage: React.FC = () => {
                         </div>
                     </div>
                 </main>
-                <footer
-                    className="mt-auto py-8 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    <div
-                        className="max-w-[1200px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <footer className="mt-auto py-8 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-xl">
+                    <div className="max-w-[1200px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-4 text-slate-400 text-sm">
                             <span>© 2026 Ministry of Health Sri Lanka</span>
                             <span className="hidden md:block">•</span>
@@ -412,7 +393,7 @@ export const PhmDashboardPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
                                 <span className="text-xs font-bold text-slate-500">SYSTEM ONLINE</span>
                             </div>
                             <div className="flex items-center gap-2 text-slate-400">
@@ -423,6 +404,6 @@ export const PhmDashboardPage: React.FC = () => {
                     </div>
                 </footer>
             </div>
-        </>
+        </PhmLayout>
     );
 };

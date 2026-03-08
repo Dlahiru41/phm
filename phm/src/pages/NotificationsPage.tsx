@@ -4,10 +4,12 @@ import { Notification, NotificationType } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 import { ParentLayout } from '../components/ParentLayout';
+import { PhmLayout } from '../components/PhmLayout';
 
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
   const isParent = AuthService.isParent();
+  const isPHM = AuthService.isPHM();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
@@ -87,13 +89,16 @@ export const NotificationsPage: React.FC = () => {
   const content = (
     <div className="w-full max-w-4xl mx-auto px-6 py-12">
       <div className="mb-8">
-        <button
-          onClick={() => (isParent ? navigate('/parent-dashboard-desktop') : navigate(-1))}
-          className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-          <span className="text-sm font-medium">{isParent ? 'Back to Dashboard' : 'Back'}</span>
-        </button>
+        {!(isParent || isPHM) && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+            <span className="text-sm font-medium">Back</span>
+          </button>
+        )}
         <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-1">Notifications</h1>
@@ -207,6 +212,14 @@ export const NotificationsPage: React.FC = () => {
       <ParentLayout activeNav="notifications">
         {content}
       </ParentLayout>
+    );
+  }
+
+  if (isPHM) {
+    return (
+      <PhmLayout activeNav="notifications" showBackToDashboard={true}>
+        {content}
+      </PhmLayout>
     );
   }
 

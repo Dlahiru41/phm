@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Child, Gender } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
+import { PhmLayout } from '../components/PhmLayout';
 
 // Extended Child interface for display purposes
 interface ChildWithStatus extends Child {
@@ -120,20 +121,20 @@ export const ViewAreaChildrenPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <div className="w-full max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
+  const content = (
+    <div className="w-full max-w-7xl mx-auto px-6 py-12">
+      <div className="mb-8">
+        {!isPHM && (
           <button
-            onClick={() =>
-              navigate(isMOH ? '/moh-analytics-dashboard' : '/phm-dashboard')
-            }
+            type="button"
+            onClick={() => navigate(isMOH ? '/moh-analytics-dashboard' : '/phm-dashboard')}
             className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
           >
             <span className="material-symbols-outlined">arrow_back</span>
             <span className="text-sm font-medium">Back to Dashboard</span>
           </button>
-          <div className="flex items-center justify-between mb-6">
+        )}
+        <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">
                 {isMOH ? 'Children by Area' : 'Children in My Area'}
@@ -277,6 +278,19 @@ export const ViewAreaChildrenPage: React.FC = () => {
           <p>Showing {filteredChildren.length} of {children.length} children</p>
         </div>
       </div>
+  );
+
+  if (isPHM) {
+    return (
+      <PhmLayout activeNav="view-area-children" showBackToDashboard={true}>
+        {content}
+      </PhmLayout>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+      {content}
     </div>
   );
 };
