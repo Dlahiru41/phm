@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { dataService } from '../services/DataService';
 
 export type ParentNavKey = 'dashboard' | 'health-records' | 'notifications' | 'growth-chart' | 'settings';
 
 export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNav }) => {
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await dataService.getNotifications();
+        if (!cancelled) setUnreadCount(res.unreadCount ?? 0);
+      } catch {
+        if (!cancelled) setUnreadCount(0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const navClass = (key: ParentNavKey) =>
     `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeNav === key ? 'bg-primary text-white' : 'text-[#4c739a] hover:bg-primary/10'}`;
   return (
@@ -32,6 +48,9 @@ export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNa
           <Link to="/notifications" className={navClass('notifications')}>
             <span className="material-symbols-outlined">notifications</span>
             <p className="text-sm font-medium">Notifications</p>
+            {unreadCount > 0 && (
+              <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{unreadCount}</span>
+            )}
           </Link>
           <Link to="/growth-chart" className={navClass('growth-chart')}>
             <span className="material-symbols-outlined">monitoring</span>

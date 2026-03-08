@@ -21,16 +21,27 @@ export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const storedLang = localStorage.getItem('language') || 'english';
+    let cancelled = false;
+    (async () => {
+      try {
+        const user = await AuthService.refreshProfile();
+        if (cancelled || !user) return;
+        const pref = (user.languagePreference || 'en').toLowerCase();
+        const lang = codeToLang[pref] || codeToLang.en || 'english';
+        setLanguage(lang);
+      } catch {
+        // keep defaults
+      }
+    })();
     const storedDark = localStorage.getItem('darkMode') === 'true';
     const storedNotif = localStorage.getItem('notifications');
-    setLanguage(storedLang);
     setDarkMode(storedDark);
     if (storedNotif) {
       try {
         setNotifications(JSON.parse(storedNotif));
       } catch {}
     }
+    return () => { cancelled = true; };
   }, []);
 
   const languages = [

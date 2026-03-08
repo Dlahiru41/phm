@@ -1,105 +1,139 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dataService } from '../services/DataService';
+import type { Child } from '../types/models';
+import { ParentLayout } from '../components/ParentLayout';
 
 export const AddChildPage: React.FC = () => {
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [childInfo, setChildInfo] = useState<any>(null);
+  const [childInfo, setChildInfo] = useState<Child | null>(null);
+  const [linking, setLinking] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setChildInfo(null);
+    setSuccess(false);
 
-    // Validate registration number format (NCVMS-YYYY-MMDD-XXXX)
-    const regNumberPattern = /^NCVMS-\d{4}-\d{4}-\d{4}$/;
-    if (!regNumberPattern.test(registrationNumber)) {
-      setError('Invalid registration number format. Please check and try again.');
+    const trimmed = registrationNumber.trim();
+    if (!trimmed) {
+      setError('Please enter a registration number.');
       return;
     }
 
-    // Simulate fetching child info
-    // In a real app, this would call an API
-    const mockChildInfo = {
-      name: 'Kavindu Perera',
-      dateOfBirth: '2019-08-15',
-      gender: 'Male',
-      registrationNumber: registrationNumber
-    };
-
-    setChildInfo(mockChildInfo);
-    setSuccess(true);
+    try {
+      const child = await dataService.searchChildByRegistration(trimmed);
+      if (child) {
+        setChildInfo(child);
+        setSuccess(true);
+      } else {
+        setError('No child found with this registration number. Please check and try again.');
+      }
+    } catch {
+      setError('Unable to search. Please try again.');
+    }
   };
 
-  const handleConfirm = () => {
-    // In a real app, this would link the child to the parent's account
-    navigate('/parent-dashboard-desktop');
+  const handleConfirm = async () => {
+    if (!childInfo) return;
+    setLinking(true);
+    setError('');
+    try {
+      const ok = await dataService.linkChildToParent(childInfo.childId, registrationNumber.trim());
+      if (ok) {
+        navigate('/parent-dashboard-desktop');
+      } else {
+        setError('Could not link child. Please try again.');
+      }
+    } catch {
+      setError('Could not link child. Please try again.');
+    } finally {
+      setLinking(false);
+    }
   };
+
+  const childName = childInfo ? `${childInfo.firstName} ${childInfo.lastName}`.trim() || '—';
+  const childDob = childInfo?.dateOfBirth ? (childInfo.dateOfBirth instanceof Date ? childInfo.dateOfBirth : new Date(childInfo.dateOfBirth)).toLocaleDateString() : '—';
+  const childGender = childInfo?.gender ? (String(childInfo.gender) === 'female' ? 'Female' : 'Male') : '—';
 
   if (success && childInfo) {
-    return (
-      <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-        <div className="w-full max-w-2xl mx-auto px-6 py-12">
-          <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg">
-            <div className="text-center mb-8">
-              <div className="mb-6">
-                <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
-              </div>
-              <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">Child Found!</h2>
-              <p className="text-[#4c739a] dark:text-slate-400">Please verify the child information below.</p>
+    const content = (
+      <div className="w-full max-w-2xl mx-auto px-6 py-12">
+        <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg">
+          <div className="text-center mb-8">
+            <div className="mb-6">
+              <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
             </div>
+            <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">Child Found!</h2>
+            <p className="text-[#4c739a] dark:text-slate-400">Please verify the child information below.</p>
+          </div>
 
-            <div className="bg-[#f0f9ff] dark:bg-primary/10 border border-primary/20 rounded-xl p-6 mb-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Child Name:</span>
-                  <span className="text-base font-bold text-[#0d141b] dark:text-white">{childInfo.name}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Date of Birth:</span>
-                  <span className="text-base font-bold text-[#0d141b] dark:text-white">{new Date(childInfo.dateOfBirth).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Gender:</span>
-                  <span className="text-base font-bold text-[#0d141b] dark:text-white">{childInfo.gender}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Registration Number:</span>
-                  <span className="text-base font-bold text-primary">{childInfo.registrationNumber}</span>
-                </div>
+          {error && (
+            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+            </div>
+          )}
+
+          <div className="bg-[#f0f9ff] dark:bg-primary/10 border border-primary/20 rounded-xl p-6 mb-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Child Name:</span>
+                <span className="text-base font-bold text-[#0d141b] dark:text-white">{childName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Date of Birth:</span>
+                <span className="text-base font-bold text-[#0d141b] dark:text-white">{childDob}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Gender:</span>
+                <span className="text-base font-bold text-[#0d141b] dark:text-white">{childGender}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Registration Number:</span>
+                <span className="text-base font-bold text-primary">{childInfo.registrationNumber || registrationNumber}</span>
               </div>
             </div>
+          </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  setSuccess(false);
-                  setChildInfo(null);
-                  setRegistrationNumber('');
-                }}
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-              >
-                <span className="material-symbols-outlined">arrow_back</span>
-                Back
-              </button>
-              <button
-                onClick={handleConfirm}
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
-              >
-                <span className="material-symbols-outlined">check</span>
-                Confirm & Add Child
-              </button>
-            </div>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                setSuccess(false);
+                setChildInfo(null);
+                setRegistrationNumber('');
+                setError('');
+              }}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={linking}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70"
+            >
+              <span className="material-symbols-outlined">check</span>
+              {linking ? 'Linking…' : 'Confirm & Add Child'}
+            </button>
           </div>
         </div>
       </div>
     );
+    return (
+      <ParentLayout activeNav="dashboard" showBackToDashboard={false}>
+        {content}
+      </ParentLayout>
+    );
   }
 
-  return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      <div className="w-full max-w-2xl mx-auto px-6 py-12">
+  const formContent = (
+    <div className="w-full max-w-2xl mx-auto px-6 py-12">
         <div className="mb-8">
           <button
             onClick={() => navigate('/parent-dashboard-desktop')}
@@ -167,6 +201,11 @@ export const AddChildPage: React.FC = () => {
           </div>
         </form>
       </div>
-    </div>
+  );
+
+  return (
+    <ParentLayout activeNav="dashboard" showBackToDashboard={false}>
+      {formContent}
+    </ParentLayout>
   );
 };

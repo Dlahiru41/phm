@@ -1,6 +1,103 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthService } from '../services/AuthService';
+import { dataService } from '../services/DataService';
+import type { VaccinationRecord } from '../types/models';
+
+type ParentDashboardChild = {
+    childId: string;
+    name: string;
+    age: string;
+    nextVaccinationDate: string | null;
+    nextVaccineName: string | null;
+    vaccinationStatus: string;
+    upcomingCount: number;
+    missedCount: number;
+};
+
+type ParentDashboard = {
+    children: ParentDashboardChild[];
+    unreadNotifications: number;
+};
+
+function formatDate(dateStr: string | null): string {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function daysUntil(dateStr: string | null): number | null {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    d.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function progressFromStatus(status: string): number {
+    switch (status) {
+        case 'up-to-date': return 100;
+        case 'on-track': return 85;
+        case 'behind': return 40;
+        default: return 60;
+    }
+}
+
+type RecentRecordRow = VaccinationRecord & { childName: string };
 
 export const ParentDashboardMobilePage: React.FC = () => {
+    const navigate = useNavigate();
+    const [user, setUser] = useState<{ name?: string } | null>(AuthService.getCurrentUser());
+    const [dashboard, setDashboard] = useState<ParentDashboard | null>(null);
+    const [recentRecords, setRecentRecords] = useState<RecentRecordRow[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        async function load() {
+            setLoading(true);
+            try {
+                const [profile, data] = await Promise.all([
+                    AuthService.refreshProfile(),
+                    dataService.getParentDashboard(),
+                ]);
+                if (cancelled) return;
+                if (profile) setUser(profile);
+                if (data) {
+                    setDashboard(data);
+                    const allRecords: RecentRecordRow[] = [];
+                    for (const child of data.children) {
+                        const records = await dataService.getVaccinationRecordsByChild(child.childId);
+                        for (const r of records) {
+                            allRecords.push({ ...r, childName: child.name });
+                        }
+                    }
+                    allRecords.sort((a, b) => b.administeredDate.getTime() - a.administeredDate.getTime());
+                    setRecentRecords(allRecords.slice(0, 5));
+                } else {
+                    setDashboard({ children: [], unreadNotifications: 0 });
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+        load();
+        return () => { cancelled = true; };
+    }, []);
+
+    const firstName = user?.name?.split(' ')[0] ?? 'User';
+    const children = dashboard?.children ?? [];
+    const unreadNotifications = dashboard?.unreadNotifications ?? 0;
+
+    if (loading && !dashboard) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#1a2632]">
+                <p className="text-[#4c739a] dark:text-slate-400">Loading…</p>
+            </div>
+        );
+    }
+
     return (
         <>
             <header
@@ -10,12 +107,13 @@ export const ParentDashboardMobilePage: React.FC = () => {
                     <h1 className="text-lg font-bold tracking-tight">SuwaCare LK</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button className="relative p-2 text-[#4c739a] dark:text-slate-400">
+                    <Link to="/notifications" className="relative p-2 text-[#4c739a] dark:text-slate-400">
                         <span className="material-symbols-outlined text-2xl">notifications</span>
-                        <span
-                            className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-[#1a2632]"></span>
-                    </button>
-                    <button className="p-2 text-[#4c739a] dark:text-slate-400">
+                        {unreadNotifications > 0 && (
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-[#1a2632]" aria-label={`${unreadNotifications} unread`}></span>
+                        )}
+                    </Link>
+                    <button type="button" className="p-2 text-[#4c739a] dark:text-slate-400" aria-label="Menu">
                         <span className="material-symbols-outlined text-2xl">menu</span>
                     </button>
                 </div>
@@ -23,7 +121,7 @@ export const ParentDashboardMobilePage: React.FC = () => {
             <main className="flex flex-col gap-6 p-4">
                 <section className="flex flex-col gap-4">
                     <div className="flex flex-col">
-                        <h2 className="text-2xl font-black">Hi, Amara</h2>
+                        <h2 className="text-2xl font-black">Hi, {firstName}</h2>
                         <p className="text-[#4c739a] dark:text-slate-400 text-sm">Welcome back to your dashboard</p>
                     </div>
                     <div
@@ -48,85 +146,69 @@ export const ParentDashboardMobilePage: React.FC = () => {
                 <section>
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold">Linked Children</h3>
-                        <span className="text-primary text-sm font-bold">3 Children</span>
+                        <span className="text-primary text-sm font-bold">{children.length} Children</span>
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar -mx-4 px-4 snap-x">
-                        <div
-                            className="min-w-[85vw] bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-5 flex flex-col gap-4 shadow-sm snap-center">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="h-14 w-14 rounded-2xl bg-cover bg-center border border-[#e7edf3] dark:border-slate-700"
-                                        style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4FqStuncYHDJVcXV1eGHedFHQNexdh-MCkH4enpMPrCnTsk0IwQp5ruXfUf0sQXx0swbm63qNcZogz0yK58ifP2EaW-62Ry5mSSBLUVFSSeCifAJGSbzw6jpqliEyGHT5aXWUn-65Y6kP4TpSah5Dau1aaXhcuaEkYGBQf0vvA5oOYtV4nwvv8x5yQQBhgocoJYZFc1blfhIVTGsTFeuerCyMOL6-Y6LNa8RsgCTiHu1GsPQhujFARmIbdXxhOcSTnG4FaH9T6syW')"}}
-                                    ></div>
-                                    <div>
-                                        <h4 className="font-bold text-base">Kavindu Perera</h4>
-                                        <p className="text-[#4c739a] dark:text-slate-400 text-xs">4 yrs, 2 months</p>
+                        {children.map((child) => {
+                            const progress = progressFromStatus(child.vaccinationStatus);
+                            const days = daysUntil(child.nextVaccinationDate);
+                            const hasNextDue = child.nextVaccinationDate && child.nextVaccineName;
+                            const isPending = !hasNextDue || (days !== null && days < 0);
+                            const circumference = 2 * Math.PI * 20;
+                            const strokeDashoffset = circumference - (progress / 100) * circumference;
+                            return (
+                                <div
+                                    key={child.childId}
+                                    className="min-w-[85vw] bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-5 flex flex-col gap-4 shadow-sm snap-center">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="h-14 w-14 rounded-2xl bg-cover bg-center border border-[#e7edf3] dark:border-slate-700"
+                                                style={{ backgroundImage: "url('https://via.placeholder.com/150')" }}
+                                            />
+                                            <div>
+                                                <h4 className="font-bold text-base">{child.name}</h4>
+                                                <p className="text-[#4c739a] dark:text-slate-400 text-xs">{child.age}</p>
+                                            </div>
+                                        </div>
+                                        <div className="relative h-12 w-12 flex items-center justify-center">
+                                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
+                                                <circle className="text-[#e7edf3] dark:text-slate-700" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" strokeWidth="4" />
+                                                <circle className="text-primary" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeWidth="4" />
+                                            </svg>
+                                            <span className="absolute text-[10px] font-bold">{progress}%</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="relative h-12 w-12 flex items-center justify-center">
-                                    <svg className="w-full h-full transform -rotate-90">
-                                        <circle className="text-[#e7edf3] dark:text-slate-700" cx="24" cy="24"
-                                                fill="transparent" r="20" stroke="currentColor"
-                                                stroke-width="4"></circle>
-                                        <circle className="text-primary" cx="24" cy="24" fill="transparent" r="20"
-                                                stroke="currentColor" stroke-dasharray="125.6" stroke-dashoffset="18.8"
-                                                stroke-width="4"></circle>
-                                    </svg>
-                                    <span className="absolute text-[10px] font-bold">85%</span>
-                                </div>
-                            </div>
-                            <div className="bg-primary text-white rounded-xl p-3 shadow-lg shadow-primary/20">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="material-symbols-outlined text-sm">event_upcoming</span>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider opacity-90">Next Dose
-                                        Alert</p>
-                                </div>
-                                <p className="font-bold text-sm leading-tight">DTP Booster (4th Dose)</p>
-                                <p className="text-xs font-medium mt-1 opacity-90">Due: Oct 28, 2023 (In 5 days)</p>
-                            </div>
-                        </div>
-                        <div
-                            className="min-w-[85vw] bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-5 flex flex-col gap-4 shadow-sm snap-center">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="h-14 w-14 rounded-2xl bg-cover bg-center border border-[#e7edf3] dark:border-slate-700"
-                                        style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4FqStuncYHDJVcXV1eGHedFHQNexdh-MCkH4enpMPrCnTsk0IwQp5ruXfUf0sQXx0swbm63qNcZogz0yK58ifP2EaW-62Ry5mSSBLUVFSSeCifAJGSbzw6jpqliEyGHT5aXWUn-65Y6kP4TpSah5Dau1aaXhcuaEkYGBQf0vvA5oOYtV4nwvv8x5yQQBhgocoJYZFc1blfhIVTGsTFeuerCyMOL6-Y6LNa8RsgCTiHu1GsPQhujFARmIbdXxhOcSTnG4FaH9T6syW')"}}
-                                    ></div>
-                                    <div>
-                                        <h4 className="font-bold text-base">Nimasha Perera</h4>
-                                        <p className="text-[#4c739a] dark:text-slate-400 text-xs">8 months</p>
+                                    <div className={`rounded-xl p-3 shadow-lg ${isPending ? 'bg-yellow-500 text-white shadow-yellow-500/20' : 'bg-primary text-white shadow-primary/20'}`}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="material-symbols-outlined text-sm">{isPending ? 'pending_actions' : 'event_upcoming'}</span>
+                                            <p className="text-[10px] font-bold uppercase tracking-wider opacity-90">{isPending ? 'Appointment Pending' : 'Next Dose Alert'}</p>
+                                        </div>
+                                        <p className="font-bold text-sm leading-tight">{child.nextVaccineName ?? '—'}</p>
+                                        <p className="text-xs font-medium mt-1 opacity-90">
+                                            {hasNextDue && days !== null
+                                                ? (days < 0 ? `Overdue: ${formatDate(child.nextVaccinationDate)}` : `Due: ${formatDate(child.nextVaccinationDate)} (In ${days} days)`)
+                                                : 'Book next appointment'}
+                                        </p>
                                     </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}
+                                        className="text-left text-primary text-xs font-bold hover:underline"
+                                    >
+                                        View full history
+                                    </button>
                                 </div>
-                                <div className="relative h-12 w-12 flex items-center justify-center">
-                                    <svg className="w-full h-full transform -rotate-90">
-                                        <circle className="text-[#e7edf3] dark:text-slate-700" cx="24" cy="24"
-                                                fill="transparent" r="20" stroke="currentColor"
-                                                stroke-width="4"></circle>
-                                        <circle className="text-primary" cx="24" cy="24" fill="transparent" r="20"
-                                                stroke="currentColor" stroke-dasharray="125.6" stroke-dashoffset="75.4"
-                                                stroke-width="4"></circle>
-                                    </svg>
-                                    <span className="absolute text-[10px] font-bold">40%</span>
-                                </div>
-                            </div>
-                            <div className="bg-yellow-500 text-white rounded-xl p-3 shadow-lg shadow-yellow-500/20">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="material-symbols-outlined text-sm">pending_actions</span>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider opacity-90">Appointment
-                                        Pending</p>
-                                </div>
-                                <p className="font-bold text-sm leading-tight">Measles (1st Dose)</p>
-                                <p className="text-xs font-medium mt-1 opacity-90">Book for early November</p>
-                            </div>
-                        </div>
+                            );
+                        })}
                     </div>
                 </section>
                 <section>
                     <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <button
+                            type="button"
+                            onClick={() => navigate('/add-child')}
                             className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-2xl active:bg-slate-50">
                             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-primary">person_add</span>
@@ -134,6 +216,8 @@ export const ParentDashboardMobilePage: React.FC = () => {
                             <span className="text-xs font-bold text-center">Add Child</span>
                         </button>
                         <button
+                            type="button"
+                            onClick={() => navigate('/child-profile-schedule')}
                             className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-2xl active:bg-slate-50">
                             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-green-600">calendar_add_on</span>
@@ -141,6 +225,8 @@ export const ParentDashboardMobilePage: React.FC = () => {
                             <span className="text-xs font-bold text-center">Book Appointment</span>
                         </button>
                         <button
+                            type="button"
+                            onClick={() => navigate('/growth-chart')}
                             className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-2xl active:bg-slate-50 col-span-2">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
@@ -157,36 +243,32 @@ export const ParentDashboardMobilePage: React.FC = () => {
                         <Link to="/child-profile-schedule" className="text-primary text-sm font-bold">View All</Link>
                     </div>
                     <div className="flex flex-col gap-3">
-                        <div
-                            className="flex items-center justify-between p-4 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-xl">
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-primary">vaccines</span>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">Polio (OPV)</p>
-                                    <p className="text-[11px] text-[#4c739a] dark:text-slate-400">Kavindu • Sep 15,
-                                        2023</p>
-                                </div>
-                            </div>
-                            <span className="material-symbols-outlined text-[#4c739a] text-sm">chevron_right</span>
-                        </div>
-                        <div
-                            className="flex items-center justify-between p-4 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-xl">
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-primary">vaccines</span>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">Pentavalent (3rd)</p>
-                                    <p className="text-[11px] text-[#4c739a] dark:text-slate-400">Nimasha • Aug 22,
-                                        2023</p>
-                                </div>
-                            </div>
-                            <span className="material-symbols-outlined text-[#4c739a] text-sm">chevron_right</span>
-                        </div>
+                        {recentRecords.length === 0 ? (
+                            <p className="text-[#4c739a] dark:text-slate-400 text-sm py-4">No vaccination records yet.</p>
+                        ) : (
+                            recentRecords.map((rec) => {
+                                const dateStr = rec.administeredDate ? (typeof rec.administeredDate === 'string' ? rec.administeredDate : rec.administeredDate.toISOString()) : null;
+                                return (
+                                    <button
+                                        key={rec.recordId}
+                                        type="button"
+                                        onClick={() => navigate(`/child-profile-schedule?childId=${rec.childId}`)}
+                                        className="flex items-center justify-between p-4 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-xl text-left w-full active:bg-slate-50"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-primary">vaccines</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold">{rec.vaccineName ?? '—'}</p>
+                                                <p className="text-[11px] text-[#4c739a] dark:text-slate-400">{rec.childName} • {formatDate(dateStr)}</p>
+                                            </div>
+                                        </div>
+                                        <span className="material-symbols-outlined text-[#4c739a] text-sm">chevron_right</span>
+                                    </button>
+                                );
+                            })
+                        )}
                     </div>
                 </section>
             </main>

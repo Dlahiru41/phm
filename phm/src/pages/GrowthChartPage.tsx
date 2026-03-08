@@ -1,27 +1,52 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { dataService } from '../services/DataService';
 import { ParentLayout } from '../components/ParentLayout';
+import type { Child, GrowthRecord } from '../types/models';
 
-const GrowthChartMainContent: React.FC = () => (
+function formatDate(d: Date): string {
+  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function ageFromDob(dob: Date): string {
+  if (isNaN(dob.getTime())) return '—';
+  const now = new Date();
+  const months = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
+  if (months < 12) return `${months} months`;
+  const years = Math.floor(months / 12);
+  const m = months % 12;
+  return m === 0 ? `${years} year${years !== 1 ? 's' : ''}` : `${years}y ${m}m`;
+}
+
+type GrowthChartMainContentProps = {
+  child?: Child | null;
+  growthRecords?: GrowthRecord[];
+};
+
+const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, growthRecords = [] }) => {
+  const sortedRecords = [...growthRecords].sort((a, b) => b.recordedDate.getTime() - a.recordedDate.getTime());
+  const latest = sortedRecords[0];
+  const childName = child ? `${child.firstName} ${child.lastName}`.trim() : '—';
+  const lastVisitStr = latest ? formatDate(latest.recordedDate) : '—';
+
+  return (
     <div className="max-w-[1200px] mx-auto p-8">
         <nav className="flex flex-wrap gap-2 mb-4">
-                                <Link to="/parent-dashboard-desktop" className="text-[#4c739a] text-sm font-medium hover:underline">Home</Link>
-                                <span className="text-[#4c739a] text-sm font-medium">/</span>
-                                <Link to="/child-profile-schedule" className="text-[#4c739a] text-sm font-medium hover:underline">Children
-                                    List</Link>
-                                <span className="text-[#4c739a] text-sm font-medium">/</span>
-                                <span
-                                    className="text-[#0d141b] dark:text-slate-300 text-sm font-medium">Growth Progress</span>
-                            </nav>
+            <Link to="/parent-dashboard-desktop" className="text-[#4c739a] text-sm font-medium hover:underline">Home</Link>
+            <span className="text-[#4c739a] text-sm font-medium">/</span>
+            <Link to="/child-profile-schedule" className="text-[#4c739a] text-sm font-medium hover:underline">Children List</Link>
+            <span className="text-[#4c739a] text-sm font-medium">/</span>
+            <span className="text-[#0d141b] dark:text-slate-300 text-sm font-medium">Growth Progress</span>
+        </nav>
 
-                            <div className="flex flex-wrap justify-between items-end gap-3 mb-8">
-                                <div className="flex flex-col gap-1">
-                                    <h1 className="text-[#0d141b] dark:text-slate-50 text-3xl font-black leading-tight tracking-tight">WHO
-                                        Growth Standards</h1>
-                                    <p className="text-[#4c739a] dark:text-slate-400 text-base font-normal">Samadhi's
-                                        progress against global pediatric benchmarks. Last visit: Oct 24, 2023</p>
-                                </div>
+        <div className="flex flex-wrap justify-between items-end gap-3 mb-8">
+            <div className="flex flex-col gap-1">
+                <h1 className="text-[#0d141b] dark:text-slate-50 text-3xl font-black leading-tight tracking-tight">WHO Growth Standards</h1>
+                <p className="text-[#4c739a] dark:text-slate-400 text-base font-normal">
+                  {childName !== '—' ? `${childName}'s` : 'Child\'s'} progress against global pediatric benchmarks. Last visit: {lastVisitStr}
+                </p>
+            </div>
                                 <div className="flex gap-3">
                                     <button
                                         className="flex items-center gap-2 rounded-lg h-10 px-4 bg-slate-100 dark:bg-slate-800 text-[#0d141b] dark:text-slate-50 text-sm font-bold border border-slate-200 dark:border-slate-700">
@@ -36,48 +61,38 @@ const GrowthChartMainContent: React.FC = () => (
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                <div
-                                    className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                                    <div className="flex justify-between items-start">
-                                        <p className="text-[#4c739a] dark:text-slate-400 text-sm font-medium">Current
-                                            Weight</p>
-                                        <span className="material-symbols-outlined text-primary">scale</span>
-                                    </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">12.5 kg</p>
-                                        <p className="text-[#078838] text-sm font-bold">+0.4kg</p>
-                                    </div>
-                                    <p className="text-xs text-[#4c739a] dark:text-slate-500">Above 50th percentile</p>
-                                </div>
-                                <div
-                                    className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                                    <div className="flex justify-between items-start">
-                                        <p className="text-[#4c739a] dark:text-slate-400 text-sm font-medium">Current
-                                            Height</p>
-                                        <span className="material-symbols-outlined text-primary">straighten</span>
-                                    </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">88.2 cm</p>
-                                        <p className="text-[#078838] text-sm font-bold">+1.2cm</p>
-                                    </div>
-                                    <p className="text-xs text-[#4c739a] dark:text-slate-500">Within normal range</p>
-                                </div>
-                                <div
-                                    className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                                    <div className="flex justify-between items-start">
-                                        <p className="text-[#4c739a] dark:text-slate-400 text-sm font-medium">BMI
-                                            Z-Score</p>
-                                        <span className="material-symbols-outlined text-primary">analytics</span>
-                                    </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">+0.5</p>
-                                        <p className="text-[#4c739a] text-sm font-medium">Optimal</p>
-                                    </div>
-                                    <p className="text-xs text-[#4c739a] dark:text-slate-500">Standard deviation from
-                                        median</p>
-                                </div>
-                            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex justify-between items-start">
+                    <p className="text-[#4c739a] dark:text-slate-400 text-sm font-medium">Current Weight</p>
+                    <span className="material-symbols-outlined text-primary">scale</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">{latest ? `${latest.weight} kg` : '—'}</p>
+                </div>
+                <p className="text-xs text-[#4c739a] dark:text-slate-500">From latest record</p>
+            </div>
+            <div className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex justify-between items-start">
+                    <p className="text-[#4c739a] dark:text-slate-400 text-sm font-medium">Current Height</p>
+                    <span className="material-symbols-outlined text-primary">straighten</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">{latest ? `${latest.height} cm` : '—'}</p>
+                </div>
+                <p className="text-xs text-[#4c739a] dark:text-slate-500">From latest record</p>
+            </div>
+            <div className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex justify-between items-start">
+                    <p className="text-[#4c739a] dark:text-slate-400 text-sm font-medium">Head Circumference</p>
+                    <span className="material-symbols-outlined text-primary">analytics</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                    <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">{latest && latest.headCircumference != null ? `${latest.headCircumference} cm` : '—'}</p>
+                </div>
+                <p className="text-xs text-[#4c739a] dark:text-slate-500">From latest record</p>
+            </div>
+        </div>
 
                             <div
                                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 mb-8 shadow-sm">
@@ -205,71 +220,114 @@ const GrowthChartMainContent: React.FC = () => (
                                         Records
                                     </button>
                                 </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <thead className="bg-slate-50 dark:bg-slate-800/50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Date</th>
-                                            <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Age</th>
-                                            <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Weight
-                                                (kg)
-                                            </th>
-                                            <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Height
-                                                (cm)
-                                            </th>
-                                            <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">BMI
-                                                Z-Score
-                                            </th>
-                                            <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Recorded
-                                                By
-                                            </th>
-                                        </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                        <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                            <td className="px-6 py-4 text-sm font-medium">Oct 24, 2023</td>
-                                            <td className="px-6 py-4 text-sm">14m 10d</td>
-                                            <td className="px-6 py-4 text-sm font-bold">12.5</td>
-                                            <td className="px-6 py-4 text-sm">88.2</td>
-                                            <td className="px-6 py-4 text-sm"><span
-                                                className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold">+0.5</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-[#4c739a]">Mrs. Silva (PHM)</td>
-                                        </tr>
-                                        <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                            <td className="px-6 py-4 text-sm font-medium">Aug 12, 2023</td>
-                                            <td className="px-6 py-4 text-sm">12m 0d</td>
-                                            <td className="px-6 py-4 text-sm font-bold">12.1</td>
-                                            <td className="px-6 py-4 text-sm">87.0</td>
-                                            <td className="px-6 py-4 text-sm"><span
-                                                className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold">+0.3</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-[#4c739a]">Mrs. Silva (PHM)</td>
-                                        </tr>
-                                        <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                            <td className="px-6 py-4 text-sm font-medium">May 05, 2023</td>
-                                            <td className="px-6 py-4 text-sm">8m 22d</td>
-                                            <td className="px-6 py-4 text-sm font-bold">10.8</td>
-                                            <td className="px-6 py-4 text-sm">82.5</td>
-                                            <td className="px-6 py-4 text-sm"><span
-                                                className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-bold">+1.2</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-[#4c739a]">Mrs. Silva (PHM)</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+        <div className="overflow-x-auto">
+            <table className="w-full text-left">
+                <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Weight (kg)</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Height (cm)</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Head Circ.</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Recorded By</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {sortedRecords.length === 0 ? (
+                        <tr>
+                            <td colSpan={5} className="px-6 py-8 text-center text-[#4c739a] dark:text-slate-400">No growth records yet.</td>
+                        </tr>
+                    ) : (
+                        sortedRecords.map((rec) => (
+                            <tr key={rec.recordId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <td className="px-6 py-4 text-sm font-medium">{formatDate(rec.recordedDate)}</td>
+                                <td className="px-6 py-4 text-sm font-bold">{rec.weight}</td>
+                                <td className="px-6 py-4 text-sm">{rec.height}</td>
+                                <td className="px-6 py-4 text-sm">{rec.headCircumference != null ? rec.headCircumference : '—'}</td>
+                                <td className="px-6 py-4 text-sm text-[#4c739a]">{rec.recordedBy || '—'}</td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
     </div>
-);
+    </div>
+  );
+};
 
 export const GrowthChartPage: React.FC = () => {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const childIdParam = searchParams.get('childId');
     const isParent = AuthService.isParent();
 
+    const [children, setChildren] = useState<Child[]>([]);
+    const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+    const [growthRecords, setGrowthRecords] = useState<GrowthRecord[]>([]);
+    const [loading, setLoading] = useState(true);
+    const currentUser = AuthService.getCurrentUser();
+
+    useEffect(() => {
+        if (!isParent || !currentUser?.userId) {
+            setLoading(false);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            try {
+                const list = await dataService.getChildrenByParent(currentUser.userId);
+                if (cancelled) return;
+                setChildren(list);
+                const childId = childIdParam || (list.length === 1 ? list[0].childId : null);
+                if (childId) {
+                    const child = await dataService.getChild(childId);
+                    const records = await dataService.getGrowthRecordsByChild(childId);
+                    if (cancelled) return;
+                    setSelectedChild(child ?? null);
+                    setGrowthRecords(records);
+                } else {
+                    setSelectedChild(null);
+                    setGrowthRecords([]);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [isParent, currentUser?.userId, childIdParam]);
+
     if (isParent) {
+        const content = loading ? (
+            <div className="max-w-[1200px] mx-auto p-8 text-center text-[#4c739a] dark:text-slate-400">Loading…</div>
+        ) : children.length === 0 ? (
+            <div className="max-w-[1200px] mx-auto p-8 text-center">
+                <p className="text-[#4c739a] dark:text-slate-400 mb-4">No linked children yet.</p>
+                <button type="button" onClick={() => navigate('/add-child')} className="text-primary font-bold hover:underline">Add a child to your account</button>
+            </div>
+        ) : children.length > 1 && !selectedChild ? (
+            <div className="max-w-[1200px] mx-auto p-8">
+                <h2 className="text-xl font-bold mb-4">Select a child</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {children.map((c) => (
+                        <button
+                            key={c.childId}
+                            type="button"
+                            onClick={() => navigate(`/growth-chart?childId=${c.childId}`)}
+                            className="bg-white dark:bg-[#1a2632] rounded-xl border border-[#e7edf3] dark:border-slate-700 p-6 text-left hover:border-primary transition-colors"
+                        >
+                            <p className="font-bold text-lg">{c.firstName} {c.lastName}</p>
+                            <p className="text-sm text-[#4c739a] dark:text-slate-400 mt-1">{ageFromDob(c.dateOfBirth)}</p>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        ) : (
+            <GrowthChartMainContent child={selectedChild} growthRecords={growthRecords} />
+        );
         return (
             <ParentLayout activeNav="growth-chart">
-                <GrowthChartMainContent />
+                {content}
             </ParentLayout>
         );
     }
