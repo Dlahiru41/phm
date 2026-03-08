@@ -104,7 +104,7 @@ export class AuthService {
       case UserRole.PHM:
         return '/phm-dashboard';
       case UserRole.MOH_OFFICER:
-        return '/moh-analytics-dashboard';
+        return '/moh';
       default:
         return '/';
     }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -8,7 +8,10 @@ import { ParentDashboardDesktopPage } from './pages/ParentDashboardDesktopPage';
 import { PhmDashboardPage } from './pages/PhmDashboardPage';
 import { ChildProfileSchedulePage } from './pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from './pages/GrowthChartPage';
-import { MohAnalyticsDashboardPage } from './pages/MohAnalyticsDashboardPage';
+import { MohLayout } from './components/MohLayout';
+import { MohDashboardContent } from './pages/MohDashboardContent';
+import { RegionalAnalyticsPage } from './pages/RegionalAnalyticsPage';
+import { MohPhmManagementPage } from './pages/MohPhmManagementPage';
 import { BabyRegistrationPage } from './pages/BabyRegistrationPage';
 import { AddChildPage } from './pages/AddChildPage';
 import { RecordVaccinationPage } from './pages/RecordVaccinationPage';
@@ -46,8 +49,15 @@ const App: React.FC = () => {
       <Route path="/record-growth-data" element={<RecordGrowthDataPage />} />
       <Route path="/view-area-children" element={<ViewAreaChildrenPage />} />
       
-      {/* MOH Routes */}
-      <Route path="/moh-analytics-dashboard" element={<MohAnalyticsDashboardPage />} />
+      {/* MOH Routes: layout keeps sidebar visible for all MOH pages */}
+      <Route path="/moh-analytics-dashboard" element={<Navigate to="/moh" replace />} />
+      <Route path="/moh" element={<MohLayout />}>
+        <Route index element={<MohDashboardContent />} />
+        <Route path="regional-analytics" element={<RegionalAnalyticsPage />} />
+        <Route path="reports" element={<GenerateReportsPage />} />
+        <Route path="audit-logs" element={<AuditLogsPage />} />
+        <Route path="phm-management" element={<MohPhmManagementPage />} />
+      </Route>
       <Route path="/generate-reports" element={<GenerateReportsPage />} />
       <Route path="/audit-logs" element={<AuditLogsPage />} />
     </Routes>

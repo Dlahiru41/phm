@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuditLog as AuditLogType } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 
 export const AuditLogsPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const embeddedInMoh = location.pathname.startsWith('/moh');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterAction, setFilterAction] = useState<string>('all');
@@ -60,16 +62,20 @@ export const AuditLogsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+    <div className={embeddedInMoh ? '' : 'flex min-h-screen bg-background-light dark:bg-background-dark'}>
       <div className="w-full max-w-7xl mx-auto px-6 py-12">
+        {!embeddedInMoh && (
+          <div className="mb-8">
+            <button
+              onClick={() => navigate('/moh')}
+              className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="text-sm font-medium">Back to Dashboard</span>
+            </button>
+          </div>
+        )}
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/moh-analytics-dashboard')}
-            className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </button>
           <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Audit Logs</h1>
           <p className="text-[#4c739a] dark:text-slate-400">
             View SuwaCare LK system activity and user actions for security and compliance.

@@ -1,10 +1,12 @@
 import React, { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 
 export const GenerateReportsPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const embeddedInMoh = location.pathname.startsWith('/moh');
   const [reportType, setReportType] = useState('');
   const [dateRange, setDateRange] = useState({
     startDate: '',
@@ -73,7 +75,7 @@ export const GenerateReportsPage: React.FC = () => {
 
   if (reportGenerated) {
     return (
-      <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+      <div className={embeddedInMoh ? '' : 'flex min-h-screen bg-background-light dark:bg-background-dark'}>
         <div className="w-full max-w-4xl mx-auto px-6 py-12">
           <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg">
             <div className="text-center mb-8">
@@ -149,7 +151,7 @@ export const GenerateReportsPage: React.FC = () => {
                 Generate Another Report
               </button>
               <button
-                onClick={() => navigate('/moh-analytics-dashboard')}
+                onClick={() => navigate(embeddedInMoh ? '/moh' : '/moh-analytics-dashboard')}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
               >
                 Return to Dashboard
@@ -162,16 +164,20 @@ export const GenerateReportsPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
+    <div className={embeddedInMoh ? '' : 'flex min-h-screen bg-background-light dark:bg-background-dark'}>
       <div className="w-full max-w-4xl mx-auto px-6 py-12">
+        {!embeddedInMoh && (
+          <div className="mb-8">
+            <button
+              onClick={() => navigate('/moh')}
+              className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="text-sm font-medium">Back to Dashboard</span>
+            </button>
+          </div>
+        )}
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/moh-analytics-dashboard')}
-            className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </button>
           <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Generate Reports</h1>
           <p className="text-[#4c739a] dark:text-slate-400">
             Generate comprehensive SuwaCare LK vaccination reports for analysis and record-keeping.
@@ -270,7 +276,7 @@ export const GenerateReportsPage: React.FC = () => {
           <div className="flex gap-4">
             <button
               type="button"
-              onClick={() => navigate('/moh-analytics-dashboard')}
+              onClick={() => navigate(embeddedInMoh ? '/moh' : '/moh-analytics-dashboard')}
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               Cancel

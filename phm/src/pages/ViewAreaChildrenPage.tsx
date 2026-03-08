@@ -173,7 +173,7 @@ export const ViewAreaChildrenPage: React.FC = () => {
         {!isPHM && (
           <button
             type="button"
-            onClick={() => navigate(isMOH ? '/moh-analytics-dashboard' : '/phm-dashboard')}
+            onClick={() => navigate(isMOH ? '/moh' : '/phm-dashboard')}
             className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
           >
             <span className="material-symbols-outlined">arrow_back</span>
