@@ -310,11 +310,12 @@ All fields except optional ones are required. The authenticated user must have r
   "gnDivision": "Colombo 01",
   "address": "123 Main Street, Colombo",
   "phmId": "phm-001",
-  "areaCode": "COL-01"
+  "areaCode": "COL-01",
+  "parent_whatsapp_number": "+94771234567"
 }
 ```
 
-*Optional: `headCircumference`, `bloodGroup`, `phmId`, `areaCode`.*
+*Optional: `headCircumference`, `bloodGroup`, `phmId`, `areaCode`, `parent_whatsapp_number` (used when the parent links the child via WhatsApp OTP).*
 
 **Response `201 Created`**
 
@@ -389,29 +390,50 @@ All fields except optional ones are required. The authenticated user must have r
 
 ---
 
-### 3.4 Link Child to Parent Account (Parent only)
+### 3.4 Link Child to Parent Account (Parent only) – WhatsApp OTP flow
 
-| Field  | Value                              |
-|--------|------------------------------------|
-| Method | `POST`                             |
-| URL    | `/children/:childId/link-parent`   |
-| Auth   | Required (`parent`)                |
+OTP is sent to the parent WhatsApp number stored for the child (from PHM registration). No `otp_id` in request/response; verify uses `registrationNumber` + `otpCode`.
+
+#### 3.4a Request OTP
+
+| Field  | Value                                          |
+|--------|------------------------------------------------|
+| Method | `POST`                                         |
+| URL    | `/children/:childId/link-parent/otp/request`   |
+| Auth   | Required (`parent`)                            |
 
 **Request Body**
 
 ```json
 {
-  "registrationNumber": "NCVMS-2024-0415-1234"
+  "registrationNumber": "NCVMS-2025-0208-a77e"
 }
 ```
 
-**Response `200 OK`**
+**Response `200 OK`** – optional body (e.g. expires_at, max_attempts, attempt_count).
+
+---
+
+#### 3.4b Verify OTP
+
+| Field  | Value                                          |
+|--------|------------------------------------------------|
+| Method | `POST`                                         |
+| URL    | `/children/:childId/link-parent/otp/verify`    |
+| Auth   | Required (`parent`)                            |
+
+**Request Body**
 
 ```json
 {
-  "message": "Child successfully linked to your account."
+  "registrationNumber": "NCVMS-2025-0208-a77e",
+  "otpCode": "795556"
 }
 ```
+
+**Response `200 OK`** – success (e.g. linked, child_id, parent_id, consumed_at).
+
+**Error mapping:** `400` invalid OTP/bad payload, `404` child or OTP not found, `409` already consumed, `410` expired, `429` max attempts reached.
 
 ---
 

@@ -36,6 +36,7 @@ function childFromApi(a: any): Child {
     registeredBy: a.registeredBy || '',
     areaCode: a.areaCode || '',
     areaName: a.areaName || '',
+    parentWhatsappNumber: a.parentWhatsappNumber ?? a.parent_whatsapp_number ?? undefined,
   };
 }
 
@@ -205,7 +206,9 @@ class DataService {
 
   async searchChildByRegistration(registrationNumber: string): Promise<Child | null> {
     try {
-      const a = await api.get<any>('/children/search', { registrationNumber });
+      const a = await api.get<any>('/children/search', {
+        registrationNumber: registrationNumber.trim(),
+      });
       return a ? childFromApi(a) : null;
     } catch {
       return null;
@@ -231,8 +234,29 @@ class DataService {
     address: string;
     phmId?: string;
     areaCode?: string;
+    parent_whatsapp_number?: string;
   }): Promise<{ childId: string; registrationNumber: string } | null> {
-    const payload = { ...body };
+    const payload: Record<string, unknown> = {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      dateOfBirth: body.dateOfBirth,
+      gender: body.gender,
+      birthWeight: body.birthWeight,
+      birthHeight: body.birthHeight,
+      motherName: body.motherName,
+      motherNIC: body.motherNIC,
+      fatherName: body.fatherName,
+      fatherNIC: body.fatherNIC,
+      district: body.district,
+      dsDivision: body.dsDivision,
+      gnDivision: body.gnDivision,
+      address: body.address,
+    };
+    if (body.headCircumference != null) payload.headCircumference = body.headCircumference;
+    if (body.bloodGroup != null) payload.bloodGroup = body.bloodGroup;
+    if (body.phmId != null) payload.phmId = body.phmId;
+    if (body.areaCode != null) payload.areaCode = body.areaCode;
+    payload.ParentWhatsAppNumber = body.parent_whatsapp_number?.trim() ?? '';
     const res = await api.post<any>('/children', payload);
     const raw = res ?? (typeof res === 'object' ? res : {});
     const childId = raw.childId ?? raw.child_id ?? '';
@@ -257,13 +281,26 @@ class DataService {
     }
   }
 
-  async linkChildToParent(childId: string, registrationNumber: string): Promise<boolean> {
-    try {
-      await api.post(`/children/${encodeURIComponent(childId)}/link-parent`, { registrationNumber });
-      return true;
-    } catch {
-      return false;
-    }
+  /**
+   * Request OTP for parent-child linking. POST /children/:childId/link-parent/otp/request
+   * Request: { registrationNumber }. OTP is sent to the number on file for the child.
+   */
+  async requestLinkOtp(
+    childId: string,
+    payload: { registrationNumber: string }
+  ): Promise<unknown> {
+    return api.post(`/children/${encodeURIComponent(childId)}/link-parent/otp/request`, payload);
+  }
+
+  /**
+   * Verify OTP and complete link. POST /children/:childId/link-parent/otp/verify
+   * Request: { registrationNumber, otpCode }. Throws ApiError on failure.
+   */
+  async verifyLinkOtp(
+    childId: string,
+    payload: { registrationNumber: string; otpCode: string }
+  ): Promise<unknown> {
+    return api.post(`/children/${encodeURIComponent(childId)}/link-parent/otp/verify`, payload);
   }
 
   async getVaccine(vaccineId: string): Promise<Vaccine | null> {

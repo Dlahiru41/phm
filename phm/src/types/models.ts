@@ -127,6 +127,8 @@ export interface Child {
   areaName: string;
   birthHeight: number;
   headCircumference?: number;
+  /** Set when child is linked via WhatsApp OTP; matches backend parent_whatsapp_number */
+  parentWhatsappNumber?: string;
 }
 
 // Child methods

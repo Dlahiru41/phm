@@ -12,6 +12,10 @@ export interface ApiError {
   code?: string;
   message: string;
   details?: Array<{ field?: string; message?: string }>;
+  /** HTTP status for mapping 400/404/409/410/429 in link-otp flow */
+  statusCode?: number;
+  /** Raw response body (e.g. for 422 validation errors) */
+  responseBody?: unknown;
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
@@ -31,7 +35,13 @@ async function handleResponse<T>(res: Response): Promise<T> {
       (Array.isArray(body?.error?.details) && body.error.details[0]?.message) ||
       text ||
       `Request failed (${res.status})`;
-    const err: ApiError = { message, code: body?.error?.code, details: body?.error?.details };
+    const err: ApiError = {
+      message,
+      code: body?.error?.code,
+      details: body?.error?.details,
+      statusCode: res.status,
+      responseBody: body,
+    };
     if (res.status === 401) {
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('currentUser');

@@ -19,7 +19,8 @@ export const BabyRegistrationPage: React.FC = () => {
     address: '',
     district: '',
     dsDivision: '',
-    gnDivision: ''
+    gnDivision: '',
+    parent_whatsapp_number: '',
   });
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [lastRegisteredChild, setLastRegisteredChild] = useState<{
@@ -64,6 +65,9 @@ export const BabyRegistrationPage: React.FC = () => {
         address: formData.address,
         ...(phmId && { phmId }),
         ...(areaCode && { areaCode }),
+        ...(formData.parent_whatsapp_number?.trim() && {
+          parent_whatsapp_number: formData.parent_whatsapp_number.trim(),
+        }),
       });
       if (res?.registrationNumber) {
         setRegistrationNumber(res.registrationNumber);
@@ -78,9 +82,18 @@ export const BabyRegistrationPage: React.FC = () => {
         setError('Registration failed. Server did not return a registration number.');
       }
     } catch (err: unknown) {
-      const message = err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string'
-        ? (err as { message: string }).message
-        : 'Registration failed. Please check your details and try again.';
+      let message = 'Registration failed. Please check your details and try again.';
+      if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
+        message = (err as { message: string }).message;
+        const apiErr = err as { details?: Array<{ field?: string; message?: string }>; statusCode?: number; responseBody?: unknown };
+        if (apiErr.statusCode === 422 && (apiErr.details?.length || apiErr.responseBody)) {
+          const detailsStr = apiErr.details?.map((d) => d.field ? `${d.field}: ${d.message ?? 'invalid'}` : d.message).join('; ');
+          if (detailsStr) message = `${message} ${detailsStr}`;
+          else if (apiErr.responseBody && typeof apiErr.responseBody === 'object') {
+            message = `${message} (Response: ${JSON.stringify(apiErr.responseBody)})`;
+          }
+        }
+      }
       setError(message);
     } finally {
       setSubmitting(false);
@@ -136,7 +149,7 @@ export const BabyRegistrationPage: React.FC = () => {
                     firstName: '', lastName: '', dateOfBirth: '', gender: '',
                     birthWeight: '', birthHeight: '', motherName: '', motherNIC: '',
                     fatherName: '', fatherNIC: '', address: '', district: '',
-                    dsDivision: '', gnDivision: ''
+                    dsDivision: '', gnDivision: '', parent_whatsapp_number: '',
                   });
                 }}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors"
@@ -312,6 +325,24 @@ export const BabyRegistrationPage: React.FC = () => {
                     value={formData.fatherNIC}
                     onChange={handleChange}
                   />
+                </label>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="flex flex-col">
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Parent WhatsApp Number *</p>
+                  <input
+                    className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
+                    type="tel"
+                    name="parent_whatsapp_number"
+                    value={formData.parent_whatsapp_number}
+                    onChange={handleChange}
+                    placeholder="+94771234567"
+                    required
+                  />
+                  <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">
+                    Required. Used when the parent links this child via WhatsApp OTP (e.g. +94 for Sri Lanka).
+                  </p>
                 </label>
               </div>
             </div>
