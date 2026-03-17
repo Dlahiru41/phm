@@ -30,6 +30,7 @@ export const PhmDashboardPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalChildren, setTotalChildren] = useState(0);
+    const [passwordJustChanged, setPasswordJustChanged] = useState(false);
 
     const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId ?? '';
     const areaName = (currentUser as { assignedRegion?: string; areaCode?: string })?.assignedRegion
@@ -39,6 +40,13 @@ export const PhmDashboardPage: React.FC = () => {
     const totalPages = Math.max(1, Math.ceil(totalChildren / CHILDREN_PAGE_SIZE));
     const startItem = totalChildren === 0 ? 0 : (page - 1) * CHILDREN_PAGE_SIZE + 1;
     const endItem = Math.min(page * CHILDREN_PAGE_SIZE, totalChildren);
+
+    useEffect(() => {
+        if (sessionStorage.getItem('passwordChanged') === 'true') {
+            setPasswordJustChanged(true);
+            sessionStorage.removeItem('passwordChanged');
+        }
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -96,6 +104,17 @@ export const PhmDashboardPage: React.FC = () => {
     return (
         <PhmLayout activeNav="overview" showBackToDashboard={false}>
             <div className="max-w-[1200px] mx-auto w-full p-4 lg:p-6 space-y-6">
+                {passwordJustChanged && (
+                    <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-4 text-emerald-800 dark:text-emerald-200 text-sm flex items-start gap-2">
+                        <span className="material-symbols-outlined text-base mt-0.5">check_circle</span>
+                        <div>
+                            <p className="font-semibold">Password changed successfully</p>
+                            <p className="text-xs">
+                                Your new password is now active. Please keep it confidential to protect children&apos;s health records.
+                            </p>
+                        </div>
+                    </div>
+                )}
                 {error && (
                     <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-300 text-sm">
                         {error}

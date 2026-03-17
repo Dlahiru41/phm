@@ -15,6 +15,12 @@ export const LoginPage: React.FC = () => {
 
         const user = await AuthService.login(username, password);
         if (user) {
+            const isPHM = AuthService.isPHM();
+            const isFirstLogin = AuthService.getFirstLogin();
+            if (isPHM && isFirstLogin) {
+                navigate('/change-password');
+                return;
+            }
             const dashboardPath = AuthService.getDashboardPath();
             navigate(dashboardPath);
         } else {

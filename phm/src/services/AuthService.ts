@@ -6,6 +6,7 @@ export interface UserWithDetails {
   email: string;
   nic: string;
   role: UserRole | string;
+  firstLogin?: boolean;
   name?: string;
   phoneNumber?: string;
   address?: string;
@@ -22,11 +23,24 @@ export interface UserWithDetails {
 interface LoginResponse {
   token: string;
   user: UserWithDetails;
+  firstLogin?: boolean;
 }
 
 export class AuthService {
   static getToken(): string | null {
     return sessionStorage.getItem('token');
+  }
+
+  private static setFirstLogin(value: boolean): void {
+    if (value) {
+      sessionStorage.setItem('firstLogin', 'true');
+    } else {
+      sessionStorage.removeItem('firstLogin');
+    }
+  }
+
+  static getFirstLogin(): boolean {
+    return sessionStorage.getItem('firstLogin') === 'true';
   }
 
   static async login(usernameOrEmail: string, password: string): Promise<UserWithDetails | null> {
@@ -36,6 +50,7 @@ export class AuthService {
         password,
       });
       if (!res?.token || !res?.user) return null;
+      this.setFirstLogin(!!res.firstLogin);
       sessionStorage.setItem('token', res.token);
       sessionStorage.setItem('currentUser', JSON.stringify(res.user));
       sessionStorage.setItem('isAuthenticated', 'true');
@@ -47,6 +62,7 @@ export class AuthService {
   }
 
   static async logout(): Promise<void> {
+    this.setFirstLogin(false);
     const token = this.getToken();
     if (token) {
       try {
@@ -59,6 +75,16 @@ export class AuthService {
     sessionStorage.removeItem('currentUser');
     sessionStorage.removeItem('isAuthenticated');
     sessionStorage.removeItem('userRole');
+  }
+
+  static async changePassword(oldPassword: string, newPassword: string, confirmPassword: string): Promise<void> {
+    await api.post<void>('/auth/change-password', {
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    });
+    this.setFirstLogin(false);
+    sessionStorage.setItem('passwordChanged', 'true');
   }
 
   static checkAuth(): boolean {

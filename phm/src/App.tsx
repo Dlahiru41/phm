@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { ParentDashboardMobilePage } from './pages/ParentDashboardMobilePage';
 import { ParentDashboardDesktopPage } from './pages/ParentDashboardDesktopPage';
 import { PhmDashboardPage } from './pages/PhmDashboardPage';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/change-password" element={<ChangePasswordPage />} />
       
       {/* Parent Routes */}
       <Route path="/parent-dashboard-mobile" element={<ParentDashboardMobilePage />} />

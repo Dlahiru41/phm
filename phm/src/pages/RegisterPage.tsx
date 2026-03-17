@@ -10,7 +10,7 @@ export const RegisterPage: React.FC = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    userType: 'parent' as 'parent' | 'phm' | 'moh'
+    userType: 'parent' as 'parent'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,7 +42,7 @@ export const RegisterPage: React.FC = () => {
         phoneNumber: formData.phone,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
-        role: formData.userType,
+        role: 'parent',
       });
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
@@ -123,8 +123,6 @@ export const RegisterPage: React.FC = () => {
                   required
                 >
                   <option value="parent">Parent</option>
-                  <option value="phm">Public Health Midwife (PHM)</option>
-                  <option value="moh">MOH Officer</option>
                 </select>
               </label>
             </div>

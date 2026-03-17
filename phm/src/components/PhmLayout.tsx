@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 
@@ -95,6 +95,11 @@ export const PhmLayout: React.FC<PhmLayoutProps> = ({
   showBackToDashboard = true,
 }) => {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (AuthService.isPHM() && AuthService.getFirstLogin()) {
+      navigate('/change-password');
+    }
+  }, [navigate]);
   return (
     <div className="flex min-h-screen">
       <PhmSidebar activeNav={activeNav} />
