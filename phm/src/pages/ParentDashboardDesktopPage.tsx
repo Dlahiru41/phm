@@ -150,10 +150,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                         </nav>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <Link to="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
-                            <span className="material-symbols-outlined">help</span>
-                            <p className="text-sm font-medium">Help Center</p>
-                        </Link>
                         <button 
                             onClick={async () => {
                                 await AuthService.logout();
@@ -176,9 +172,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-6">
-                                <Link to="/settings" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
-                                    Contact Support
-                                </Link>
                                 <Link to="/vaccine-guide" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
                                     Vaccine Guide
                                 </Link>
