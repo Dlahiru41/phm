@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -10,8 +10,14 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export const MohLayout: React.FC = () => {
+  const navigate = useNavigate();
   const currentUser = AuthService.getCurrentUser();
   const displayName = currentUser?.name ?? currentUser?.email ?? 'MOH Officer';
+
+  const handleLogout = async (): Promise<void> => {
+    await AuthService.logout();
+    navigate('/login');
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -141,6 +147,14 @@ export const MohLayout: React.FC = () => {
               <span className="material-symbols-outlined text-[20px]">ios_share</span>
               <span>Generate Report</span>
             </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 rounded-lg h-11 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              <span className="material-symbols-outlined text-[20px]">logout</span>
+              <span>Logout</span>
+            </button>
           </div>
         </aside>
 
