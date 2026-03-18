@@ -215,12 +215,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                 <p className="text-[#4c739a] dark:text-slate-400 text-lg max-w-xl">Monitor your
                                     children's vaccination status and upcoming health milestones.</p>
                             </div>
-                            <button
-                                onClick={handleRegisterChild}
-                                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20">
-                                <span className="material-symbols-outlined">person_add</span>
-                                <span>Register New Child</span>
-                            </button>
                         </div>
 
                         {error && (
