@@ -423,14 +423,16 @@ export const BabyRegistrationPage: React.FC = () => {
               <div>
                 <label className="flex flex-col">
                   <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">MOH Division *</p>
-                  <input
+                  <select
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                    type="text"
                     name="dsDivision"
                     value={formData.dsDivision}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">Select MOH Division</option>
+                    <option value="Galle">Galle</option>
+                  </select>
                 </label>
               </div>
 
