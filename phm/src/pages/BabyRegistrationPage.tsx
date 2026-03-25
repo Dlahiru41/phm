@@ -4,6 +4,59 @@ import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 import { PhmLayout } from '../components/PhmLayout';
 
+const GN_DIVISIONS = [
+  '96 - Kumbalwella South',
+  '96A - Mahamodara',
+  '96B - Galwadugoda',
+  '96C - Kaluwella',
+  '96D - Fort',
+  '96E - Richmond Hill',
+  '96F - Kandewatta',
+  '96G - Chinagarden',
+  '96H - Minuwangoda',
+  '96I - Osanagoda',
+  '96J - Kumbalwella North',
+  '97 - Kongaha',
+  '97A - Weliwatta',
+  '97B - Madapathala',
+  '97C - Pokunawatta',
+  '97D - Dangedara East',
+  '98 - Madawalamulla North',
+  '98A - Madawalamulla South',
+  '98B - Bataganvila',
+  '98C - Sangamittapura',
+  '98D - Dangedara West',
+  '99 - Magalle',
+  '99A - Thalapitiya',
+  '99B - Pettigalawatta',
+  '99C - Makuluwa',
+  '99D - Dewathura',
+  '100 - Katugoda',
+  '100A - Dewata',
+  '101 - Maitipe',
+  '101A - Deddugoda South',
+  '101B - Milidduwa',
+  '101C - Deddugoda North',
+  '101D - Welipatha',
+  '101E - Maligaspe',
+  '102 - Dadella West',
+  '102A - Dadella East',
+  '102B - Walauwatta',
+  '102C - Siyambalagahawatta',
+  '103 - Gintota West',
+  '103A - Gintota East',
+  '105 - Welipitimodara',
+  '106 - Kurunduwatta',
+  '107 - Piyadigama',
+  '107A - Bope North',
+  '108 - Ukwattta East',
+  '108A - Mahahapugala',
+  '108B - Ukwatta West',
+  '119 - Bope West',
+  '119A - Bope East',
+  '130 - Eththiligoda South',
+];
+
 export const BabyRegistrationPage: React.FC = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -354,20 +407,22 @@ export const BabyRegistrationPage: React.FC = () => {
               <div>
                 <label className="flex flex-col">
                   <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">District *</p>
-                  <input
+                  <select
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                    type="text"
                     name="district"
                     value={formData.district}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">Select District</option>
+                    <option value="Galle">Galle</option>
+                  </select>
                 </label>
               </div>
 
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">DS Division *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">MOH Division *</p>
                   <input
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     type="text"
@@ -382,14 +437,20 @@ export const BabyRegistrationPage: React.FC = () => {
               <div className="md:col-span-2">
                 <label className="flex flex-col">
                   <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">GN Division *</p>
-                  <input
+                  <select
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                    type="text"
                     name="gnDivision"
                     value={formData.gnDivision}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">Select GN Division</option>
+                    {GN_DIVISIONS.map((division) => (
+                      <option key={division} value={division}>
+                        {division}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
 
