@@ -2,6 +2,59 @@ import React, { useEffect, useState, FormEvent } from 'react';
 import { dataService } from '../services/DataService';
 import { api } from '../services/apiClient';
 
+const GN_DIVISIONS = [
+  '96 - Kumbalwella South',
+  '96A - Mahamodara',
+  '96B - Galwadugoda',
+  '96C - Kaluwella',
+  '96D - Fort',
+  '96E - Richmond Hill',
+  '96F - Kandewatta',
+  '96G - Chinagarden',
+  '96H - Minuwangoda',
+  '96I - Osanagoda',
+  '96J - Kumbalwella North',
+  '97 - Kongaha',
+  '97A - Weliwatta',
+  '97B - Madapathala',
+  '97C - Pokunawatta',
+  '97D - Dangedara East',
+  '98 - Madawalamulla North',
+  '98A - Madawalamulla South',
+  '98B - Bataganvila',
+  '98C - Sangamittapura',
+  '98D - Dangedara West',
+  '99 - Magalle',
+  '99A - Thalapitiya',
+  '99B - Pettigalawatta',
+  '99C - Makuluwa',
+  '99D - Dewathura',
+  '100 - Katugoda',
+  '100A - Dewata',
+  '101 - Maitipe',
+  '101A - Deddugoda South',
+  '101B - Milidduwa',
+  '101C - Deddugoda North',
+  '101D - Welipatha',
+  '101E - Maligaspe',
+  '102 - Dadella West',
+  '102A - Dadella East',
+  '102B - Walauwatta',
+  '102C - Siyambalagahawatta',
+  '103 - Gintota West',
+  '103A - Gintota East',
+  '105 - Welipitimodara',
+  '106 - Kurunduwatta',
+  '107 - Piyadigama',
+  '107A - Bope North',
+  '108 - Ukwattta East',
+  '108A - Mahahapugala',
+  '108B - Ukwatta West',
+  '119 - Bope West',
+  '119A - Bope East',
+  '130 - Eththiligoda South',
+];
+
 interface AreaPerf {
   areaCode: string;
   areaName: string;
@@ -168,14 +221,20 @@ export const MohPhmManagementPage: React.FC = () => {
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Assigned Area</label>
-            <input
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Assigned GN Division</label>
+            <select
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
-              placeholder="e.g. Colombo District"
               value={phmForm.assignedArea}
               onChange={(e) => setPhmForm({ ...phmForm, assignedArea: e.target.value })}
               required
-            />
+            >
+              <option value="">Select GN Division</option>
+              {GN_DIVISIONS.map((division) => (
+                <option key={division} value={division}>
+                  {division}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="md:col-span-2 flex flex-col gap-3 mt-2">
             {createError && (
