@@ -147,4 +147,8 @@ export class AuthService {
       return this.getCurrentUser();
     }
   }
+
+  static async updateProfile(data: Partial<UserWithDetails>): Promise<void> {
+    await api.put('/users/me', data);
+  }
 }

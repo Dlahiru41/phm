@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Notification, NotificationType } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 import { ParentLayout } from '../components/ParentLayout';
 import { PhmLayout } from '../components/PhmLayout';
 
@@ -11,6 +12,7 @@ export const NotificationsPage: React.FC = () => {
   const isParent = AuthService.isParent();
   const isPHM = AuthService.isPHM();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [filter, setFilter] = useState<NotificationType | 'all'>('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -18,7 +20,9 @@ export const NotificationsPage: React.FC = () => {
       const res = await dataService.getNotifications();
       if (!cancelled) setNotifications(res.data);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const markAsRead = async (notificationId: string) => {
@@ -46,6 +50,8 @@ export const NotificationsPage: React.FC = () => {
         return 'notifications_active';
       case NotificationType.GROWTH_RECORD:
         return 'monitoring';
+      case 'child_linked' as any:
+        return 'person_add';
       default:
         return 'info';
     }
@@ -62,6 +68,8 @@ export const NotificationsPage: React.FC = () => {
         return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
       case NotificationType.GROWTH_RECORD:
         return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+      case 'child_linked' as any:
+        return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
       default:
         return 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-800';
     }
@@ -79,12 +87,15 @@ export const NotificationsPage: React.FC = () => {
         return 'Vaccination Due';
       case NotificationType.GROWTH_RECORD:
         return 'Growth Record Update';
+      case 'child_linked' as any:
+        return 'Child Account Linked';
       default:
         return 'Notification';
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const filteredNotifications = filter === 'all' ? notifications : notifications.filter(n => n.type === filter);
+  const unreadCount = filteredNotifications.filter((n) => !n.isRead).length;
 
   const content = (
     <div className="w-full max-w-4xl mx-auto px-6 py-12">
@@ -99,37 +110,70 @@ export const NotificationsPage: React.FC = () => {
             <span className="text-sm font-medium">Back</span>
           </button>
         )}
-        <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-1">Notifications</h1>
-              <p className="text-xs font-medium text-[#4c739a] dark:text-slate-400 mb-1">
-                SuwaCare LK alerts for vaccinations, growth updates, and reminders.
-              </p>
-              <p className="text-[#4c739a] dark:text-slate-400">
-                {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
-              </p>
-            </div>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-              >
-                <span className="material-symbols-outlined text-lg">done_all</span>
-                Mark all as read
-              </button>
-            )}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-1">
+              {TranslationService.t('notification.title')}
+            </h1>
+            <p className="text-[#4c739a] dark:text-slate-400">
+              {unreadCount > 0
+                ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
+                : 'All caught up!'}
+            </p>
           </div>
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllAsRead}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">done_all</span>
+              Mark all as read
+            </button>
+          )}
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-[#e7edf3] dark:border-slate-700">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              filter === 'all'
+                ? 'bg-primary text-white'
+                : 'bg-slate-100 dark:bg-slate-800 text-[#0d141b] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            All
+          </button>
+          {[NotificationType.VACCINATION_DUE, NotificationType.MISSED, NotificationType.GROWTH_RECORD].map(
+            (type) => (
+              <button
+                key={type}
+                onClick={() => setFilter(type)}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  filter === type
+                    ? 'bg-primary text-white'
+                    : 'bg-slate-100 dark:bg-slate-800 text-[#0d141b] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {getNotificationTitle(type)}
+              </button>
+            )
+          )}
         </div>
 
         <div className="space-y-4">
-          {notifications.length === 0 ? (
+          {filteredNotifications.length === 0 ? (
             <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-12 text-center">
-              <span className="material-symbols-outlined text-6xl text-[#4c739a] dark:text-slate-400 mb-4">notifications_off</span>
-              <p className="text-lg font-medium text-[#0d141b] dark:text-white mb-2">No notifications</p>
+              <span className="material-symbols-outlined text-6xl text-[#4c739a] dark:text-slate-400 mb-4">
+                notifications_off
+              </span>
+              <p className="text-lg font-medium text-[#0d141b] dark:text-white mb-2">
+                {TranslationService.t('notification.noNotifications')}
+              </p>
               <p className="text-sm text-[#4c739a] dark:text-slate-400">You're all caught up!</p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            filteredNotifications.map((notification) => (
               <div
                 key={notification.notificationId}
                 className={`bg-white dark:bg-[#1a2632] rounded-xl border ${getNotificationColor(notification.type)} p-6 cursor-pointer transition-all hover:shadow-md ${
@@ -143,20 +187,32 @@ export const NotificationsPage: React.FC = () => {
                 }}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE ? 'bg-blue-100 dark:bg-blue-900/30' :
-                    notification.type === NotificationType.MISSED ? 'bg-red-100 dark:bg-red-900/30' :
-                    notification.type === NotificationType.REMINDER ? 'bg-yellow-100 dark:bg-yellow-900/30' :
-                    notification.type === NotificationType.GROWTH_RECORD ? 'bg-green-100 dark:bg-green-900/30' :
-                    'bg-slate-100 dark:bg-slate-800'
-                  }`}>
-                    <span className={`material-symbols-outlined text-xl ${
-                      notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE ? 'text-blue-600 dark:text-blue-400' :
-                      notification.type === NotificationType.MISSED ? 'text-red-600 dark:text-red-400' :
-                      notification.type === NotificationType.REMINDER ? 'text-yellow-600 dark:text-yellow-400' :
-                      notification.type === NotificationType.GROWTH_RECORD ? 'text-green-600 dark:text-green-400' :
-                      'text-slate-600 dark:text-slate-400'
-                    }`}>
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+                      notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE
+                        ? 'bg-blue-100 dark:bg-blue-900/30'
+                        : notification.type === NotificationType.MISSED
+                        ? 'bg-red-100 dark:bg-red-900/30'
+                        : notification.type === NotificationType.REMINDER
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                        : notification.type === NotificationType.GROWTH_RECORD
+                        ? 'bg-green-100 dark:bg-green-900/30'
+                        : 'bg-slate-100 dark:bg-slate-800'
+                    }`}
+                  >
+                    <span
+                      className={`material-symbols-outlined text-xl ${
+                        notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : notification.type === NotificationType.MISSED
+                          ? 'text-red-600 dark:text-red-400'
+                          : notification.type === NotificationType.REMINDER
+                          ? 'text-yellow-600 dark:text-yellow-400'
+                          : notification.type === NotificationType.GROWTH_RECORD
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
                       {getNotificationIcon(notification.type)}
                     </span>
                   </div>
@@ -169,9 +225,7 @@ export const NotificationsPage: React.FC = () => {
                             <span className="ml-2 w-2 h-2 bg-primary rounded-full inline-block"></span>
                           )}
                         </h3>
-                        <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-2">
-                          {notification.message}
-                        </p>
+                        <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-2">{notification.message}</p>
                         {notification.relatedChildId && (
                           <p className="text-xs text-[#4c739a] dark:text-slate-400">
                             Child ID: {notification.relatedChildId}
@@ -184,7 +238,7 @@ export const NotificationsPage: React.FC = () => {
                         {notification.sentDate.toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
-                          day: 'numeric'
+                          day: 'numeric',
                         })}
                       </p>
                       {notification.relatedChildId && (
@@ -205,14 +259,11 @@ export const NotificationsPage: React.FC = () => {
           )}
         </div>
       </div>
+    </div>
   );
 
   if (isParent) {
-    return (
-      <ParentLayout activeNav="notifications">
-        {content}
-      </ParentLayout>
-    );
+    return <ParentLayout activeNav="notifications">{content}</ParentLayout>;
   }
 
   if (isPHM) {
@@ -223,9 +274,6 @@ export const NotificationsPage: React.FC = () => {
     );
   }
 
-  return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark">
-      {content}
-    </div>
-  );
+  return <div className="flex min-h-screen bg-background-light dark:bg-background-dark">{content}</div>;
 };
+

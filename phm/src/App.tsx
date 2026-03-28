@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { ParentDashboardMobilePage } from './pages/ParentDashboardMobilePage';
 import { ParentDashboardDesktopPage } from './pages/ParentDashboardDesktopPage';
+import { ParentProfilePage } from './pages/ParentProfilePage';
 import { PhmDashboardPage } from './pages/PhmDashboardPage';
 import { ChildProfileSchedulePage } from './pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from './pages/GrowthChartPage';
@@ -36,6 +37,7 @@ const App: React.FC = () => {
       {/* Parent Routes */}
       <Route path="/parent-dashboard-mobile" element={<ParentDashboardMobilePage />} />
       <Route path="/parent-dashboard-desktop" element={<ParentDashboardDesktopPage />} />
+      <Route path="/parent-profile" element={<ParentProfilePage />} />
       <Route path="/add-child" element={<AddChildPage />} />
       <Route path="/child-profile-schedule" element={<ChildProfileSchedulePage />} />
       <Route path="/growth-chart" element={<GrowthChartPage />} />

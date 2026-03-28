@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 
-export type ParentNavKey = 'dashboard' | 'health-records' | 'notifications' | 'growth-chart' | 'settings';
+export type ParentNavKey = 'dashboard' | 'health-records' | 'notifications' | 'growth-chart' | 'profile' | 'settings';
 
 export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNav }) => {
   const navigate = useNavigate();
@@ -55,6 +55,10 @@ export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNa
           <Link to="/growth-chart" className={navClass('growth-chart')}>
             <span className="material-symbols-outlined">monitoring</span>
             <p className="text-sm font-medium">Growth Chart</p>
+          </Link>
+          <Link to="/parent-profile" className={navClass('profile')}>
+            <span className="material-symbols-outlined">person</span>
+            <p className="text-sm font-medium">Profile</p>
           </Link>
           <Link to="/settings" className={navClass('settings')}>
             <span className="material-symbols-outlined">settings</span>

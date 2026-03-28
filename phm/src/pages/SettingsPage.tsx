@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { api } from '../services/apiClient';
+import { TranslationService, type Language } from '../services/TranslationService';
 import { ParentLayout } from '../components/ParentLayout';
 import { PhmLayout } from '../components/PhmLayout';
 
-const langToCode: Record<string, string> = { english: 'en', sinhala: 'si', tamil: 'ta' };
-const codeToLang: Record<string, string> = { en: 'english', si: 'sinhala', ta: 'tamil' };
+const langToCode: Record<string, Language> = { english: 'en', sinhala: 'si', tamil: 'ta' };
+const codeToLang: Record<Language, string> = { en: 'english', si: 'sinhala', ta: 'tamil' };
 
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,9 +29,10 @@ export const SettingsPage: React.FC = () => {
       try {
         const user = await AuthService.refreshProfile();
         if (cancelled || !user) return;
-        const pref = (user.languagePreference || 'en').toLowerCase();
-        const lang = codeToLang[pref] || codeToLang.en || 'english';
+        const pref = (user.languagePreference || 'en').toLowerCase() as Language;
+        const lang = codeToLang[pref] || 'english';
         setLanguage(lang);
+        TranslationService.setLanguage(pref);
       } catch {
         // keep defaults
       }
@@ -43,7 +45,9 @@ export const SettingsPage: React.FC = () => {
         setNotifications(JSON.parse(storedNotif));
       } catch {}
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const languages = [
@@ -61,10 +65,14 @@ export const SettingsPage: React.FC = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    // Update TranslationService
+    const langCode = langToCode[language] || 'en';
+    TranslationService.setLanguage(langCode);
+
     setLoading(true);
     try {
       await api.put('/users/me/settings', {
-        languagePreference: langToCode[language] || 'en',
+        languagePreference: langCode,
         notifications: { email: notifications.email, sms: notifications.sms, push: notifications.push },
       });
       setSaved(true);
@@ -97,6 +105,15 @@ export const SettingsPage: React.FC = () => {
         )}
         <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Settings</h1>
         <p className="text-[#4c739a] dark:text-slate-400">Manage your SuwaCare LK account settings and preferences.</p>
+        {isParent && (
+          <Link
+            to="/parent-profile"
+            className="inline-flex items-center gap-2 text-primary text-sm font-medium mt-4 hover:underline"
+          >
+            <span className="material-symbols-outlined">person</span>
+            Go to Profile Management
+          </Link>
+        )}
       </div>
 
         <div className="space-y-6">

@@ -716,6 +716,44 @@ class DataService {
       return [];
     }
   }
+
+  // Mobile Number Change with OTP
+  async requestMobileNumberChange(newPhoneNumber: string): Promise<{ message: string; maskedDestination: string; expiresInSeconds: number }> {
+    try {
+      const response = await api.post<{ message: string; maskedDestination: string; expiresInSeconds: number }>('/users/request-mobile-change', {
+        newPhoneNumber,
+      });
+      return response || { message: '', maskedDestination: '', expiresInSeconds: 0 };
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to request mobile number change';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async verifyMobileNumberChange(newPhoneNumber: string, otpCode: string): Promise<{ message: string; phoneNumber: string }> {
+    try {
+      const response = await api.post<{ message: string; phoneNumber: string }>('/users/verify-mobile-change', {
+        newPhoneNumber,
+        otpCode,
+      });
+      return response || { message: '', phoneNumber: '' };
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to verify OTP';
+      throw new Error(errorMessage);
+    }
+  }
+
+  async getChildrenByParent(parentId: string): Promise<{ data: Child[]; count: number }> {
+    try {
+      const list = await api.get<Child[]>(`/children?parentId=${parentId}`);
+      return {
+        data: Array.isArray(list) ? list.map(childFromApi) : [],
+        count: Array.isArray(list) ? list.length : 0,
+      };
+    } catch {
+      return { data: [], count: 0 };
+    }
+  }
 }
 
 export const dataService = new DataService();

@@ -18,7 +18,9 @@ export enum NotificationType {
   UPCOMING = 'upcoming',
   INFO = 'info',
   VACCINATION_DUE = 'vaccination_due',
-  GROWTH_RECORD = 'growth_record'
+  GROWTH_RECORD = 'growth_record',
+  CHILD_LINKED = 'child_linked',
+  VACCINATION_COMPLETED = 'vaccination_completed'
 }
 
 export enum ScheduleStatus {

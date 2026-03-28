@@ -286,7 +286,7 @@ export const ParentDashboardMobilePage: React.FC = () => {
           <span className="material-symbols-outlined">calendar_month</span>
           <span className="text-[10px] font-medium">Appointments</span>
         </Link>
-        <Link to="/settings" className="flex flex-col items-center gap-1 text-[#4c739a] dark:text-slate-400">
+        <Link to="/parent-profile" className="flex flex-col items-center gap-1 text-[#4c739a] dark:text-slate-400">
           <span className="material-symbols-outlined">person</span>
           <span className="text-[10px] font-medium">Profile</span>
         </Link>

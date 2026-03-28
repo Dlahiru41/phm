@@ -143,6 +143,10 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                 <span className="material-symbols-outlined">monitoring</span>
                                 <p className="text-sm font-medium">Growth Chart</p>
                             </Link>
+                            <Link to="/parent-profile" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
+                                <span className="material-symbols-outlined">person</span>
+                                <p className="text-sm font-medium">Profile</p>
+                            </Link>
                             <Link to="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
                                 <span className="material-symbols-outlined">settings</span>
                                 <p className="text-sm font-medium">Settings</p>
