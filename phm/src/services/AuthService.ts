@@ -118,6 +118,10 @@ export class AuthService {
     return this.getUserRole() === UserRole.MOH_OFFICER;
   }
 
+  static isAdmin(): boolean {
+    return this.getUserRole() === UserRole.ADMIN;
+  }
+
   static isLoggedIn(): boolean {
     return this.checkAuth();
   }
@@ -131,6 +135,8 @@ export class AuthService {
         return '/phm-dashboard';
       case UserRole.MOH_OFFICER:
         return '/moh';
+      case UserRole.ADMIN:
+        return '/admin';
       default:
         return '/';
     }

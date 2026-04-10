@@ -4,7 +4,8 @@
 export enum UserRole {
   PARENT = 'parent',
   PHM = 'phm',
-  MOH_OFFICER = 'moh'
+  MOH_OFFICER = 'moh',
+  ADMIN = 'admin'
 }
 
 export enum Gender {

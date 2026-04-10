@@ -16,8 +16,9 @@ export const LoginPage: React.FC = () => {
         const user = await AuthService.login(username, password);
         if (user) {
             const isPHM = AuthService.isPHM();
+            const isMOH = AuthService.isMOH();
             const isFirstLogin = AuthService.getFirstLogin();
-            if (isPHM && isFirstLogin) {
+            if ((isPHM || isMOH) && isFirstLogin) {
                 navigate('/change-password');
                 return;
             }
@@ -74,7 +75,7 @@ export const LoginPage: React.FC = () => {
                             credentials to access the portal.</p>
                         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                             <p className="text-xs text-blue-700 dark:text-blue-300 font-medium mb-1">Test Credentials:</p>
-                            <p className="text-xs text-blue-600 dark:text-blue-400">PHM: dlahiru412@outlook.com / dilshan123 | Parent: parent/parent123 | MOH: moh/moh123</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">Admin: admin@moh.lk / pass | PHM: dlahiru412@outlook.com / dilshan123 | Parent: parent/parent123 | MOH: moh/moh123</p>
                         </div>
                     </div>
 

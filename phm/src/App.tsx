@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { ParentDashboardMobilePage } from './pages/ParentDashboardMobilePage';
 import { ParentDashboardDesktopPage } from './pages/ParentDashboardDesktopPage';
 import { ParentProfilePage } from './pages/ParentProfilePage';
@@ -33,7 +34,8 @@ const App: React.FC = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/change-password" element={<ChangePasswordPage />} />
-      
+      <Route path="/admin" element={<AdminDashboardPage />} />
+
       {/* Parent Routes */}
       <Route path="/parent-dashboard-mobile" element={<ParentDashboardMobilePage />} />
       <Route path="/parent-dashboard-desktop" element={<ParentDashboardDesktopPage />} />
