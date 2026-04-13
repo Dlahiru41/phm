@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { ParentLayout } from '../components/ParentLayout';
-import type { Child, GrowthRecord } from '../types/models';
+import type { Child, ChildGrowthCharts, GrowthChartPoint } from '../types/models';
 
 function formatDate(d: Date): string {
   return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -19,14 +19,82 @@ function ageFromDob(dob: Date): string {
   return m === 0 ? `${years} year${years !== 1 ? 's' : ''}` : `${years}y ${m}m`;
 }
 
-type GrowthChartMainContentProps = {
-  child?: Child | null;
-  growthRecords?: GrowthRecord[];
+const badgeClassByStatus: Record<string, string> = {
+  underweight: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  overweight: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+  stunted: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  normal: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
 };
 
-const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, growthRecords = [] }) => {
-  const sortedRecords = [...growthRecords].sort((a, b) => b.recordedDate.getTime() - a.recordedDate.getTime());
-  const latest = sortedRecords[0];
+function titleCaseStatus(value?: string): string {
+  if (!value) return '—';
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function getStatusBadge(value?: string) {
+  const key = (value || '').toLowerCase();
+  const cls = badgeClassByStatus[key] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>{titleCaseStatus(value)}</span>;
+}
+
+function buildPolyline(points: GrowthChartPoint[], minY: number, maxY: number): string {
+  if (points.length === 0) return '';
+  const maxAge = Math.max(...points.map((p) => p.ageInMonths), 1);
+  const yRange = Math.max(maxY - minY, 1);
+  return points
+    .map((p) => {
+      const x = (p.ageInMonths / maxAge) * 1000;
+      const y = 380 - ((p.value - minY) / yRange) * 340;
+      return `${x.toFixed(2)},${Math.max(20, Math.min(380, y)).toFixed(2)}`;
+    })
+    .join(' ');
+}
+
+const MetricChartCard: React.FC<{
+  title: string;
+  yLabel: string;
+  points: GrowthChartPoint[];
+}> = ({ title, yLabel, points }) => {
+  const sorted = [...points].sort((a, b) => a.ageInMonths - b.ageInMonths);
+  const values = sorted.map((p) => p.value);
+  const minY = values.length ? Math.min(...values) * 0.9 : 0;
+  const maxY = values.length ? Math.max(...values) * 1.1 : 100;
+  const polyline = buildPolyline(sorted, minY, maxY);
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 mb-8 shadow-sm">
+      <h3 className="text-lg font-bold text-[#0d141b] dark:text-slate-50 mb-6">{title}</h3>
+      <div className="relative w-full h-[340px] bg-slate-50 dark:bg-slate-950 rounded-lg border border-dashed border-slate-200 dark:border-slate-800 overflow-hidden">
+        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 400">
+          {polyline ? (
+            <>
+              <polyline fill="none" points={polyline} stroke="#137fec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" />
+              {sorted.map((p) => {
+                const maxAge = Math.max(...sorted.map((it) => it.ageInMonths), 1);
+                const yRange = Math.max(maxY - minY, 1);
+                const x = (p.ageInMonths / maxAge) * 1000;
+                const y = 380 - ((p.value - minY) / yRange) * 340;
+                return <circle key={`${p.ageInMonths}-${p.value}`} cx={x} cy={Math.max(20, Math.min(380, y))} fill="#137fec" r="5" />;
+              })}
+            </>
+          ) : null}
+        </svg>
+        {!polyline ? <div className="absolute inset-0 flex items-center justify-center text-sm text-[#4c739a] dark:text-slate-400">No data available</div> : null}
+        <div className="absolute bottom-2 left-4 text-[10px] text-[#4c739a]">Age (Months)</div>
+        <div className="absolute top-4 left-2 -rotate-90 text-[10px] text-[#4c739a] origin-top-left">{yLabel}</div>
+      </div>
+    </div>
+  );
+};
+
+type GrowthChartMainContentProps = {
+  child?: Child | null;
+  growthCharts?: ChildGrowthCharts;
+};
+
+const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, growthCharts }) => {
+  const history = [...(growthCharts?.historyTable || [])].sort((a, b) => b.recordedDate.getTime() - a.recordedDate.getTime());
+  const latest = history[0];
   const childName = child ? `${child.firstName} ${child.lastName}`.trim() : '—';
   const lastVisitStr = latest ? formatDate(latest.recordedDate) : '—';
 
@@ -70,7 +138,7 @@ const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, 
                 <div className="flex items-baseline gap-2">
                     <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">{latest ? `${latest.weight} kg` : '—'}</p>
                 </div>
-                <p className="text-xs text-[#4c739a] dark:text-slate-500">From latest record</p>
+                <p className="text-xs text-[#4c739a] dark:text-slate-500 mt-1">{latest ? getStatusBadge(latest.weightStatus) : '—'}</p>
             </div>
             <div className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex justify-between items-start">
@@ -80,7 +148,7 @@ const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, 
                 <div className="flex items-baseline gap-2">
                     <p className="text-[#0d141b] dark:text-slate-50 text-3xl font-bold">{latest ? `${latest.height} cm` : '—'}</p>
                 </div>
-                <p className="text-xs text-[#4c739a] dark:text-slate-500">From latest record</p>
+                <p className="text-xs text-[#4c739a] dark:text-slate-500 mt-1">{latest ? getStatusBadge(latest.heightStatus) : '—'}</p>
             </div>
             <div className="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex justify-between items-start">
@@ -94,121 +162,8 @@ const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, 
             </div>
         </div>
 
-                            <div
-                                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 mb-8 shadow-sm">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-bold text-[#0d141b] dark:text-slate-50">Weight-for-Age
-                                        (0-2 Years)</h3>
-                                    <div className="flex items-center gap-4 text-xs font-medium">
-                                        <div className="flex items-center gap-1"><span
-                                            className="w-3 h-0.5 bg-red-400"></span> +3 SD
-                                        </div>
-                                        <div className="flex items-center gap-1"><span
-                                            className="w-3 h-0.5 bg-green-500"></span> Median
-                                        </div>
-                                        <div className="flex items-center gap-1"><span
-                                            className="w-3 h-0.5 bg-red-400"></span> -3 SD
-                                        </div>
-                                        <div className="flex items-center gap-1 ml-2"><span
-                                            className="w-2 h-2 rounded-full bg-primary"></span> Patient
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    className="relative w-full h-[400px] bg-slate-50 dark:bg-slate-950 rounded-lg border border-dashed border-slate-200 dark:border-slate-800 overflow-hidden">
-
-                                    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6 opacity-30">
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-r border-b border-slate-300 dark:border-slate-700"></div>
-                                        <div className="border-b border-slate-300 dark:border-slate-700"></div>
-                                    </div>
-
-                                    <svg className="absolute inset-0 w-full h-full" preserveaspectratio="none"
-                                         viewbox="0 0 1000 400">
-
-                                        <path d="M0,350 Q250,300 500,250 T1000,100" fill="none" stroke="#f87171"
-                                              stroke-dasharray="4" stroke-width="2"></path>
-                                        <path d="M0,380 Q250,340 500,300 T1000,180" fill="none" stroke="#10b981"
-                                              stroke-width="3"></path>
-                                        <path d="M0,395 Q250,380 500,360 T1000,300" fill="none" stroke="#f87171"
-                                              stroke-dasharray="4" stroke-width="2"></path>
-
-                                        <polyline fill="none" points="50,380 150,370 250,355 400,320 550,295"
-                                                  stroke="#137fec" stroke-linecap="round" stroke-linejoin="round"
-                                                  stroke-width="4"></polyline>
-                                        <circle cx="50" cy="380" fill="#137fec" r="5"></circle>
-                                        <circle cx="150" cy="370" fill="#137fec" r="5"></circle>
-                                        <circle cx="250" cy="355" fill="#137fec" r="5"></circle>
-                                        <circle cx="400" cy="320" fill="#137fec" r="5"></circle>
-                                        <circle cx="550" cy="295" fill="#137fec" r="5"></circle>
-                                    </svg>
-
-                                    <div className="absolute bottom-2 left-4 text-[10px] text-[#4c739a]">Age (Months)
-                                    </div>
-                                    <div
-                                        className="absolute top-4 left-2 -rotate-90 text-[10px] text-[#4c739a] origin-top-left">Weight
-                                        (kg)
-                                    </div>
-                                </div>
-                            </div>
+        <MetricChartCard title="Weight vs Age" yLabel="Weight (kg)" points={growthCharts?.weightVsAge || []} />
+        <MetricChartCard title="Height vs Age" yLabel="Height (cm)" points={growthCharts?.heightVsAge || []} />
 
                             <div
                                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
@@ -229,21 +184,29 @@ const GrowthChartMainContent: React.FC<GrowthChartMainContentProps> = ({ child, 
                         <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Height (cm)</th>
                         <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Head Circ.</th>
                         <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Recorded By</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Age (months)</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Weight Status</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Height Status</th>
+                        <th className="px-6 py-3 text-[#4c739a] text-xs font-bold uppercase tracking-wider">Notes</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {sortedRecords.length === 0 ? (
+                    {history.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className="px-6 py-8 text-center text-[#4c739a] dark:text-slate-400">No growth records yet.</td>
+                            <td colSpan={8} className="px-6 py-8 text-center text-[#4c739a] dark:text-slate-400">No growth records yet.</td>
                         </tr>
                     ) : (
-                        sortedRecords.map((rec) => (
+                        history.map((rec) => (
                             <tr key={rec.recordId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td className="px-6 py-4 text-sm font-medium">{formatDate(rec.recordedDate)}</td>
                                 <td className="px-6 py-4 text-sm font-bold">{rec.weight}</td>
                                 <td className="px-6 py-4 text-sm">{rec.height}</td>
                                 <td className="px-6 py-4 text-sm">{rec.headCircumference != null ? rec.headCircumference : '—'}</td>
                                 <td className="px-6 py-4 text-sm text-[#4c739a]">{rec.recordedBy || '—'}</td>
+                                <td className="px-6 py-4 text-sm">{typeof rec.ageInMonths === 'number' ? rec.ageInMonths : '—'}</td>
+                                <td className="px-6 py-4 text-sm">{getStatusBadge(rec.weightStatus)}</td>
+                                <td className="px-6 py-4 text-sm">{getStatusBadge(rec.heightStatus)}</td>
+                                <td className="px-6 py-4 text-sm text-[#4c739a] max-w-[240px] truncate" title={rec.notes || ''}>{rec.notes || '—'}</td>
                             </tr>
                         ))
                     )}
@@ -263,7 +226,7 @@ export const GrowthChartPage: React.FC = () => {
 
     const [children, setChildren] = useState<Child[]>([]);
     const [selectedChild, setSelectedChild] = useState<Child | null>(null);
-    const [growthRecords, setGrowthRecords] = useState<GrowthRecord[]>([]);
+    const [growthCharts, setGrowthCharts] = useState<ChildGrowthCharts>({ weightVsAge: [], heightVsAge: [], historyTable: [] });
     const [loading, setLoading] = useState(true);
     const currentUser = AuthService.getCurrentUser();
 
@@ -282,13 +245,13 @@ export const GrowthChartPage: React.FC = () => {
                 const childId = childIdParam || (list.length === 1 ? list[0].childId : null);
                 if (childId) {
                     const child = await dataService.getChild(childId);
-                    const records = await dataService.getGrowthRecordsByChild(childId);
+                    const charts = await dataService.getGrowthChartsByChild(childId);
                     if (cancelled) return;
                     setSelectedChild(child ?? null);
-                    setGrowthRecords(records);
+                    setGrowthCharts(charts);
                 } else {
                     setSelectedChild(null);
-                    setGrowthRecords([]);
+                    setGrowthCharts({ weightVsAge: [], heightVsAge: [], historyTable: [] });
                 }
             } finally {
                 if (!cancelled) setLoading(false);
@@ -323,7 +286,7 @@ export const GrowthChartPage: React.FC = () => {
                 </div>
             </div>
         ) : (
-            <GrowthChartMainContent child={selectedChild} growthRecords={growthRecords} />
+            <GrowthChartMainContent child={selectedChild} growthCharts={growthCharts} />
         );
         return (
             <ParentLayout activeNav="growth-chart">

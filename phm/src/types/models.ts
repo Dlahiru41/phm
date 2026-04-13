@@ -211,6 +211,9 @@ export interface GrowthRecord {
   recordedBy: string;
   notes: string;
   createdAt?: Date;
+  ageInMonths?: number;
+  weightStatus?: 'underweight' | 'normal' | 'overweight';
+  heightStatus?: 'stunted' | 'normal';
 }
 
 // GrowthRecord methods
@@ -349,4 +352,16 @@ export interface Coverage {
   vaccinatedCount: number;
   coveragePercentage: number;
   vaccineBreakdown: Record<string, number>;
+}
+
+export interface GrowthChartPoint {
+  ageInMonths: number;
+  value: number;
+  dateOfVisit?: Date;
+}
+
+export interface ChildGrowthCharts {
+  weightVsAge: GrowthChartPoint[];
+  heightVsAge: GrowthChartPoint[];
+  historyTable: GrowthRecord[];
 }

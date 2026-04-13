@@ -11,6 +11,8 @@ import {
   VaccinationStatus,
   NotificationType,
   Gender,
+  ChildGrowthCharts,
+  GrowthChartPoint,
 } from '../types/models';
 
 function parseDate(v: string | Date | undefined): Date {
@@ -83,6 +85,25 @@ function growthRecordFromApi(a: any): GrowthRecord {
     recordedBy: a.recordedBy || '',
     notes: a.notes || '',
     createdAt: parseDate(a.createdAt),
+    ageInMonths: typeof a.ageInMonths === 'number' ? a.ageInMonths : undefined,
+    weightStatus: typeof a.weightStatus === 'string' ? a.weightStatus : undefined,
+    heightStatus: typeof a.heightStatus === 'string' ? a.heightStatus : undefined,
+  };
+}
+
+function growthChartPointFromApi(a: any): GrowthChartPoint {
+  return {
+    ageInMonths: typeof a.ageInMonths === 'number' ? a.ageInMonths : 0,
+    value: typeof a.value === 'number' ? a.value : 0,
+    dateOfVisit: a.dateOfVisit ? parseDate(a.dateOfVisit) : undefined,
+  };
+}
+
+function childGrowthChartsFromApi(a: any): ChildGrowthCharts {
+  return {
+    weightVsAge: Array.isArray(a?.weightVsAge) ? a.weightVsAge.map(growthChartPointFromApi) : [],
+    heightVsAge: Array.isArray(a?.heightVsAge) ? a.heightVsAge.map(growthChartPointFromApi) : [],
+    historyTable: Array.isArray(a?.historyTable) ? a.historyTable.map(growthRecordFromApi) : [],
   };
 }
 
@@ -752,6 +773,22 @@ class DataService {
       };
     } catch {
       return { data: [], count: 0 };
+    }
+  }
+
+  async getGrowthChartsByChild(
+    childId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<ChildGrowthCharts> {
+    try {
+      const p: Record<string, string> = { childId };
+      if (startDate) p.startDate = startDate;
+      if (endDate) p.endDate = endDate;
+      const payload = await api.get<any>('/growth-records/charts', p);
+      return childGrowthChartsFromApi(payload);
+    } catch {
+      return { weightVsAge: [], heightVsAge: [], historyTable: [] };
     }
   }
 }
