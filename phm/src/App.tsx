@@ -26,6 +26,7 @@ import { GenerateReportsPage } from './pages/GenerateReportsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { VaccineGuidePage } from './pages/VaccineGuidePage';
+import { MohProfilePage } from './pages/MohProfilePage';
 
 const App: React.FC = () => {
   return (
@@ -63,6 +64,7 @@ const App: React.FC = () => {
         <Route path="reports" element={<GenerateReportsPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="phm-management" element={<MohPhmManagementPage />} />
+        <Route path="profile" element={<MohProfilePage />} />
       </Route>
       <Route path="/generate-reports" element={<GenerateReportsPage />} />
       <Route path="/audit-logs" element={<AuditLogsPage />} />

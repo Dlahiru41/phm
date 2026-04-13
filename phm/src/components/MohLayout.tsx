@@ -36,33 +36,7 @@ export const MohLayout: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-6">
-            <NavLink
-              to="/moh"
-              end
-              className={({ isActive }) =>
-                `text-sm leading-normal py-1 ${
-                  isActive
-                    ? 'text-primary font-semibold border-b-2 border-primary'
-                    : 'text-slate-500 dark:text-slate-400 font-medium hover:text-primary transition-colors'
-                }`
-              }
-            >
-              Overview
-            </NavLink>
-            <Link
-              to="/moh/reports"
-              className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            >
-              Reports
-            </Link>
-            <Link
-              to="/moh/audit-logs"
-              className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary transition-colors"
-            >
-              Audit Logs
-            </Link>
-          </div>
+          {/* Navigation links removed as per requirements */}
         </div>
         <div className="flex flex-1 justify-end gap-4 items-center">
           <label className="hidden sm:flex flex-col min-w-40 h-10 max-w-64">
@@ -92,10 +66,13 @@ export const MohLayout: React.FC = () => {
               <span className="material-symbols-outlined">settings</span>
             </button>
           </div>
-          <div
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
+          <button
+            type="button"
+            onClick={() => navigate('/moh/profile')}
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20 hover:border-primary/50 transition-all cursor-pointer"
             data-alt="MOH Officer profile photo"
             style={{ backgroundImage: "url('https://via.placeholder.com/150')" }}
+            title="View Profile"
           />
         </div>
       </header>
