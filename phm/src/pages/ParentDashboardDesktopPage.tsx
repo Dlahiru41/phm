@@ -139,7 +139,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                     <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{unreadNotifications}</span>
                                 )}
                             </Link>
-                            <Link to="/growth-chart" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
+                            <Link to={children.length > 0 ? `/growth-chart/${children[0].childId}` : '#'} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors ${children.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                 <span className="material-symbols-outlined">monitoring</span>
                                 <p className="text-sm font-medium">Growth Chart</p>
                             </Link>

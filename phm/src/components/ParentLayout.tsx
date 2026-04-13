@@ -52,7 +52,7 @@ export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNa
               <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{unreadCount}</span>
             )}
           </Link>
-          <Link to="/growth-chart" className={navClass('growth-chart')}>
+          <Link to="/child-profile-schedule" className={navClass('growth-chart')}>
             <span className="material-symbols-outlined">monitoring</span>
             <p className="text-sm font-medium">Growth Chart</p>
           </Link>

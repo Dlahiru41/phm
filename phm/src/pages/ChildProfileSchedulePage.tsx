@@ -287,7 +287,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => selectedChild && navigate(`/growth-chart?childId=${selectedChild.childId}`)}
+                                                onClick={() => selectedChild && navigate(`/growth-chart/${selectedChild.childId}`)}
                                                 className="flex flex-col items-center justify-center border-b-[3px] border-transparent text-[#4c739a] dark:text-slate-400 pb-[13px] pt-4 hover:text-[#0d141b] dark:hover:text-slate-200 transition-colors">
                                                 <p className="text-sm font-bold leading-normal tracking-[0.015em]">Growth Charts</p>
                                             </button>

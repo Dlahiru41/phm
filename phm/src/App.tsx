@@ -43,7 +43,7 @@ const App: React.FC = () => {
       <Route path="/parent-profile" element={<ParentProfilePage />} />
       <Route path="/add-child" element={<AddChildPage />} />
       <Route path="/child-profile-schedule" element={<ChildProfileSchedulePage />} />
-      <Route path="/growth-chart" element={<GrowthChartPage />} />
+      <Route path="/growth-chart/:childId" element={<GrowthChartPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/vaccine-guide" element={<VaccineGuidePage />} />

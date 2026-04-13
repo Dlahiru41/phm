@@ -113,7 +113,7 @@ export const HomePage: React.FC = () => {
             </div>
           </Link>
           
-          <Link to="/growth-chart" className="page-card bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm">
+            <Link to="/child-profile-schedule" className="page-card bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                 <span className="material-symbols-outlined text-primary text-2xl">monitoring</span>

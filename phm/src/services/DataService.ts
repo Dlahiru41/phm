@@ -13,6 +13,7 @@ import {
   Gender,
   ChildGrowthCharts,
   GrowthChartPoint,
+  WHOGrowthPayload,
 } from '../types/models';
 
 function parseDate(v: string | Date | undefined): Date {
@@ -92,10 +93,22 @@ function growthRecordFromApi(a: any): GrowthRecord {
 }
 
 function growthChartPointFromApi(a: any): GrowthChartPoint {
+  // Try to extract date from multiple possible field names from backend
+  let visitDate: Date | undefined;
+  if (a.dateOfVisit) {
+    visitDate = parseDate(a.dateOfVisit);
+  } else if (a.recordedDate) {
+    visitDate = parseDate(a.recordedDate);
+  } else if (a.recorded_date) {
+    visitDate = parseDate(a.recorded_date);
+  }
+  // Only set dateOfVisit if we found a valid date (not epoch/0)
+  const finalDate = visitDate && visitDate.getTime() !== 0 ? visitDate : undefined;
+
   return {
     ageInMonths: typeof a.ageInMonths === 'number' ? a.ageInMonths : 0,
     value: typeof a.value === 'number' ? a.value : 0,
-    dateOfVisit: a.dateOfVisit ? parseDate(a.dateOfVisit) : undefined,
+    dateOfVisit: finalDate,
   };
 }
 
@@ -764,17 +777,6 @@ class DataService {
     }
   }
 
-  async getChildrenByParent(parentId: string): Promise<{ data: Child[]; count: number }> {
-    try {
-      const list = await api.get<Child[]>(`/children?parentId=${parentId}`);
-      return {
-        data: Array.isArray(list) ? list.map(childFromApi) : [],
-        count: Array.isArray(list) ? list.length : 0,
-      };
-    } catch {
-      return { data: [], count: 0 };
-    }
-  }
 
   async getGrowthChartsByChild(
     childId: string,
@@ -789,6 +791,28 @@ class DataService {
       return childGrowthChartsFromApi(payload);
     } catch {
       return { weightVsAge: [], heightVsAge: [], historyTable: [] };
+    }
+  }
+
+  /**
+   * Fetch WHO standard growth reference data for a child.
+   * Uses GET /growth-records/child-{childId}/who-payload with Bearer token.
+   * Returns WHO reference curves along with child's observations.
+   */
+  async getWHOGrowthPayload(childId: string): Promise<WHOGrowthPayload | null> {
+    try {
+      const payload = await api.get<WHOGrowthPayload>(
+        `/growth-records/${encodeURIComponent(childId)}/who-payload`
+      );
+      if (payload) {
+        console.log('WHO Payload received:', payload);
+        return payload;
+      }
+      console.warn('WHO payload is null/empty');
+      return null;
+    } catch (error) {
+      console.error('Error fetching WHO growth payload:', error);
+      return null;
     }
   }
 }

@@ -365,3 +365,41 @@ export interface ChildGrowthCharts {
   heightVsAge: GrowthChartPoint[];
   historyTable: GrowthRecord[];
 }
+
+// WHO Standard Growth Reference Data Types
+export interface WHOStandardPoint {
+  ageInMonths: number;
+  sdNeg3: number;
+  sdNeg2: number;
+  sdNeg1: number;
+  median: number;
+  sdPos1: number;
+  sdPos2: number;
+  sdPos3: number;
+}
+
+export interface WHOIndicators {
+  height_for_age: WHOStandardPoint[];
+  weight_for_age: WHOStandardPoint[];
+}
+
+export interface WHOObservation {
+  dateOfVisit: string;
+  ageMonth: number;
+  weight: number;
+  height: number;
+  weightStatus: string;
+  heightStatus: string;
+}
+
+export interface WHOGrowthPayload {
+  version: string;
+  metadata?: {
+    note?: string;
+  };
+  childId: string;
+  sex: string;
+  indicators: WHOIndicators;
+  observations: WHOObservation[];
+}
+

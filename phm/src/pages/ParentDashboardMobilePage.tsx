@@ -226,8 +226,9 @@ export const ParentDashboardMobilePage: React.FC = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={() => navigate('/growth-chart')}
-                            className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-2xl active:bg-slate-50 col-span-2">
+                            onClick={() => children.length > 0 && navigate(`/growth-chart/${children[0].childId}`)}
+                            className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-[#1a2632] border border-[#e7edf3] dark:border-slate-700 rounded-2xl active:bg-slate-50 col-span-2"
+                            disabled={children.length === 0}>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-purple-600">monitoring</span>

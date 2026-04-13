@@ -40,7 +40,7 @@ export const routes: Route[] = [
     component: async () => ChildProfileSchedulePage(),
   },
   {
-    path: '/growth-chart',
+    path: '/growth-chart/:childId',
     name: 'Growth Chart',
     component: async () => GrowthChartPage(),
   },
