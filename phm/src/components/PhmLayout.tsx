@@ -8,6 +8,7 @@ export type PhmNavKey =
   | 'register-baby'
   | 'record-vaccination'
   | 'record-growth'
+  | 'clinic-scheduling'
   | 'notifications'
   | 'settings';
 
@@ -36,6 +37,10 @@ export const PhmSidebar: React.FC<{ activeNav?: PhmNavKey }> = ({ activeNav }) =
           <Link to="/view-area-children" className={navClass('view-area-children')}>
             <span className="material-symbols-outlined">groups</span>
             <p className="text-sm font-medium">View Area Children</p>
+          </Link>
+          <Link to="/clinic-scheduling" className={navClass('clinic-scheduling')}>
+            <span className="material-symbols-outlined">local_hospital</span>
+            <p className="text-sm font-medium">Clinic Scheduling</p>
           </Link>
           <Link to="/baby-registration" className={navClass('register-baby')}>
             <span className="material-symbols-outlined">person_add</span>

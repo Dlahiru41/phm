@@ -21,7 +21,8 @@ export enum NotificationType {
   VACCINATION_DUE = 'vaccination_due',
   GROWTH_RECORD = 'growth_record',
   CHILD_LINKED = 'child_linked',
-  VACCINATION_COMPLETED = 'vaccination_completed'
+  VACCINATION_COMPLETED = 'vaccination_completed',
+  CLINIC_REMINDER = 'clinic_reminder'
 }
 
 export enum ScheduleStatus {
@@ -401,5 +402,47 @@ export interface WHOGrowthPayload {
   sex: string;
   indicators: WHOIndicators;
   observations: WHOObservation[];
+}
+
+// Clinic Scheduling Types
+export enum ClinicStatus {
+  SCHEDULED = 'scheduled',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled'
+}
+
+export interface ClinicSchedule {
+  clinicId: string;
+  phmId: string;
+  clinicDate: Date;
+  gnDivision: string;
+  location: string;
+  description?: string;
+  status: ClinicStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DueChild {
+  childId: string;
+  firstName: string;
+  lastName: string;
+  registrationNumber: string;
+  dateOfBirth: Date;
+  vaccineName: string;
+  nextDueDate: Date;
+  parentId?: string;
+  parentName?: string;
+  parentPhone?: string;
+  doseNumber?: number;
+}
+
+export interface ClinicChild {
+  clinicChildId: string;
+  clinicId: string;
+  childId: string;
+  attended: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 

@@ -50,6 +50,8 @@ export const NotificationsPage: React.FC = () => {
         return 'notifications_active';
       case NotificationType.GROWTH_RECORD:
         return 'monitoring';
+      case NotificationType.CLINIC_REMINDER:
+        return 'local_hospital';
       case 'child_linked' as any:
         return 'person_add';
       default:
@@ -68,6 +70,8 @@ export const NotificationsPage: React.FC = () => {
         return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
       case NotificationType.GROWTH_RECORD:
         return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+      case NotificationType.CLINIC_REMINDER:
+        return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
       case 'child_linked' as any:
         return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
       default:
@@ -87,6 +91,8 @@ export const NotificationsPage: React.FC = () => {
         return 'Vaccination Due';
       case NotificationType.GROWTH_RECORD:
         return 'Growth Record Update';
+      case NotificationType.CLINIC_REMINDER:
+        return 'Clinic Reminder';
       case 'child_linked' as any:
         return 'Child Account Linked';
       default:
@@ -144,7 +150,7 @@ export const NotificationsPage: React.FC = () => {
           >
             All
           </button>
-          {[NotificationType.VACCINATION_DUE, NotificationType.MISSED, NotificationType.GROWTH_RECORD].map(
+          {[NotificationType.VACCINATION_DUE, NotificationType.MISSED, NotificationType.GROWTH_RECORD, NotificationType.CLINIC_REMINDER].map(
             (type) => (
               <button
                 key={type}
@@ -197,6 +203,8 @@ export const NotificationsPage: React.FC = () => {
                         ? 'bg-yellow-100 dark:bg-yellow-900/30'
                         : notification.type === NotificationType.GROWTH_RECORD
                         ? 'bg-green-100 dark:bg-green-900/30'
+                        : notification.type === NotificationType.CLINIC_REMINDER
+                        ? 'bg-purple-100 dark:bg-purple-900/30'
                         : 'bg-slate-100 dark:bg-slate-800'
                     }`}
                   >
@@ -210,6 +218,8 @@ export const NotificationsPage: React.FC = () => {
                           ? 'text-yellow-600 dark:text-yellow-400'
                           : notification.type === NotificationType.GROWTH_RECORD
                           ? 'text-green-600 dark:text-green-400'
+                          : notification.type === NotificationType.CLINIC_REMINDER
+                          ? 'text-purple-600 dark:text-purple-400'
                           : 'text-slate-600 dark:text-slate-400'
                       }`}
                     >

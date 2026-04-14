@@ -9,6 +9,7 @@ import { ParentDashboardMobilePage } from './pages/ParentDashboardMobilePage';
 import { ParentDashboardDesktopPage } from './pages/ParentDashboardDesktopPage';
 import { ParentProfilePage } from './pages/ParentProfilePage';
 import { PhmDashboardPage } from './pages/PhmDashboardPage';
+import { ClinicSchedulingPage } from './pages/ClinicSchedulingPage';
 import { ChildProfileSchedulePage } from './pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from './pages/GrowthChartPage';
 import { MohLayout } from './components/MohLayout';
@@ -50,6 +51,7 @@ const App: React.FC = () => {
       
       {/* PHM Routes */}
       <Route path="/phm-dashboard" element={<PhmDashboardPage />} />
+      <Route path="/clinic-scheduling" element={<ClinicSchedulingPage />} />
       <Route path="/baby-registration" element={<BabyRegistrationPage />} />
       <Route path="/record-vaccination" element={<RecordVaccinationPage />} />
       <Route path="/edit-vaccination" element={<EditVaccinationPage />} />

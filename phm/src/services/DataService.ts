@@ -14,6 +14,10 @@ import {
   ChildGrowthCharts,
   GrowthChartPoint,
   WHOGrowthPayload,
+  ClinicSchedule,
+  ClinicStatus,
+  DueChild,
+  ClinicChild,
 } from '../types/models';
 
 function parseDate(v: string | Date | undefined): Date {
@@ -144,6 +148,47 @@ function auditLogFromApi(a: any): AuditLog {
     details: a.details,
     timestamp: parseDate(a.timestamp),
     ipAddress: a.ipAddress || '',
+  };
+}
+
+function clinicScheduleFromApi(a: any): ClinicSchedule {
+  return {
+    clinicId: a.clinicId,
+    phmId: a.phmId,
+    clinicDate: parseDate(a.clinicDate),
+    gnDivision: a.gnDivision,
+    location: a.location,
+    description: a.description || '',
+    status: (a.status as ClinicStatus) || ClinicStatus.SCHEDULED,
+    createdAt: parseDate(a.createdAt),
+    updatedAt: parseDate(a.updatedAt),
+  };
+}
+
+function dueChildFromApi(a: any): DueChild {
+  return {
+    childId: a.childId,
+    firstName: a.firstName,
+    lastName: a.lastName,
+    registrationNumber: a.registrationNumber,
+    dateOfBirth: parseDate(a.dateOfBirth),
+    vaccineName: a.vaccineName,
+    nextDueDate: parseDate(a.nextDueDate),
+    parentId: a.parentId || undefined,
+    parentName: a.parentName || undefined,
+    parentPhone: a.parentPhone || undefined,
+    doseNumber: a.doseNumber || undefined,
+  };
+}
+
+function clinicChildFromApi(a: any): ClinicChild {
+  return {
+    clinicChildId: a.clinicChildId,
+    clinicId: a.clinicId,
+    childId: a.childId,
+    attended: !!a.attended,
+    createdAt: parseDate(a.createdAt),
+    updatedAt: parseDate(a.updatedAt),
   };
 }
 
@@ -813,6 +858,85 @@ class DataService {
     } catch (error) {
       console.error('Error fetching WHO growth payload:', error);
       return null;
+    }
+  }
+
+  // Clinic Scheduling Methods
+  async createClinic(body: {
+    clinicDate: string;
+    gnDivision: string;
+    location: string;
+    description?: string;
+  }): Promise<{ clinic: ClinicSchedule; dueChildren: DueChild[]; childCount: number } | null> {
+    try {
+      const res = await api.post<any>('/clinics', body);
+      if (res && res.clinic) {
+        return {
+          clinic: clinicScheduleFromApi(res.clinic),
+          dueChildren: Array.isArray(res.dueChildren) ? res.dueChildren.map(dueChildFromApi) : [],
+          childCount: res.childCount ?? 0,
+        };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getMyClinicList(params?: { fromDate?: string; toDate?: string }): Promise<ClinicSchedule[]> {
+    try {
+      const p: Record<string, string> = {};
+      if (params?.fromDate) p.fromDate = params.fromDate;
+      if (params?.toDate) p.toDate = params.toDate;
+      const list = await api.get<any[]>('/clinics/my', p);
+      return Array.isArray(list) ? list.map(clinicScheduleFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getClinicDetails(clinicId: string): Promise<ClinicSchedule | null> {
+    try {
+      const res = await api.get<any>(`/clinics/${encodeURIComponent(clinicId)}`);
+      return res ? clinicScheduleFromApi(res) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getClinicDueChildren(clinicId: string): Promise<DueChild[]> {
+    try {
+      const list = await api.get<any[]>(`/clinics/${encodeURIComponent(clinicId)}/due-children`);
+      return Array.isArray(list) ? list.map(dueChildFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getClinicChildren(clinicId: string): Promise<ClinicChild[]> {
+    try {
+      const list = await api.get<any[]>(`/clinics/${encodeURIComponent(clinicId)}/children`);
+      return Array.isArray(list) ? list.map(clinicChildFromApi) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async updateClinicStatus(clinicId: string, status: ClinicStatus): Promise<ClinicSchedule | null> {
+    try {
+      const res = await api.put<any>(`/clinics/${encodeURIComponent(clinicId)}/status`, { status });
+      return res ? clinicScheduleFromApi(res) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async updateClinicChildAttendance(clinicId: string, childId: string, attended: boolean): Promise<boolean> {
+    try {
+      await api.post(`/clinics/${encodeURIComponent(clinicId)}/attendance`, { childId, attended });
+      return true;
+    } catch {
+      return false;
     }
   }
 }
