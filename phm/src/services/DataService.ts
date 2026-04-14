@@ -939,6 +939,15 @@ class DataService {
       return false;
     }
   }
+
+  async getAssignedArea(): Promise<string | null> {
+    try {
+      const res = await api.get<{ assignedArea: string; userId: string }>('/users/me/assigned-area');
+      return res?.assignedArea || null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 export const dataService = new DataService();

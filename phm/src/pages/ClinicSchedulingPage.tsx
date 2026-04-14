@@ -33,6 +33,7 @@ export const ClinicSchedulingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [assignedArea, setAssignedArea] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateClinicState>({
     clinicDate: '',
@@ -41,9 +42,10 @@ export const ClinicSchedulingPage: React.FC = () => {
     description: '',
   });
 
-  // Load clinics on mount
+  // Load clinics and assigned area on mount
   useEffect(() => {
     loadClinics();
+    fetchAssignedArea();
   }, []);
 
   const loadClinics = async () => {
@@ -56,6 +58,18 @@ export const ClinicSchedulingPage: React.FC = () => {
       setError(err?.message || 'Failed to load clinics');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAssignedArea = async () => {
+    try {
+      const area = await dataService.getAssignedArea();
+      setAssignedArea(area);
+      if (area) {
+        setFormData((prev) => ({ ...prev, gnDivision: area }));
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch assigned area:', err);
     }
   };
 
@@ -303,11 +317,13 @@ export const ClinicSchedulingPage: React.FC = () => {
                   <input
                     type="text"
                     value={formData.gnDivision}
-                    onChange={(e) => setFormData({ ...formData, gnDivision: e.target.value })}
-                    placeholder="e.g., Galle 01"
-                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled
+                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none cursor-not-allowed opacity-70"
                     required
                   />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Your assigned area: {assignedArea || 'Loading...'}
+                  </p>
                 </div>
 
                 <div>
