@@ -112,15 +112,21 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                 <aside
                     className="w-72 bg-white dark:bg-[#1a2632] border-r border-[#e7edf3] dark:border-slate-700 flex flex-col justify-between p-6">
                     <div className="flex flex-col gap-8">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-primary/10 rounded-full p-2 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-primary text-2xl">child_care</span>
+                        <div className="flex flex-col gap-4">
+                            <div className="border-b border-[#e7edf3] dark:border-slate-700 pb-4">
+                                <p className="text-sm font-bold text-[#0d141b] dark:text-slate-50 leading-none">{user?.name ?? 'Parent'}</p>
+                                <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">Parent Account</p>
                             </div>
-                            <div className="flex flex-col">
-                                <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-none">Parent
-                                    Portal</h1>
-                                <p className="text-[#4c739a] dark:text-slate-400 text-xs mt-1">Vaccination
-                                    Management</p>
+                            <div className="flex items-center gap-3">
+                                <div className="bg-primary/10 rounded-full p-2 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-primary text-2xl">child_care</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-none">Parent
+                                        Portal</h1>
+                                    <p className="text-[#4c739a] dark:text-slate-400 text-xs mt-1">Vaccination
+                                        Management</p>
+                                </div>
                             </div>
                         </div>
                         <nav className="flex flex-col gap-2">
@@ -146,7 +152,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                         </nav>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <button 
+                        <button
                             onClick={async () => {
                                 await AuthService.logout();
                                 navigate('/login');
@@ -188,13 +194,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                         <span>தமிழ்</span>
                                         <input className="hidden" name="lang" type="radio" value="Tamil"/>
                                     </label>
-                                </div>
-                                <div className="flex items-center gap-3 pl-2">
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold leading-none">{user?.name ?? 'Parent'}</p>
-                                        <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">Parent
-                                            Account</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
