@@ -311,19 +311,13 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                 type="button"
                                                 onClick={() => setActiveTab('schedule')}
                                                 className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
-                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">Vaccination Schedule</p>
+                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">History</p>
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setActiveTab('growth')}
                                                 className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'growth' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
                                                 <p className="text-sm font-bold leading-normal tracking-[0.015em]">Growth Charts</p>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setActiveTab('history')}
-                                                className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
-                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">History</p>
                                             </button>
                                         </div>
                                     </div>
@@ -419,11 +413,6 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                         ) : (
                                             <div className="text-center text-[#4c739a] dark:text-slate-400">No growth data available.</div>
                                         )}
-                                    </div>
-                                    )}
-                                    {activeTab === 'history' && (
-                                    <div className="p-8">
-                                        <p className="text-center text-[#4c739a] dark:text-slate-400">Medical history coming soon.</p>
                                     </div>
                                     )}
                                 </div>
