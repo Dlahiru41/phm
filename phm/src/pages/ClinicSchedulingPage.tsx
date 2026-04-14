@@ -372,7 +372,7 @@ export const ClinicSchedulingPage: React.FC = () => {
                   }}
                   className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                 >
-                  <span className="material-icons-outlined mr-1" style={{ fontSize: '20px' }}>
+                  <span className="material-symbols-outlined mr-1" style={{ fontSize: '20px' }}>
                     arrow_back
                   </span>
                   Back to Clinics
