@@ -195,10 +195,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                         <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">Parent
                                             Account</p>
                                     </div>
-                                    <div
-                                        className="h-10 w-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                                        data-alt="Portrait of a female user"
-                                        style={{"backgroundImage": "url('https://via.placeholder.com/150')"}}></div>
                                 </div>
                             </div>
                         </div>
