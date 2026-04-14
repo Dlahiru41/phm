@@ -139,17 +139,9 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                     <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{unreadNotifications}</span>
                                 )}
                             </Link>
-                            <Link to={children.length > 0 ? `/growth-chart/${children[0].childId}` : '#'} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors ${children.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                <span className="material-symbols-outlined">monitoring</span>
-                                <p className="text-sm font-medium">Growth Chart</p>
-                            </Link>
                             <Link to="/parent-profile" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
                                 <span className="material-symbols-outlined">person</span>
                                 <p className="text-sm font-medium">Profile</p>
-                            </Link>
-                            <Link to="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
-                                <span className="material-symbols-outlined">settings</span>
-                                <p className="text-sm font-medium">Settings</p>
                             </Link>
                         </nav>
                     </div>
