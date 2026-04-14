@@ -446,3 +446,14 @@ export interface ClinicChild {
   updatedAt: Date;
 }
 
+export interface VaccinationDue {
+  clinicId: string;
+  clinicDate: Date;
+  clinicLocation: string;
+  childId: string;
+  childName: string;
+  registrationNumber: string;
+  vaccineName: string;
+  nextDueDate: Date;
+  clinicReminder: string;
+}

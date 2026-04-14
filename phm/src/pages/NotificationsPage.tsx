@@ -1,29 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Notification, NotificationType } from '../types/models';
+import { Notification, NotificationType, VaccinationDue } from '../types/models';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 import { TranslationService } from '../services/TranslationService';
 import { ParentLayout } from '../components/ParentLayout';
 import { PhmLayout } from '../components/PhmLayout';
 
+interface CombinedNotification extends Notification {
+  source?: 'notification' | 'vaccination_due';
+  vaccinationDueData?: VaccinationDue;
+}
+
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
   const isParent = AuthService.isParent();
   const isPHM = AuthService.isPHM();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<CombinedNotification[]>([]);
   const [filter, setFilter] = useState<NotificationType | 'all'>('all');
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const res = await dataService.getNotifications();
-      if (!cancelled) setNotifications(res.data);
+      // Fetch regular notifications
+      const notifRes = await dataService.getNotifications();
+      let allNotifications: CombinedNotification[] = notifRes.data.map((n) => ({
+        ...n,
+        source: 'notification',
+      }));
+
+      // If parent, also fetch due vaccinations and convert them to notifications
+      if (isParent) {
+        try {
+          const dueVaccinations = await dataService.getDueVaccinations();
+          const vaccinationNotifications: CombinedNotification[] = dueVaccinations.map((due) => ({
+            notificationId: `due-vaccination-${due.childId}-${due.vaccineName}`,
+            recipientId: AuthService.getCurrentUser()?.userId || '',
+            type: NotificationType.VACCINATION_DUE,
+            message: due.clinicReminder,
+            relatedChildId: due.childId,
+            sentDate: new Date(),
+            isRead: false,
+            source: 'vaccination_due',
+            vaccinationDueData: due,
+          }));
+          allNotifications = [...allNotifications, ...vaccinationNotifications];
+          // Sort by sentDate descending (most recent first)
+          allNotifications.sort((a, b) => b.sentDate.getTime() - a.sentDate.getTime());
+        } catch (error) {
+          console.error('Error fetching due vaccinations:', error);
+        }
+      }
+
+      if (!cancelled) setNotifications(allNotifications);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isParent]);
 
   const markAsRead = async (notificationId: string) => {
     const ok = await dataService.markNotificationAsRead(notificationId);
@@ -186,7 +220,10 @@ export const NotificationsPage: React.FC = () => {
                   !notification.isRead ? 'ring-2 ring-primary/20' : ''
                 }`}
                 onClick={() => {
-                  markAsRead(notification.notificationId);
+                  // Only mark as read if it's from the notification system
+                  if (notification.source === 'notification') {
+                    markAsRead(notification.notificationId);
+                  }
                   if (notification.relatedChildId) {
                     navigate(`/child-profile-schedule?childId=${notification.relatedChildId}`);
                   }
@@ -228,7 +265,7 @@ export const NotificationsPage: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-base font-bold text-[#0d141b] dark:text-white mb-1">
                           {getNotificationTitle(notification.type)}
                           {!notification.isRead && (
@@ -236,7 +273,34 @@ export const NotificationsPage: React.FC = () => {
                           )}
                         </h3>
                         <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-2">{notification.message}</p>
-                        {notification.relatedChildId && (
+
+                        {/* Display vaccination due specific details */}
+                        {notification.source === 'vaccination_due' && notification.vaccinationDueData && (
+                          <div className="mt-3 p-3 bg-white/50 dark:bg-slate-800/50 rounded-lg text-xs text-[#4c739a] dark:text-slate-400 space-y-1">
+                            <p>
+                              <strong>Vaccine:</strong> {notification.vaccinationDueData.vaccineName}
+                            </p>
+                            <p>
+                              <strong>Due Date:</strong> {notification.vaccinationDueData.nextDueDate.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                            <p>
+                              <strong>Clinic Location:</strong> {notification.vaccinationDueData.clinicLocation}
+                            </p>
+                            <p>
+                              <strong>Clinic Date:</strong> {notification.vaccinationDueData.clinicDate.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                        )}
+
+                        {notification.relatedChildId && !notification.vaccinationDueData && (
                           <p className="text-xs text-[#4c739a] dark:text-slate-400">
                             Child ID: {notification.relatedChildId}
                           </p>

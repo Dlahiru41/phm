@@ -18,6 +18,7 @@ import {
   ClinicStatus,
   DueChild,
   ClinicChild,
+  VaccinationDue,
 } from '../types/models';
 
 function parseDate(v: string | Date | undefined): Date {
@@ -189,6 +190,20 @@ function clinicChildFromApi(a: any): ClinicChild {
     attended: !!a.attended,
     createdAt: parseDate(a.createdAt),
     updatedAt: parseDate(a.updatedAt),
+  };
+}
+
+function vaccinationDueFromApi(a: any): VaccinationDue {
+  return {
+    clinicId: a.clinicId,
+    clinicDate: parseDate(a.clinicDate),
+    clinicLocation: a.clinicLocation,
+    childId: a.childId,
+    childName: a.childName,
+    registrationNumber: a.registrationNumber,
+    vaccineName: a.vaccineName,
+    nextDueDate: parseDate(a.nextDueDate),
+    clinicReminder: a.clinicReminder,
   };
 }
 
@@ -946,6 +961,23 @@ class DataService {
       return res?.assignedArea || null;
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Get due vaccinations for parent's children
+   * Calls GET /clinics/parent/due-vaccinations with Bearer token
+   * Returns list of children with due vaccinations
+   */
+  async getDueVaccinations(): Promise<VaccinationDue[]> {
+    try {
+      const res = await api.get<{ count: number; items: any[] }>('/clinics/parent/due-vaccinations');
+      if (res && Array.isArray(res.items)) {
+        return res.items.map(vaccinationDueFromApi);
+      }
+      return [];
+    } catch {
+      return [];
     }
   }
 }
