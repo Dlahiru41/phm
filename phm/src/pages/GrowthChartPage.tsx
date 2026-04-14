@@ -70,7 +70,7 @@ export const GrowthChartPage: React.FC = () => {
   }, [childId]);
 
   return (
-    <ParentLayout activeNav="growth-chart">
+    <ParentLayout activeNav="dashboard">
       <div className="max-w-[1200px] mx-auto p-8">
         <GrowthChartContent state={state} />
       </div>

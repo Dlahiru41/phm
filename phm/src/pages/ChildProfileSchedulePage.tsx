@@ -3,7 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { ParentSidebar } from '../components/ParentLayout';
-import type { Child, ScheduleItem, VaccinationRecord } from '../types/models';
+import { WHOGrowthChart } from '../components/WHOGrowthChart';
+import type { Child, ScheduleItem, VaccinationRecord, WHOGrowthPayload } from '../types/models';
 import { ScheduleStatus } from '../types/models';
 
 type TimelineItem =
@@ -30,6 +31,9 @@ export const ChildProfileSchedulePage: React.FC = () => {
     const [records, setRecords] = useState<VaccinationRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'schedule' | 'growth' | 'history'>('schedule');
+    const [growthData, setGrowthData] = useState<WHOGrowthPayload | null>(null);
+    const [growthLoading, setGrowthLoading] = useState(false);
 
     const currentUser = AuthService.getCurrentUser();
 
@@ -70,6 +74,27 @@ export const ChildProfileSchedulePage: React.FC = () => {
         })();
         return () => { cancelled = true; };
     }, [isParent, currentUser?.userId, childIdParam]);
+
+    useEffect(() => {
+        if (activeTab === 'growth' && selectedChild && !growthData) {
+            let cancelled = false;
+            (async () => {
+                setGrowthLoading(true);
+                try {
+                    const payload = await dataService.getWHOGrowthPayload(selectedChild.childId);
+                    if (!cancelled && payload) {
+                        setGrowthData(payload);
+                    }
+                } catch {
+                    if (!cancelled) setGrowthData(null);
+                } finally {
+                    if (!cancelled) setGrowthLoading(false);
+                }
+            })();
+            return () => { cancelled = true; };
+        }
+    }, [activeTab, selectedChild, growthData]);
+
 
     const timeline: TimelineItem[] = [];
     records.forEach((r) => {
@@ -282,23 +307,27 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#e7edf3] dark:border-slate-800 overflow-hidden">
                                     <div className="px-4 bg-background-light/50 dark:bg-slate-800/50">
                                         <div className="flex border-b border-[#cfdbe7] dark:border-slate-700 gap-8">
-                                            <button type="button" className="flex flex-col items-center justify-center border-b-[3px] border-primary text-primary pb-[13px] pt-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveTab('schedule')}
+                                                className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
                                                 <p className="text-sm font-bold leading-normal tracking-[0.015em]">Vaccination Schedule</p>
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => selectedChild && navigate(`/growth-chart/${selectedChild.childId}`)}
-                                                className="flex flex-col items-center justify-center border-b-[3px] border-transparent text-[#4c739a] dark:text-slate-400 pb-[13px] pt-4 hover:text-[#0d141b] dark:hover:text-slate-200 transition-colors">
+                                                onClick={() => setActiveTab('growth')}
+                                                className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'growth' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
                                                 <p className="text-sm font-bold leading-normal tracking-[0.015em]">Growth Charts</p>
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => selectedChild && navigate(`/child-profile-schedule?childId=${selectedChild.childId}`)}
-                                                className="flex flex-col items-center justify-center border-b-[3px] border-transparent text-[#4c739a] dark:text-slate-400 pb-[13px] pt-4 hover:text-[#0d141b] dark:hover:text-slate-200 transition-colors">
+                                                onClick={() => setActiveTab('history')}
+                                                className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
                                                 <p className="text-sm font-bold leading-normal tracking-[0.015em]">History</p>
                                             </button>
                                         </div>
                                     </div>
+                                    {activeTab === 'schedule' && (
                                     <div className="p-8">
                                         <div className="flex items-center justify-between mb-8">
                                             <h3 className="text-lg font-bold text-[#0d141b] dark:text-white flex items-center gap-2">
@@ -380,6 +409,23 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                             )}
                                         </div>
                                     </div>
+                                    )}
+                                    {activeTab === 'growth' && (
+                                    <div className="p-8">
+                                        {growthLoading ? (
+                                            <div className="text-center text-[#4c739a] dark:text-slate-400">Loading growth chart...</div>
+                                        ) : growthData ? (
+                                            <WHOGrowthChart data={growthData} />
+                                        ) : (
+                                            <div className="text-center text-[#4c739a] dark:text-slate-400">No growth data available.</div>
+                                        )}
+                                    </div>
+                                    )}
+                                    {activeTab === 'history' && (
+                                    <div className="p-8">
+                                        <p className="text-center text-[#4c739a] dark:text-slate-400">Medical history coming soon.</p>
+                                    </div>
+                                    )}
                                 </div>
                                 )}
                             </div>
