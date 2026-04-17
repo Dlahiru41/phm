@@ -1,61 +1,9 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 import { PhmLayout } from '../components/PhmLayout';
 
-const GN_DIVISIONS = [
-  '96 - Kumbalwella South',
-  '96A - Mahamodara',
-  '96B - Galwadugoda',
-  '96C - Kaluwella',
-  '96D - Fort',
-  '96E - Richmond Hill',
-  '96F - Kandewatta',
-  '96G - Chinagarden',
-  '96H - Minuwangoda',
-  '96I - Osanagoda',
-  '96J - Kumbalwella North',
-  '97 - Kongaha',
-  '97A - Weliwatta',
-  '97B - Madapathala',
-  '97C - Pokunawatta',
-  '97D - Dangedara East',
-  '98 - Madawalamulla North',
-  '98A - Madawalamulla South',
-  '98B - Bataganvila',
-  '98C - Sangamittapura',
-  '98D - Dangedara West',
-  '99 - Magalle',
-  '99A - Thalapitiya',
-  '99B - Pettigalawatta',
-  '99C - Makuluwa',
-  '99D - Dewathura',
-  '100 - Katugoda',
-  '100A - Dewata',
-  '101 - Maitipe',
-  '101A - Deddugoda South',
-  '101B - Milidduwa',
-  '101C - Deddugoda North',
-  '101D - Welipatha',
-  '101E - Maligaspe',
-  '102 - Dadella West',
-  '102A - Dadella East',
-  '102B - Walauwatta',
-  '102C - Siyambalagahawatta',
-  '103 - Gintota West',
-  '103A - Gintota East',
-  '105 - Welipitimodara',
-  '106 - Kurunduwatta',
-  '107 - Piyadigama',
-  '107A - Bope North',
-  '108 - Ukwattta East',
-  '108A - Mahahapugala',
-  '108B - Ukwatta West',
-  '119 - Bope West',
-  '119A - Bope East',
-  '130 - Eththiligoda South',
-];
 
 export const BabyRegistrationPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -84,8 +32,36 @@ export const BabyRegistrationPage: React.FC = () => {
     dateOfBirth: string;
   } | null>(null);
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [assignedGnDivision, setAssignedGnDivision] = useState<string>('');
+  const [loadingArea, setLoadingArea] = useState(true);
   const navigate = useNavigate();
+
+  // Initialize GN Division from PHM's assigned area on component mount
+  useEffect(() => {
+    const initializeGnDivision = async () => {
+      try {
+        setLoadingArea(true);
+        const assignedArea = await dataService.getAssignedArea();
+
+        if (assignedArea) {
+          setAssignedGnDivision(assignedArea);
+          setFormData((prevData) => ({
+            ...prevData,
+            gnDivision: assignedArea,
+          }));
+        } else {
+          setError('Unable to determine your assigned GN Division. Please contact administrator.');
+        }
+      } catch (err) {
+        console.error('Error initializing GN Division:', err);
+        setError('Failed to load your assigned area. Please try again.');
+      } finally {
+        setLoadingArea(false);
+      }
+    };
+
+    initializeGnDivision();
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,7 +72,6 @@ export const BabyRegistrationPage: React.FC = () => {
       setError('Please enter valid birth weight and height.');
       return;
     }
-    setSubmitting(true);
     try {
       const currentUser = AuthService.getCurrentUser();
       const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId;
@@ -148,8 +123,6 @@ export const BabyRegistrationPage: React.FC = () => {
         }
       }
       setError(message);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -202,7 +175,7 @@ export const BabyRegistrationPage: React.FC = () => {
                     firstName: '', lastName: '', dateOfBirth: '', gender: '',
                     birthWeight: '', birthHeight: '', motherName: '', motherNIC: '',
                     fatherName: '', fatherNIC: '', address: '', district: '',
-                    dsDivision: '', gnDivision: '', parent_whatsapp_number: '',
+                    dsDivision: '', gnDivision: assignedGnDivision, parent_whatsapp_number: '',
                   });
                 }}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors"
@@ -438,21 +411,23 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div className="md:col-span-2">
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">GN Division *</p>
-                  <select
-                    className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                    name="gnDivision"
-                    value={formData.gnDivision}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select GN Division</option>
-                    {GN_DIVISIONS.map((division) => (
-                      <option key={division} value={division}>
-                        {division}
-                      </option>
-                    ))}
-                  </select>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">GN Division (Assigned)</p>
+                  {loadingArea ? (
+                    <div className="w-full rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-12 px-4 flex items-center">
+                      <p className="text-[#4c739a] dark:text-slate-400 text-sm">Loading your assigned area...</p>
+                    </div>
+                  ) : assignedGnDivision ? (
+                    <div className="w-full rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-12 px-4 flex items-center">
+                      <p className="text-[#0d141b] dark:text-white text-sm font-medium">{assignedGnDivision}</p>
+                    </div>
+                  ) : (
+                    <div className="w-full rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 h-12 px-4 flex items-center">
+                      <p className="text-red-600 dark:text-red-400 text-sm">Unable to load assigned area</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-2">
+                    Your GN Division is automatically assigned based on your PHM account setup and cannot be changed manually.
+                  </p>
                 </label>
               </div>
 
