@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { dataService } from '../services/DataService';
+import { mohService } from '../services/MohService';
 import { AuthService } from '../services/AuthService';
 
 export const GenerateReportsPage: React.FC = () => {
@@ -12,19 +12,17 @@ export const GenerateReportsPage: React.FC = () => {
     startDate: '',
     endDate: ''
   });
-  const [district, setDistrict] = useState('');
-  const [dsDivision, setDsDivision] = useState('');
+  const [gnDivision, setGnDivision] = useState('');
+  const [role, setRole] = useState('');
   const [generating, setGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
-  const [generatedReportId, setGeneratedReportId] = useState<string | null>(null);
   const [generateError, setGenerateError] = useState('');
 
   const reportTypes = [
-    { value: 'vaccination_coverage', label: 'Vaccination Coverage Report', icon: 'bar_chart' },
-    { value: 'area_performance', label: 'Area Performance Report', icon: 'assignment' },
-    { value: 'audit_report', label: 'Audit Report', icon: 'history' },
-    { value: 'growth_analysis', label: 'Growth Analysis Report', icon: 'trending_up' },
-    { value: 'monthly_summary', label: 'Monthly Summary Report', icon: 'event_upcoming' },
+    { value: 'coverage', label: 'Vaccination Coverage Report', icon: 'bar_chart' },
+    { value: 'missed', label: 'Missed Vaccinations Report', icon: 'warning' },
+    { value: 'phm-performance', label: 'PHM Performance Report', icon: 'assignment' },
+    { value: 'audit', label: 'Audit Report', icon: 'history' },
   ];
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -32,31 +30,54 @@ export const GenerateReportsPage: React.FC = () => {
     setGenerateError('');
     setGenerating(true);
     try {
-      const res = await dataService.generateReport({
-        reportType,
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        district: district || undefined,
-        dsDivision: dsDivision || undefined,
-        format: 'pdf',
-      });
-      if (res?.reportId) {
-        setGeneratedReportId(res.reportId);
+      let reportData = null;
+      const params = {
+        startDate: dateRange.startDate || undefined,
+        endDate: dateRange.endDate || undefined,
+        gnDivision: gnDivision || undefined,
+        role: reportType === 'audit' ? (role || undefined) : undefined,
+      };
+
+      if (reportType === 'coverage') {
+        reportData = await mohService.getVaccinationCoverageReport(params);
+      } else if (reportType === 'missed') {
+        reportData = await mohService.getMissedVaccinationReport(params);
+      } else if (reportType === 'phm-performance') {
+        reportData = await mohService.getPHMPerformanceReport(params);
+      } else if (reportType === 'audit') {
+        reportData = await mohService.getAuditReport(params as any);
+      }
+
+      if (reportData) {
         setReportGenerated(true);
       } else {
         setGenerateError('Failed to generate report.');
       }
-    } catch {
+    } catch (err) {
+      console.error('Error generating report:', err);
       setGenerateError('Failed to generate report. Please try again.');
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleDownload = async (format: 'pdf' | 'excel' | 'csv') => {
-    if (!generatedReportId) return;
+  const handleDownload = async (format: 'pdf' | 'csv') => {
     const token = AuthService.getToken();
-    const url = `/api/v1/reports/${encodeURIComponent(generatedReportId)}/download?format=${format}`;
+
+    if (!reportType) {
+      alert('Invalid report type');
+      return;
+    }
+
+    const params = {
+      startDate: dateRange.startDate || undefined,
+      endDate: dateRange.endDate || undefined,
+      gnDivision: gnDivision || undefined,
+      role: reportType === 'audit' ? (role || undefined) : undefined,
+      format,
+    };
+
+    const url = mohService.downloadReport(reportType as any, params);
     try {
       const res = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -65,7 +86,7 @@ export const GenerateReportsPage: React.FC = () => {
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `report-${generatedReportId}.${format === 'pdf' ? 'pdf' : format === 'excel' ? 'xlsx' : 'csv'}`;
+      a.download = `report-${reportType}.${format}`;
       a.click();
       URL.revokeObjectURL(a.href);
     } catch {
@@ -103,10 +124,16 @@ export const GenerateReportsPage: React.FC = () => {
                     </span>
                   </div>
                 )}
-                {district && (
+                {gnDivision && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">District:</span>
-                    <span className="text-base font-bold text-[#0d141b] dark:text-white">{district}</span>
+                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">GN Division:</span>
+                    <span className="text-base font-bold text-[#0d141b] dark:text-white">{gnDivision}</span>
+                  </div>
+                )}
+                {role && reportType === 'audit' && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">User Role:</span>
+                    <span className="text-base font-bold text-[#0d141b] dark:text-white">{role}</span>
                   </div>
                 )}
               </div>
@@ -121,13 +148,6 @@ export const GenerateReportsPage: React.FC = () => {
                 Download PDF
               </button>
               <button
-                onClick={() => handleDownload('excel')}
-                className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
-              >
-                <span className="material-symbols-outlined">table_chart</span>
-                Download Excel
-              </button>
-              <button
                 onClick={() => handleDownload('csv')}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors"
               >
@@ -140,11 +160,10 @@ export const GenerateReportsPage: React.FC = () => {
               <button
                 onClick={() => {
                   setReportGenerated(false);
-                  setGeneratedReportId(null);
                   setReportType('');
                   setDateRange({ startDate: '', endDate: '' });
-                  setDistrict('');
-                  setDsDivision('');
+                  setGnDivision('');
+                  setRole('');
                 }}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
@@ -248,29 +267,35 @@ export const GenerateReportsPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">District</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">GN Division</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="text"
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  placeholder="All Districts"
+                  value={gnDivision}
+                  onChange={(e) => setGnDivision(e.target.value)}
+                  placeholder="All Divisions"
                 />
               </label>
             </div>
 
-            <div>
-              <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">DS Division</p>
-                <input
-                  className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
-                  type="text"
-                  value={dsDivision}
-                  onChange={(e) => setDsDivision(e.target.value)}
-                  placeholder="All DS Divisions"
-                />
-              </label>
-            </div>
+            {reportType === 'audit' && (
+              <div>
+                <label className="flex flex-col">
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">User Role</p>
+                  <select
+                    className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="moh">MOH</option>
+                    <option value="phm">PHM</option>
+                    <option value="parent">Parent</option>
+                  </select>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-4">

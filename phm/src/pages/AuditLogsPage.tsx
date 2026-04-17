@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuditLog as AuditLogType } from '../types/models';
 import { dataService } from '../services/DataService';
+import { mohService, AuditReportResponse } from '../services/MohService';
 import { AuthService } from '../services/AuthService';
 
 export const AuditLogsPage: React.FC = () => {
@@ -12,6 +13,7 @@ export const AuditLogsPage: React.FC = () => {
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterAction, setFilterAction] = useState<string>('all');
   const [auditLogs, setAuditLogs] = useState<AuditLogType[]>([]);
+  const [mohAuditData, setMohAuditData] = useState<AuditReportResponse | null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -19,25 +21,77 @@ export const AuditLogsPage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const params: Record<string, string> = { page: String(page), limit: '50' };
-    if (filterRole !== 'all') params.userRole = filterRole;
-    if (filterAction !== 'all') params.action = filterAction;
-    if (searchTerm.trim()) params.search = searchTerm.trim();
-    dataService.getAuditLogs(params).then((res) => {
-      if (!cancelled) {
-        setAuditLogs(res.data);
-        setTotal(res.total);
-      }
-      setLoading(false);
-    });
+
+    if (embeddedInMoh) {
+      // Use MOH service for audit reports
+      const params: Record<string, string | undefined> = {
+        startDate: undefined,
+        endDate: undefined,
+        role: filterRole !== 'all' ? filterRole : undefined,
+        action: filterAction !== 'all' ? filterAction : undefined,
+      };
+
+      mohService.getAuditReport(params as any).then((res) => {
+        if (!cancelled) {
+          setMohAuditData(res);
+          setTotal(res?.data?.length ?? 0);
+        }
+        setLoading(false);
+      }).catch(err => {
+        console.error('Error fetching MOH audit report:', err);
+        if (!cancelled) {
+          setMohAuditData(null);
+          setTotal(0);
+        }
+        setLoading(false);
+      });
+    } else {
+      // Use DataService for regular audit logs
+      const params: Record<string, string> = { page: String(page), limit: '50' };
+      if (filterRole !== 'all') params.userRole = filterRole;
+      if (filterAction !== 'all') params.action = filterAction;
+      if (searchTerm.trim()) params.search = searchTerm.trim();
+
+      dataService.getAuditLogs(params).then((res) => {
+        if (!cancelled) {
+          setAuditLogs(res.data);
+          setTotal(res.total);
+        }
+        setLoading(false);
+      }).catch(err => {
+        console.error('Error fetching audit logs:', err);
+        if (!cancelled) {
+          setAuditLogs([]);
+          setTotal(0);
+        }
+        setLoading(false);
+      });
+    }
+
     return () => { cancelled = true; };
-  }, [page, filterRole, filterAction, searchTerm]);
+  }, [page, filterRole, filterAction, searchTerm, embeddedInMoh]);
 
   useEffect(() => {
     setPage(1);
   }, [filterRole, filterAction, searchTerm]);
 
-  const displayLogs = auditLogs;
+
+  const getMohLogDisplayData = () => {
+    if (!mohAuditData?.data) return [];
+    return mohAuditData.data.map(log => ({
+      logId: `${log.date}-${log.user}`,
+      timestamp: new Date(log.date),
+      userName: log.user,
+      userRole: log.role,
+      action: log.action,
+      details: log.details,
+      entityType: 'System',
+      entityId: log.action,
+      ipAddress: '—',
+    })) as AuditLogType[];
+  };
+
+  const displayAuditLogs = embeddedInMoh ? getMohLogDisplayData() : auditLogs;
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -132,14 +186,14 @@ export const AuditLogsPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e7edf3] dark:divide-slate-700">
-                {displayLogs.length === 0 && !loading ? (
+                {displayAuditLogs.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-[#4c739a] dark:text-slate-400">
                       No audit logs found matching your search criteria.
                     </td>
                   </tr>
                 ) : (
-                  displayLogs.map((log) => (
+                  displayAuditLogs.map((log) => (
                     <tr key={log.logId} className="hover:bg-[#f6f7f8] dark:hover:bg-slate-800 transition-colors">
                       <td className="px-6 py-4">
                         <p className="text-sm text-[#0d141b] dark:text-white">
@@ -180,35 +234,63 @@ export const AuditLogsPage: React.FC = () => {
         </div>
 
         <div className="mt-6 flex items-center justify-between text-sm text-[#4c739a] dark:text-slate-400">
-          <p>{loading ? 'Loading...' : `Showing ${displayLogs.length} of ${total} audit logs`}</p>
-          <a
-            href={dataService.getAuditLogExportUrl({
-              userRole: filterRole !== 'all' ? filterRole : '',
-              action: filterAction !== 'all' ? filterAction : '',
-              search: searchTerm,
-              format: 'csv',
-            })}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            onClick={(e) => {
-              const token = AuthService.getToken();
-              if (token) {
-                e.preventDefault();
-                const url = (e.currentTarget as HTMLAnchorElement).href;
-                fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-                  .then((r) => r.blob())
-                  .then((blob) => {
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'audit-logs.csv';
-                    a.click();
-                    URL.revokeObjectURL(a.href);
-                  });
-              }
-            }}
-          >
-            <span className="material-symbols-outlined">download</span>
-            Export Logs
-          </a>
+          <p>{loading ? 'Loading...' : `Showing ${displayAuditLogs.length} of ${total} audit logs`}</p>
+          {!embeddedInMoh && (
+            <a
+              href={dataService.getAuditLogExportUrl({
+                userRole: filterRole !== 'all' ? filterRole : '',
+                action: filterAction !== 'all' ? filterAction : '',
+                search: searchTerm,
+                format: 'csv',
+              })}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              onClick={(e) => {
+                const token = AuthService.getToken();
+                if (token) {
+                  e.preventDefault();
+                  const url = (e.currentTarget as HTMLAnchorElement).href;
+                  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+                    .then((r) => r.blob())
+                    .then((blob) => {
+                      const a = document.createElement('a');
+                      a.href = URL.createObjectURL(blob);
+                      a.download = 'audit-logs.csv';
+                      a.click();
+                      URL.revokeObjectURL(a.href);
+                    });
+                }
+              }}
+            >
+              <span className="material-symbols-outlined">download</span>
+              Export Logs
+            </a>
+          )}
+          {embeddedInMoh && (
+            <button
+              onClick={() => {
+                const token = AuthService.getToken();
+                const url = mohService.downloadReport('audit', {
+                  role: filterRole !== 'all' ? filterRole : undefined,
+                  format: 'csv',
+                });
+                if (token) {
+                  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+                    .then((r) => r.blob())
+                    .then((blob) => {
+                      const a = document.createElement('a');
+                      a.href = URL.createObjectURL(blob);
+                      a.download = 'audit-logs.csv';
+                      a.click();
+                      URL.revokeObjectURL(a.href);
+                    });
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <span className="material-symbols-outlined">download</span>
+              Export Logs
+            </button>
+          )}
         </div>
       </div>
     </div>

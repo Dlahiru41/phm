@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { dataService } from '../services/DataService';
+import { mohService } from '../services/MohService';
 
 interface DashboardStats {
   totalChildren: number;
@@ -10,12 +10,12 @@ interface DashboardStats {
 }
 
 interface AreaPerf {
-  areaCode: string;
+  areaCode?: string;
   areaName: string;
   phmName?: string;
   totalChildren: number;
   vaccinated: number;
-  missed: number;
+  missed?: number;
   coveragePercentage: number;
 }
 
@@ -44,28 +44,79 @@ export const MohDashboardContent: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      dataService.getMOHDashboard({ period }),
-      dataService.getAreaPerformance(),
-      dataService.getVaccinationCoverage(),
-    ]).then(([dash, areaList, coverage]) => {
-      if (dash) {
-        setStats({
-          totalChildren: dash.totalChildren,
-          vaccinatedCount: dash.vaccinatedCount,
-          coveragePercentage: dash.coveragePercentage,
-          missedVaccinations: dash.missedVaccinations,
-          newRegistrationsThisMonth: dash.newRegistrationsThisMonth,
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        // Fetch all dashboard data from real API endpoints
+        const [totalChildren, coverage, missedVaccinations, phmPerformance, recentChildren, gnDistribution] = await Promise.all([
+          mohService.getTotalChildren(),
+          mohService.getVaccinationCoverage(),
+          mohService.getMissedVaccinations(),
+          mohService.getPHMPerformanceSummary(),
+          mohService.getRecentChildren(),
+          mohService.getGNDistribution(),
+        ]);
+
+        // Set stats
+        if (coverage) {
+          setStats({
+            totalChildren: coverage.totalChildren,
+            vaccinatedCount: coverage.vaccinatedChildren,
+            coveragePercentage: coverage.coverage,
+            missedVaccinations: missedVaccinations,
+            newRegistrationsThisMonth: recentChildren.length,
+          });
+        }
+
+        // Build area performance from PHM performance data and GN distribution
+        const areaMap = new Map<string, AreaPerf>();
+
+        // Initialize from GN distribution
+        gnDistribution.forEach(gn => {
+          areaMap.set(gn.gnDivision, {
+            areaName: gn.gnDivision,
+            totalChildren: gn.total,
+            vaccinated: 0,
+            missed: 0,
+            coveragePercentage: 0,
+          });
         });
+
+        // Merge with PHM performance data
+        phmPerformance.forEach(phm => {
+          const key = phm.gnDivision;
+          if (!areaMap.has(key)) {
+            areaMap.set(key, {
+              areaName: phm.gnDivision,
+              totalChildren: phm.totalChildren,
+              vaccinated: phm.vaccinated,
+              missed: 0,
+              coveragePercentage: phm.coverage,
+              phmName: phm.phmName,
+            });
+          } else {
+            const existing = areaMap.get(key)!;
+            existing.vaccinated = phm.vaccinated;
+            existing.coveragePercentage = phm.coverage;
+            existing.phmName = phm.phmName;
+          }
+        });
+
+        const areaList = Array.from(areaMap.values());
+        setAreas(areaList);
+
+        // Vaccine breakdown would need to come from coverage report
+        // For now, we'll set empty vaccines as the endpoint structure doesn't include vaccine breakdown
+        setVaccines([]);
+        setTotalDoses(0);
+      } catch (error) {
+        console.error('Error fetching MOH dashboard:', error);
+      } finally {
+        setLoading(false);
       }
-      if (Array.isArray(areaList)) setAreas(areaList as AreaPerf[]);
-      if (coverage?.byVaccine) {
-        const bv: VaccineBreakdown[] = coverage.byVaccine;
-        setVaccines(bv);
-        setTotalDoses(bv.reduce((s: number, v: VaccineBreakdown) => s + v.administered, 0));
-      }
-    }).finally(() => setLoading(false));
+    };
+
+    fetchDashboardData();
   }, [period]);
 
   // Build donut chart segments from vaccine breakdown

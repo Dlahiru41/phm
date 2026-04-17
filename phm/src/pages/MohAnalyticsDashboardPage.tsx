@@ -1,11 +1,73 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { mohService } from '../services/MohService';
+
+interface DashboardData {
+    totalChildren: number;
+    vaccinatedCount: number;
+    coverage: number;
+    missed: number;
+    areas: Array<{ name: string; total: number; vaccinated: number; coverage: number }>;
+}
 
 export const MohAnalyticsDashboardPage: React.FC = () => {
-    const navigate = useNavigate();
     const currentUser = AuthService.getCurrentUser();
     const displayName = currentUser?.name ?? currentUser?.email ?? 'MOH Officer';
+
+    const [loading, setLoading] = useState(true);
+    const [dashboardData, setDashboardData] = useState<DashboardData>({
+        totalChildren: 0,
+        vaccinatedCount: 0,
+        coverage: 0,
+        missed: 0,
+        areas: [],
+    });
+    const [bestArea, setBestArea] = useState<{ name: string; coverage: number } | null>(null);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setLoading(true);
+            try {
+                const [totalChildren, coverage, missed, phmPerformance, gnDistribution] = await Promise.all([
+                    mohService.getTotalChildren(),
+                    mohService.getVaccinationCoverage(),
+                    mohService.getMissedVaccinations(),
+                    mohService.getPHMPerformanceSummary(),
+                    mohService.getGNDistribution(),
+                ]);
+
+                const areas = gnDistribution.map(gn => {
+                    const phm = phmPerformance.find(p => p.gnDivision === gn.gnDivision);
+                    return {
+                        name: gn.gnDivision,
+                        total: gn.total,
+                        vaccinated: phm?.vaccinated ?? 0,
+                        coverage: phm?.coverage ?? 0,
+                    };
+                });
+
+                const bestPerformer = areas.length > 0
+                    ? [...areas].sort((a, b) => b.coverage - a.coverage)[0]
+                    : null;
+
+                setDashboardData({
+                    totalChildren: coverage?.totalChildren ?? totalChildren,
+                    vaccinatedCount: coverage?.vaccinatedChildren ?? 0,
+                    coverage: coverage?.coverage ?? 0,
+                    missed,
+                    areas,
+                });
+                setBestArea(bestPerformer ? { name: bestPerformer.name, coverage: bestPerformer.coverage } : null);
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
 
     return (
         <>
@@ -151,11 +213,15 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                             %</p>
                                         <span className="material-symbols-outlined text-primary">analytics</span>
                                     </div>
-                                    <p className="text-slate-900 dark:text-white tracking-tight text-3xl font-bold">94.2%</p>
+                                    <p className="text-slate-900 dark:text-white tracking-tight text-3xl font-bold">
+                                        {loading ? '—' : `${dashboardData.coverage.toFixed(1)}%`}
+                                    </p>
                                     <div className="flex items-center gap-1.5 mt-2">
                                         <span
                                             className="material-symbols-outlined text-green-500 text-[18px]">trending_up</span>
-                                        <p className="text-green-500 text-sm font-semibold">+2.1% from last month</p>
+                                        <p className="text-green-500 text-sm font-semibold">
+                                            {loading ? 'Loading...' : `${dashboardData.vaccinatedCount.toLocaleString()} vaccinated`}
+                                        </p>
                                     </div>
                                 </div>
                                 <div
@@ -165,11 +231,13 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                             Vaccinations</p>
                                         <span className="material-symbols-outlined text-red-500">warning</span>
                                     </div>
-                                    <p className="text-slate-900 dark:text-white tracking-tight text-3xl font-bold">1,204</p>
+                                    <p className="text-slate-900 dark:text-white tracking-tight text-3xl font-bold">
+                                        {loading ? '—' : dashboardData.missed.toLocaleString()}
+                                    </p>
                                     <div className="flex items-center gap-1.5 mt-2">
                                         <span
                                             className="material-symbols-outlined text-red-500 text-[18px]">trending_down</span>
-                                        <p className="text-red-500 text-sm font-semibold">-5.4% improvement</p>
+                                        <p className="text-red-500 text-sm font-semibold">Requires follow-up</p>
                                     </div>
                                 </div>
                                 <div
@@ -179,11 +247,15 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                             Registered</p>
                                         <span className="material-symbols-outlined text-blue-500">how_to_reg</span>
                                     </div>
-                                    <p className="text-slate-900 dark:text-white tracking-tight text-3xl font-bold">45,892</p>
+                                    <p className="text-slate-900 dark:text-white tracking-tight text-3xl font-bold">
+                                        {loading ? '—' : dashboardData.totalChildren.toLocaleString()}
+                                    </p>
                                     <div className="flex items-center gap-1.5 mt-2">
                                         <span
                                             className="material-symbols-outlined text-green-500 text-[18px]">add_circle</span>
-                                        <p className="text-green-500 text-sm font-semibold">+842 new entries</p>
+                                        <p className="text-green-500 text-sm font-semibold">
+                                            {loading ? 'Loading...' : '+0 new this period'}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -241,18 +313,22 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
 
                                         <div
                                             className="absolute bottom-4 left-4 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-[220px]">
-                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Selected
-                                                Area</p>
-                                            <h4 className="text-slate-900 dark:text-white font-bold text-lg leading-tight">Colombo
-                                                Municipal Council</h4>
+                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">
+                                                {loading ? 'Loading...' : 'Top Performer'}
+                                            </p>
+                                            <h4 className="text-slate-900 dark:text-white font-bold text-lg leading-tight">
+                                                {loading ? '—' : bestArea?.name ?? 'No data'}
+                                            </h4>
                                             <div className="mt-3 flex flex-col gap-2">
                                                 <div className="flex justify-between items-center text-sm">
                                                     <span className="text-slate-500">Coverage</span>
-                                                    <span className="font-bold text-green-500">97.8%</span>
+                                                    <span className="font-bold text-green-500">
+                                                        {loading ? '—' : `${bestArea?.coverage.toFixed(1)}%`}
+                                                    </span>
                                                 </div>
                                                 <div
                                                     className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                                    <div className="bg-green-500 h-full w-[97%]"></div>
+                                                    <div className="bg-green-500 h-full" style={{ width: `${loading ? 0 : Math.min(bestArea?.coverage ?? 0, 100)}%` }}></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -267,7 +343,7 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                         <div className="flex-1 flex flex-col items-center justify-center py-4">
 
                                             <div className="relative size-48">
-                                                <svg className="size-full" viewbox="0 0 36 36">
+                                                <svg className="size-full" viewBox="0 0 36 36">
                                                     <circle className="dark:stroke-slate-800" cx="18" cy="18"
                                                             fill="transparent" r="15.9" stroke="#e2e8f0"
                                                             stroke-dasharray="100" stroke-dashoffset="0"
@@ -309,31 +385,38 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                         <h3 className="text-slate-900 dark:text-white text-lg font-bold">Trend
                                             Highlights</h3>
                                         <div className="flex flex-col gap-4">
-                                            <div
-                                                className="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                                <div
-                                                    className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-                                                    <span className="material-symbols-outlined">trending_up</span>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold dark:text-white">Polio Coverage
-                                                        Up</p>
-                                                    <p className="text-xs text-slate-500">Maharagama PHM reported 99%
-                                                        coverage this week.</p>
-                                                </div>
-                                            </div>
-                                            <div
-                                                className="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                                <div
-                                                    className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
-                                                    <span className="material-symbols-outlined">schedule</span>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold dark:text-white">Backlog Warning</p>
-                                                    <p className="text-xs text-slate-500">Nugegoda area has 45 pending
-                                                        BCG registrations.</p>
-                                                </div>
-                                            </div>
+                                            {loading ? (
+                                                <p className="text-slate-400 text-sm">Loading...</p>
+                                            ) : bestArea ? (
+                                                <>
+                                                    <div
+                                                        className="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                                        <div
+                                                            className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
+                                                            <span className="material-symbols-outlined">trending_up</span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold dark:text-white">Top Performer</p>
+                                                            <p className="text-xs text-slate-500">{bestArea.name} reported {bestArea.coverage.toFixed(1)}% coverage.</p>
+                                                        </div>
+                                                    </div>
+                                                    {dashboardData.missed > 0 && (
+                                                        <div
+                                                            className="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                                            <div
+                                                                className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
+                                                                <span className="material-symbols-outlined">schedule</span>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold dark:text-white">Backlog Warning</p>
+                                                                <p className="text-xs text-slate-500">There are {dashboardData.missed.toLocaleString()} missed vaccinations requiring follow-up.</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <p className="text-slate-400 text-sm">No trend data available.</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -365,56 +448,38 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="py-4 px-4 font-bold text-slate-900 dark:text-white text-sm">Colombo
-                                                01
-                                            </td>
-                                            <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">12,450</td>
-                                            <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">12,180</td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div
-                                                        className="w-16 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                        <div className="bg-green-500 h-full w-[98%]"></div>
-                                                    </div>
-                                                    <span
-                                                        className="text-sm font-bold text-slate-900 dark:text-white">98%</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4 text-green-500 text-sm font-bold">+1.2%</td>
-                                        </tr>
-                                        <tr className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="py-4 px-4 font-bold text-slate-900 dark:text-white text-sm">Dehiwala</td>
-                                            <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">8,920</td>
-                                            <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">8,206</td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div
-                                                        className="w-16 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                        <div className="bg-primary h-full w-[92%]"></div>
-                                                    </div>
-                                                    <span
-                                                        className="text-sm font-bold text-slate-900 dark:text-white">92%</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4 text-green-500 text-sm font-bold">+0.8%</td>
-                                        </tr>
-                                        <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="py-4 px-4 font-bold text-slate-900 dark:text-white text-sm">Ratmalana</td>
-                                            <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">10,120</td>
-                                            <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">8,602</td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div
-                                                        className="w-16 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                        <div className="bg-amber-500 h-full w-[85%]"></div>
-                                                    </div>
-                                                    <span
-                                                        className="text-sm font-bold text-slate-900 dark:text-white">85%</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4 text-red-500 text-sm font-bold">-2.4%</td>
-                                        </tr>
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={5} className="py-8 text-center text-slate-400 text-sm">Loading...</td>
+                                            </tr>
+                                        ) : dashboardData.areas.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="py-8 text-center text-slate-400 text-sm">No area data available</td>
+                                            </tr>
+                                        ) : (
+                                            dashboardData.areas.map((area, idx) => {
+                                                const coverageColor = area.coverage >= 90 ? 'bg-green-500' : area.coverage >= 75 ? 'bg-primary' : 'bg-amber-500';
+                                                const isLast = idx === dashboardData.areas.length - 1;
+                                                return (
+                                                    <tr key={idx} className={`${!isLast ? 'border-b border-slate-50 dark:border-slate-800' : ''} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors`}>
+                                                        <td className="py-4 px-4 font-bold text-slate-900 dark:text-white text-sm">{area.name}</td>
+                                                        <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">{area.total.toLocaleString()}</td>
+                                                        <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm">{area.vaccinated.toLocaleString()}</td>
+                                                        <td className="py-4 px-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <div
+                                                                    className="w-16 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                                    <div className={`${coverageColor} h-full`} style={{ width: `${Math.min(area.coverage, 100)}%` }}></div>
+                                                                </div>
+                                                                <span
+                                                                    className="text-sm font-bold text-slate-900 dark:text-white">{area.coverage.toFixed(1)}%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-4 px-4 text-slate-600 dark:text-slate-400 text-sm font-semibold">—</td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
                                         </tbody>
                                     </table>
                                 </div>
