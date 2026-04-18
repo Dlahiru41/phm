@@ -126,9 +126,9 @@ export const PhmDashboardPage: React.FC = () => {
     }, [phmId, page]);
 
     // All stat values from GET /analytics/phm-dashboard (no mock fallbacks)
-    const vaccinationRate = stats && stats.totalChildrenInArea > 0
-        ? Math.round((stats.vaccinatedCount / stats.totalChildrenInArea) * 100)
-        : null;
+    // const vaccinationRate = stats && stats.totalChildrenInArea > 0
+    //     ? Math.round((stats.vaccinatedCount / stats.totalChildrenInArea) * 100)
+    //     : null;
 
     return (
         <PhmLayout activeNav="overview" showBackToDashboard={false}>
@@ -197,55 +197,6 @@ export const PhmDashboardPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div
-                            className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
-                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Upcoming Vaccinations</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">{loading || !stats ? '—' : stats.upcomingVaccinations}</span>
-                            </div>
-                            <div
-                                className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-emerald-500 h-full" style={{ width: stats && stats.totalChildrenInArea > 0 ? `${Math.min(100, (stats.upcomingVaccinations / stats.totalChildrenInArea) * 100)}%` : '0%' }}></div>
-                            </div>
-                        </div>
-                        <div
-                            className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
-                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Recent Registrations</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">{loading || !stats ? '—' : stats.recentRegistrations}</span>
-                            </div>
-                            <div
-                                className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-rose-500 h-full" style={{ width: stats && stats.totalChildrenInArea > 0 ? `${Math.min(100, (stats.recentRegistrations / stats.totalChildrenInArea) * 100)}%` : '0%' }}></div>
-                            </div>
-                        </div>
-                        <div
-                            className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
-                            <span
-                                className="text-sm font-medium text-slate-500 dark:text-slate-400">Vaccination Rate</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">{loading || vaccinationRate === null ? '—' : `${vaccinationRate}%`}</span>
-                            </div>
-                            <div
-                                className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-primary h-full" style={{ width: vaccinationRate !== null ? `${vaccinationRate}%` : '0%' }}></div>
-                            </div>
-                        </div>
-                        <div
-                            className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
-                            <span
-                                className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Records</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold">{loading || !stats ? '—' : stats.totalChildrenInArea}</span>
-                                <span className="text-xs font-bold text-slate-400">Total</span>
-                            </div>
-                            <div
-                                className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                                <div className="bg-slate-400 h-full" style={{ width: stats && stats.totalChildrenInArea > 0 ? `${Math.min(100, (stats.vaccinatedCount / stats.totalChildrenInArea) * 100)}%` : '0%' }}></div>
-                            </div>
-                        </div>
-                    </div>
 
                     <div
                         className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
