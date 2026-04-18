@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
-import type { ClinicSchedule, DueChild } from '../types/models';
+import type { ClinicSchedule, DueChild, ClinicChild } from '../types/models';
 
 type CreateClinicState = {
   clinicDate: string;
@@ -15,6 +15,11 @@ type CreateClinicState = {
 type DueChildWithInfo = DueChild & {
   fullName: string;
   ageInDays: number;
+};
+
+type ClinicChildWithInfo = ClinicChild & {
+  fullName: string;
+  attendanceStatus: 'attended' | 'not_attended' | 'pending';
 };
 
 export const ClinicSchedulingPage: React.FC = () => {
@@ -30,6 +35,10 @@ export const ClinicSchedulingPage: React.FC = () => {
   const [clinics, setClinics] = useState<ClinicSchedule[]>([]);
   const [selectedClinic, setSelectedClinic] = useState<ClinicSchedule | null>(null);
   const [dueChildren, setDueChildren] = useState<DueChildWithInfo[]>([]);
+  const [clinicChildren, setClinicChildren] = useState<ClinicChildWithInfo[]>([]);
+  const [missedAlertedCount, setMissedAlertedCount] = useState<number | null>(null);
+  const [savingAttendanceId, setSavingAttendanceId] = useState<string | null>(null);
+  const [closingClinic, setClosingClinic] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -117,6 +126,8 @@ export const ClinicSchedulingPage: React.FC = () => {
 
     try {
       const children = await dataService.getClinicDueChildren(clinic.clinicId);
+      const enrolled = await dataService.getClinicChildren(clinic.clinicId);
+
       const enriched: DueChildWithInfo[] = children.map((child) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -130,7 +141,16 @@ export const ClinicSchedulingPage: React.FC = () => {
           ageInDays,
         };
       });
+
+      const attendanceState: ClinicChildWithInfo[] = enrolled.map((child) => ({
+        ...child,
+        fullName: child.childId,
+        attendanceStatus: child.attended ? 'attended' : 'not_attended',
+      }));
+
       setDueChildren(enriched);
+      setClinicChildren(attendanceState);
+      setMissedAlertedCount(null);
       setView('details');
     } catch (err: any) {
       setError(err?.message || 'Failed to load clinic details');
@@ -139,20 +159,41 @@ export const ClinicSchedulingPage: React.FC = () => {
     }
   };
 
+  const handleAttendanceSubmit = async (childId: string, status: 'attended' | 'not_attended') => {
+    if (!selectedClinic) return;
+    setSavingAttendanceId(childId);
+    setError(null);
+    try {
+      const ok = await dataService.updateClinicChildAttendance(selectedClinic.clinicId, childId, status);
+      if (!ok) {
+        setError('Failed to update attendance');
+        return;
+      }
+      await handleViewDetails(selectedClinic);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update attendance');
+    } finally {
+      setSavingAttendanceId(null);
+    }
+  };
+
   const handleStatusUpdate = async (status: string) => {
     if (!selectedClinic) return;
+    setClosingClinic(status === 'completed');
     setLoading(true);
     setError(null);
 
     try {
-      const updated = await dataService.updateClinicStatus(
-        selectedClinic.clinicId,
-        status as any
-      );
+      const updated = await dataService.updateClinicStatus(selectedClinic.clinicId, status as any);
 
       if (updated) {
         setSelectedClinic(updated);
         setSuccessMessage(`Clinic status updated to ${status}`);
+        if (status === 'completed') {
+          const refreshed = await dataService.getClinicChildren(selectedClinic.clinicId);
+          setMissedAlertedCount(refreshed.filter((c: any) => c.attended === false).length);
+          await handleViewDetails(selectedClinic);
+        }
         setTimeout(() => {
           setSuccessMessage(null);
           setView('list');
@@ -164,6 +205,7 @@ export const ClinicSchedulingPage: React.FC = () => {
     } catch (err: any) {
       setError(err?.message || 'Failed to update clinic status');
     } finally {
+      setClosingClinic(false);
       setLoading(false);
     }
   };
@@ -175,6 +217,21 @@ export const ClinicSchedulingPage: React.FC = () => {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const getAttendanceBadge = (status: 'attended' | 'not_attended' | 'pending') => {
+    const badges: Record<string, string> = {
+      attended: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      not_attended: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      pending: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    };
+    return badges[status] || badges.pending;
+  };
+
+  const getAttendanceLabel = (status: 'attended' | 'not_attended' | 'pending') => {
+    if (status === 'attended') return 'Attended';
+    if (status === 'not_attended') return 'Not attended';
+    return 'Pending';
   };
 
   const getStatusBadge = (status: string) => {
@@ -378,149 +435,92 @@ export const ClinicSchedulingPage: React.FC = () => {
 
           {/* View: Details */}
           {view === 'details' && selectedClinic && (
-            <div>
-              <div className="mb-6">
-                <button
-                  onClick={() => {
-                    setView('list');
-                    setSelectedClinic(null);
-                    setDueChildren([]);
-                  }}
-                  className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-                >
-                  <span className="material-symbols-outlined mr-1" style={{ fontSize: '20px' }}>
-                    arrow_back
-                  </span>
-                  Back to Clinics
-                </button>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 md:p-8 mb-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                      {selectedClinic.gnDivision}
-                    </h2>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      <span className="material-icons-outlined inline text-sm mr-1" style={{ verticalAlign: 'text-bottom' }}>
-                        location_on
-                      </span>
-                      {selectedClinic.location}
-                    </p>
-                    <p className="text-slate-600 dark:text-slate-400">
-                      <span className="material-icons-outlined inline text-sm mr-1" style={{ verticalAlign: 'text-bottom' }}>
-                        calendar_today
-                      </span>
-                      {formatDate(selectedClinic.clinicDate)}
-                    </p>
-                    {selectedClinic.description && (
-                      <p className="text-slate-500 dark:text-slate-500 mt-2 text-sm italic">
-                        {selectedClinic.description}
-                      </p>
-                    )}
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Clinic Details</h2>
+                    <p className="text-slate-600 dark:text-slate-400">{selectedClinic.gnDivision} • {formatDate(selectedClinic.clinicDate)}</p>
+                  </div>
+                  {missedAlertedCount !== null && (
+                    <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-amber-800 dark:text-amber-200">
+                      Missed alerts sent: {missedAlertedCount}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Due Children</h3>
+                    <div className="space-y-3">
+                      {dueChildren.map((child) => (
+                        <div key={child.childId} className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium text-slate-900 dark:text-white">{child.fullName}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">{child.registrationNumber} • {child.vaccineName}</p>
+                            </div>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{child.ageInDays} days</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    {selectedClinic.status === 'scheduled' && (
-                      <>
-                        <button
-                          onClick={() => handleStatusUpdate('completed')}
-                          disabled={loading}
-                          className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
-                        >
-                          Mark Complete
-                        </button>
-                        <button
-                          onClick={() => handleStatusUpdate('cancelled')}
-                          disabled={loading}
-                          className="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg font-medium transition-colors"
-                        >
-                          Cancel Clinic
-                        </button>
-                      </>
-                    )}
+                  <div>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Attendance</h3>
+                    <div className="space-y-3">
+                      {clinicChildren.map((child) => (
+                        <div key={child.childId} className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div>
+                              <p className="font-medium text-slate-900 dark:text-white">{child.fullName}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">Attendance status: {child.attendanceStatus}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleAttendanceSubmit(child.childId, 'attended')}
+                                disabled={savingAttendanceId === child.childId || child.attendanceStatus === 'attended'}
+                                className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50"
+                              >
+                                {savingAttendanceId === child.childId && child.attendanceStatus !== 'attended' ? 'Saving...' : 'Attended'}
+                              </button>
+                              <button
+                                onClick={() => handleAttendanceSubmit(child.childId, 'not_attended')}
+                                disabled={savingAttendanceId === child.childId || child.attendanceStatus === 'not_attended'}
+                                className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50"
+                              >
+                                {savingAttendanceId === child.childId && child.attendanceStatus !== 'not_attended' ? 'Saving...' : 'Not attended'}
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getAttendanceBadge(child.attendanceStatus)}`}>
+                              {getAttendanceLabel(child.attendanceStatus)}
+                            </span>
+                            {child.attendanceStatus === 'pending' && (
+                              <span className="text-xs text-slate-500 dark:text-slate-400">No attendance recorded yet</span>
+                            )}
+                          </div>
+                          {child.attendanceStatus === 'not_attended' && (
+                            <p className="mt-2 text-xs text-red-600 dark:text-red-400">Missed notification sent</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-blue-900 dark:text-blue-200">
-                    <strong>Status:</strong> <span className={`px-2 py-1 rounded text-sm ${getStatusBadge(selectedClinic.status)}`}>{selectedClinic.status}</span>
-                  </p>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => handleStatusUpdate('completed')}
+                    disabled={closingClinic}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {closingClinic ? 'Closing Clinic...' : 'Mark Clinic Completed'}
+                  </button>
+                  <button onClick={() => setView('list')} className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-medium transition-colors">Back</button>
                 </div>
-              </div>
-
-              {/* Due Children */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 md:p-8">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-                  Children Due for Vaccination ({dueChildren.length})
-                </h3>
-
-                {loading ? (
-                  <p className="text-slate-600 dark:text-slate-400">Loading due children...</p>
-                ) : dueChildren.length === 0 ? (
-                  <p className="text-slate-600 dark:text-slate-400">No children due for vaccination on this clinic date.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-700">
-                          <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                            Child Name
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                            Registration
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                            Age
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                            Vaccine
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                            Due Date
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
-                            Parent Contact
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dueChildren.map((child) => (
-                          <tr
-                            key={child.childId}
-                            className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30"
-                          >
-                            <td className="py-3 px-4 text-slate-900 dark:text-white">{child.fullName}</td>
-                            <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                              {child.registrationNumber}
-                            </td>
-                            <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                              {Math.floor(child.ageInDays / 30)} months
-                            </td>
-                            <td className="py-3 px-4 text-slate-900 dark:text-white font-medium">
-                              {child.vaccineName}
-                            </td>
-                            <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                              {formatDate(child.nextDueDate)}
-                            </td>
-                            <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                              {child.parentPhone ? (
-                                <a
-                                  href={`tel:${child.parentPhone}`}
-                                  className="text-blue-600 dark:text-blue-400 hover:underline"
-                                >
-                                  {child.parentPhone}
-                                </a>
-                              ) : (
-                                <span className="text-slate-400">Not linked</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
               </div>
             </div>
           )}

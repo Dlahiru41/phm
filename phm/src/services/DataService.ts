@@ -19,6 +19,7 @@ import {
   DueChild,
   ClinicChild,
   VaccinationDue,
+  VaccinationDueRecord,
 } from '../types/models';
 
 function parseDate(v: string | Date | undefined): Date {
@@ -204,6 +205,22 @@ function vaccinationDueFromApi(a: any): VaccinationDue {
     vaccineName: a.vaccineName,
     nextDueDate: parseDate(a.nextDueDate),
     clinicReminder: a.clinicReminder,
+  };
+}
+
+function vaccinationDueRecordFromApi(a: any): VaccinationDueRecord {
+  return {
+    scheduleId: a.scheduleId,
+    childId: a.childId,
+    childName: a.childName,
+    registrationNumber: a.registrationNumber || '',
+    vaccineId: a.vaccineId,
+    vaccineName: a.vaccineName,
+    dueDate: parseDate(a.dueDate),
+    status: (a.status as ScheduleStatus) || ScheduleStatus.PENDING,
+    reminderSent: !!a.reminderSent,
+    missedNotified: !!a.missedNotified,
+    dueNotificationText: a.dueNotificationText || '',
   };
 }
 
@@ -521,65 +538,24 @@ class DataService {
     }
   }
 
-  async updateVaccinationRecord(
-    recordId: string,
-    body: Partial<{
-      vaccineId: string;
-      administeredDate: string;
-      batchNumber: string;
-      administeredBy: string;
-      location: string;
-      site: string;
-      doseNumber: number;
-      nextDueDate: string;
-      status: string;
-      notes: string;
-    }>
-  ): Promise<boolean> {
+  async getVaccinationRecordsDuePHM(): Promise<VaccinationDueRecord[]> {
     try {
-      await api.put(`/vaccination-records/${encodeURIComponent(recordId)}`, body);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  async deleteVaccinationRecord(recordId: string): Promise<boolean> {
-    try {
-      await api.delete(`/vaccination-records/${encodeURIComponent(recordId)}`);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  async getGrowthRecordsByChild(
-    childId: string,
-    startDate?: string,
-    endDate?: string
-  ): Promise<GrowthRecord[]> {
-    try {
-      const p: Record<string, string> = { childId };
-      if (startDate) p.startDate = startDate;
-      if (endDate) p.endDate = endDate;
-      const list = await api.get<any[]>('/growth-records', p);
-      return Array.isArray(list) ? list.map(growthRecordFromApi) : [];
+      const list = await api.get<any[]>('/vaccination-records/due/phm');
+      return Array.isArray(list) ? list.map(vaccinationDueRecordFromApi) : [];
     } catch {
       return [];
     }
   }
 
-  async createGrowthRecord(body: {
-    childId: string;
-    recordedDate: string;
-    height: number;
-    weight: number;
-    headCircumference?: number;
-    recordedBy?: string;
+  async trackVaccinationRecord(body: {
+    scheduleId: string;
+    status: 'completed' | 'not_attended';
+    administeredDate?: string;
+    location?: string;
     notes?: string;
-  }): Promise<{ recordId: string } | null> {
+  }): Promise<{ message?: string } | null> {
     try {
-      const res = await api.post<{ recordId: string }>('/growth-records', body);
+      const res = await api.post<{ message?: string }>('/vaccination-records/tracking', body);
       return res ?? null;
     } catch {
       return null;
@@ -946,9 +922,9 @@ class DataService {
     }
   }
 
-  async updateClinicChildAttendance(clinicId: string, childId: string, attended: boolean): Promise<boolean> {
+  async updateClinicChildAttendance(clinicId: string, childId: string, status: 'attended' | 'not_attended'): Promise<boolean> {
     try {
-      await api.post(`/clinics/${encodeURIComponent(clinicId)}/attendance`, { childId, attended });
+      await api.post(`/clinics/${encodeURIComponent(clinicId)}/attendance`, { childId, status });
       return true;
     } catch {
       return false;

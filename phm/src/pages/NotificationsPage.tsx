@@ -79,6 +79,8 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.VACCINATION_DUE:
         return 'event_upcoming';
       case NotificationType.MISSED:
+      case NotificationType.MISSED_VACCINATION:
+      case NotificationType.MISSED_CLINIC:
         return 'warning';
       case NotificationType.REMINDER:
         return 'notifications_active';
@@ -99,6 +101,8 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.VACCINATION_DUE:
         return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
       case NotificationType.MISSED:
+      case NotificationType.MISSED_VACCINATION:
+      case NotificationType.MISSED_CLINIC:
         return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
       case NotificationType.REMINDER:
         return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
@@ -119,6 +123,10 @@ export const NotificationsPage: React.FC = () => {
         return 'Upcoming Vaccination';
       case NotificationType.MISSED:
         return 'Missed Vaccination';
+      case NotificationType.MISSED_VACCINATION:
+        return 'Missed Vaccination';
+      case NotificationType.MISSED_CLINIC:
+        return 'Missed Clinic';
       case NotificationType.REMINDER:
         return 'Vaccination Reminder';
       case NotificationType.VACCINATION_DUE:
@@ -127,8 +135,10 @@ export const NotificationsPage: React.FC = () => {
         return 'Growth Record Update';
       case NotificationType.CLINIC_REMINDER:
         return 'Clinic Reminder';
-      case 'child_linked' as any:
+      case NotificationType.CHILD_LINKED:
         return 'Child Account Linked';
+      case NotificationType.VACCINATION_COMPLETED:
+        return 'Vaccination Completed';
       default:
         return 'Notification';
     }
@@ -184,7 +194,7 @@ export const NotificationsPage: React.FC = () => {
           >
             All
           </button>
-          {[NotificationType.VACCINATION_DUE, NotificationType.MISSED, NotificationType.GROWTH_RECORD, NotificationType.CLINIC_REMINDER].map(
+          {[NotificationType.VACCINATION_DUE, NotificationType.MISSED, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.GROWTH_RECORD, NotificationType.CLINIC_REMINDER, NotificationType.CHILD_LINKED, NotificationType.VACCINATION_COMPLETED].map(
             (type) => (
               <button
                 key={type}
@@ -234,7 +244,7 @@ export const NotificationsPage: React.FC = () => {
                     className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
                       notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE
                         ? 'bg-blue-100 dark:bg-blue-900/30'
-                        : notification.type === NotificationType.MISSED
+                        : notification.type === NotificationType.MISSED || notification.type === NotificationType.MISSED_VACCINATION || notification.type === NotificationType.MISSED_CLINIC
                         ? 'bg-red-100 dark:bg-red-900/30'
                         : notification.type === NotificationType.REMINDER
                         ? 'bg-yellow-100 dark:bg-yellow-900/30'
@@ -249,7 +259,7 @@ export const NotificationsPage: React.FC = () => {
                       className={`material-symbols-outlined text-xl ${
                         notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE
                           ? 'text-blue-600 dark:text-blue-400'
-                          : notification.type === NotificationType.MISSED
+                          : notification.type === NotificationType.MISSED || notification.type === NotificationType.MISSED_VACCINATION || notification.type === NotificationType.MISSED_CLINIC
                           ? 'text-red-600 dark:text-red-400'
                           : notification.type === NotificationType.REMINDER
                           ? 'text-yellow-600 dark:text-yellow-400'

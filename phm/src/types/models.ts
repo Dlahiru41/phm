@@ -22,7 +22,9 @@ export enum NotificationType {
   GROWTH_RECORD = 'growth_record',
   CHILD_LINKED = 'child_linked',
   VACCINATION_COMPLETED = 'vaccination_completed',
-  CLINIC_REMINDER = 'clinic_reminder'
+  CLINIC_REMINDER = 'clinic_reminder',
+  MISSED_VACCINATION = 'missed_vaccination',
+  MISSED_CLINIC = 'missed_clinic'
 }
 
 export enum ScheduleStatus {
@@ -456,4 +458,31 @@ export interface VaccinationDue {
   vaccineName: string;
   nextDueDate: Date;
   clinicReminder: string;
+}
+
+export interface VaccinationDueRecord {
+  scheduleId: string;
+  childId: string;
+  childName: string;
+  registrationNumber: string;
+  vaccineId: string;
+  vaccineName: string;
+  dueDate: Date;
+  status: ScheduleStatus;
+  reminderSent: boolean;
+  missedNotified: boolean;
+  dueNotificationText: string;
+}
+
+export interface VaccinationTrackingRequest {
+  scheduleId: string;
+  status: 'completed' | 'not_attended';
+  administeredDate?: string;
+  location?: string;
+  notes?: string;
+}
+
+export interface ClinicAttendanceStatus {
+  childId: string;
+  status: 'attended' | 'not_attended';
 }

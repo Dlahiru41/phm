@@ -1,9 +1,9 @@
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
 import { PhmLayout } from '../components/PhmLayout';
-import { Child, Vaccine } from '../types/models';
+import { Child, Vaccine, VaccinationDueRecord } from '../types/models';
 
 export const RecordVaccinationPage: React.FC = () => {
   const location = useLocation();
@@ -12,6 +12,7 @@ export const RecordVaccinationPage: React.FC = () => {
 
   const [children, setChildren] = useState<Child[]>([]);
   const [vaccines, setVaccines] = useState<Vaccine[]>([]);
+  const [records, setRecords] = useState<VaccinationDueRecord[]>([]);
   const [formData, setFormData] = useState({
     childId: childIdFromState || '',
     vaccineId: '',
@@ -22,27 +23,52 @@ export const RecordVaccinationPage: React.FC = () => {
     location: '',
     site: '',
     nextDueDate: '',
-    notes: ''
+    notes: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [actionMessage, setActionMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [submittingForm, setSubmittingForm] = useState(false);
 
   useEffect(() => {
+    if (!AuthService.isPHM()) {
+      navigate('/');
+      return;
+    }
+
     const user = AuthService.getCurrentUser();
     const registeredBy = (user as any)?.phmId || user?.userId || '';
     if (registeredBy) dataService.getChildrenByPHM(registeredBy).then(setChildren);
     dataService.getAllVaccines().then(setVaccines);
-  }, []);
+    loadDueRecords();
+  }, [navigate]);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const loadDueRecords = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const list = await dataService.getVaccinationRecordsDuePHM();
+      setRecords(list);
+    } catch {
+      setError('Failed to load vaccination due items.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    if (!formData.childId || !formData.vaccineId || !formData.dateGiven) {
+    setSubmittingForm(true);
+
+    if (!formData.childId || !formData.vaccineId || !formData.dateGiven || !formData.administeredBy) {
       setError('Please fill in all required fields');
+      setSubmittingForm(false);
       return;
     }
-    setSubmitting(true);
+
     try {
       const res = await dataService.createVaccinationRecord({
         childId: formData.childId,
@@ -57,56 +83,77 @@ export const RecordVaccinationPage: React.FC = () => {
         status: 'administered',
         notes: formData.notes || undefined,
       });
+
       if (res?.recordId) {
         setSuccess(true);
-        setTimeout(() => navigate('/view-area-children'), 2000);
+        setTimeout(() => navigate('/phm-dashboard'), 2000);
       } else {
         setError('Failed to record vaccination. Please try again.');
       }
     } catch {
       setError('Failed to record vaccination. Please try again.');
     } finally {
-      setSubmitting(false);
+      setSubmittingForm(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  if (success) {
-    return (
-      <PhmLayout activeNav="record-vaccination" showBackToDashboard={true}>
-        <div className="flex min-h-[60vh] items-center justify-center px-6">
-          <div className="w-full max-w-md text-center">
-            <div className="mb-6">
-              <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
-            </div>
-            <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">Vaccination Recorded!</h2>
-            <p className="text-[#4c739a] dark:text-slate-400 mb-6">The vaccination has been successfully recorded in the system.</p>
-            <button
-              type="button"
-              onClick={() => navigate('/phm-dashboard')}
-              className="inline-flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
-            >
-              Return to Dashboard
-            </button>
-          </div>
-        </div>
-      </PhmLayout>
+  const handleTrack = async (record: VaccinationDueRecord, status: 'completed' | 'not_attended') => {
+    setSubmittingId(record.scheduleId);
+    setError('');
+    setActionMessage('');
+
+    const previous = records;
+    const optimisticStatus = status === 'completed' ? 'completed' : 'missed';
+    setRecords((prev) =>
+      prev.map((item) =>
+        item.scheduleId === record.scheduleId
+          ? { ...item, status: optimisticStatus as any, missedNotified: status === 'not_attended' ? true : item.missedNotified }
+          : item
+      )
     );
-  }
+
+    try {
+      const result = await dataService.trackVaccinationRecord({
+        scheduleId: record.scheduleId,
+        status,
+      });
+      if (result !== null) {
+        setActionMessage(status === 'completed' ? 'Vaccination marked completed.' : 'Vaccination marked as not attended.');
+        await loadDueRecords();
+      } else {
+        setRecords(previous);
+        setError('Failed to update vaccination status.');
+      }
+    } catch {
+      setRecords(previous);
+      setError('Failed to update vaccination status.');
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  const formatDate = (value: Date) => value.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
     <PhmLayout activeNav="record-vaccination" showBackToDashboard={true}>
-      <div className="w-full max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-8">
+      <div className="w-full max-w-6xl mx-auto px-6 py-12 space-y-10">
+        <div className="mb-2">
           <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Record Vaccination</h1>
-          <p className="text-[#4c739a] dark:text-slate-400">Record vaccination details for a registered child.</p>
+          <p className="text-[#4c739a] dark:text-slate-400">Record a completed vaccination, then review due and missed items below.</p>
         </div>
+
+        {success && (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">
+            Vaccination recorded successfully.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -199,6 +246,7 @@ export const RecordVaccinationPage: React.FC = () => {
                   name="administeredBy"
                   value={formData.administeredBy}
                   onChange={handleChange}
+                  required
                 />
               </label>
             </div>
@@ -265,13 +313,80 @@ export const RecordVaccinationPage: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+              disabled={submittingForm}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-50"
             >
               <span className="material-symbols-outlined">save</span>
-              Save Vaccination Record
+              {submittingForm ? 'Saving...' : 'Save Vaccination Record'}
             </button>
           </div>
         </form>
+
+        <div className="overflow-hidden rounded-2xl border border-[#e7edf3] dark:border-slate-700 bg-white dark:bg-[#1a2632] shadow-sm">
+          <div className="border-b border-[#e7edf3] dark:border-slate-700 px-6 py-4">
+            <h2 className="text-xl font-bold text-[#0d141b] dark:text-white">Vaccination Due List</h2>
+            <p className="text-sm text-[#4c739a] dark:text-slate-400">Review due and missed vaccinations, then mark the outcome.</p>
+          </div>
+          {loading ? (
+            <div className="p-10 text-center text-[#4c739a] dark:text-slate-400">Loading due vaccinations...</div>
+          ) : records.length === 0 ? (
+            <div className="p-10 text-center text-[#4c739a] dark:text-slate-400">No due vaccinations found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-[#e7edf3] dark:divide-slate-700">
+                <thead className="bg-slate-50 dark:bg-slate-800/60">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Child name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Registration no</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Vaccine</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Due date</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Current status</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#e7edf3] dark:divide-slate-700">
+                  {records.map((record) => (
+                    <tr key={record.scheduleId} className={record.status === 'missed' ? 'bg-red-50/60 dark:bg-red-900/10' : ''}>
+                      <td className="px-6 py-4 text-sm font-medium text-[#0d141b] dark:text-white">{record.childName}</td>
+                      <td className="px-6 py-4 text-sm text-[#4c739a] dark:text-slate-400">{record.registrationNumber}</td>
+                      <td className="px-6 py-4 text-sm text-[#4c739a] dark:text-slate-400">{record.vaccineName}</td>
+                      <td className="px-6 py-4 text-sm text-[#4c739a] dark:text-slate-400">{formatDate(record.dueDate)}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${record.status === 'missed' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : record.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'}`}>
+                            {record.status}
+                          </span>
+                          {record.reminderSent && <span className="text-xs text-amber-600 dark:text-amber-400">Reminder sent</span>}
+                          {record.missedNotified && <span className="text-xs text-red-600 dark:text-red-400">Missed notification sent</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={submittingId === record.scheduleId}
+                            onClick={() => handleTrack(record, 'completed')}
+                            className="rounded-lg bg-green-600 px-3 py-2 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Mark Completed
+                          </button>
+                          <button
+                            type="button"
+                            disabled={submittingId === record.scheduleId}
+                            onClick={() => handleTrack(record, 'not_attended')}
+                            className="rounded-lg bg-red-600 px-3 py-2 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+                          >
+                            Mark Not Attended
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </PhmLayout>
   );
