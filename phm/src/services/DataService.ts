@@ -852,6 +852,23 @@ class DataService {
     }
   }
 
+  async createGrowthRecord(body: {
+    childId: string;
+    recordedDate: string;
+    height: number;
+    weight: number;
+    headCircumference?: number;
+    recordedBy?: string;
+    notes?: string;
+  }): Promise<{ recordId: string } | null> {
+    try {
+      const res = await api.post<{ recordId: string }>('/growth-records', body);
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   // Clinic Scheduling Methods
   async createClinic(body: {
     clinicDate: string;
