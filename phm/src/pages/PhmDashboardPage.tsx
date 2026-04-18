@@ -134,13 +134,6 @@ export const PhmDashboardPage: React.FC = () => {
                                 aria-label="Search"
                             />
                         </div>
-                        <Link
-                            to="/notifications"
-                            className="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                        >
-                            <span className="material-symbols-outlined">notifications</span>
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" aria-hidden />
-                        </Link>
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate max-w-[140px] sm:max-w-[180px]" title={currentUser?.name || currentUser?.email || ''}>
                                 {currentUser?.name || currentUser?.email || 'PHM User'}
