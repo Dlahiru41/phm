@@ -1,5 +1,3 @@
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { VaccinationCardPayload } from '../types/models';
@@ -399,31 +397,70 @@ export default function VaccinationCardPage() {
     setError(null);
 
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        removeContainer: true,
-      });
+      // Hide toolbar during print
+      const toolbar = cardRef.current.parentElement?.querySelector('[style*="space-between"]');
+      const errorDiv = cardRef.current.parentElement?.querySelector('[style*="FCEBEB"]');
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdfW = 210; // A4 width in mm
-      const pdfH = (canvas.height / canvas.width) * pdfW;
+      if (toolbar) toolbar.style.display = 'none';
+      if (errorDiv) errorDiv.style.display = 'none';
 
-      const pdf = new jsPDF({
-        unit: 'mm',
-        format: [pdfW, pdfH],
-        orientation: 'portrait',
-      });
+      // Set up print styles
+      const printStyle = document.createElement('style');
+      printStyle.innerHTML = `
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #vaccination-card-container, #vaccination-card-container * {
+            visibility: visible;
+          }
+          #vaccination-card-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+          }
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+        }
+      `;
+      document.head.appendChild(printStyle);
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'FAST');
-      pdf.save(data.fileName || 'vaccination-card.pdf');
+      // Mark the card container for printing
+      cardRef.current.id = 'vaccination-card-container';
+
+      // Trigger print dialog
+      window.print();
+
+      // Handle after print
+      window.addEventListener('afterprint', () => {
+        // Show toolbar again
+        if (toolbar) toolbar.style.display = 'flex';
+        if (errorDiv) errorDiv.style.display = 'block';
+
+        // Remove print styles
+        document.head.removeChild(printStyle);
+        cardRef.current.id = '';
+
+        setDownloading(false);
+      }, { once: true });
+
+      // Also handle if user cancels print
+      setTimeout(() => {
+        if (downloading) {
+          if (toolbar) toolbar.style.display = 'flex';
+          if (errorDiv) errorDiv.style.display = 'block';
+          document.head.removeChild(printStyle);
+          cardRef.current.id = '';
+          setDownloading(false);
+        }
+      }, 3000);
     } catch (err) {
-      console.error('PDF generation failed:', err);
-      setError('Could not generate PDF. Please try again.');
-    } finally {
+      console.error('Print failed:', err);
+      setError('Could not open print dialog. Please try again.');
       setDownloading(false);
     }
   };
@@ -539,6 +576,7 @@ export default function VaccinationCardPage() {
         <button
           onClick={handleDownload}
           disabled={downloading || !data}
+          title="Press Ctrl+P or click to print (then save as PDF)"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -569,7 +607,7 @@ export default function VaccinationCardPage() {
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 6v6l4 2" />
               </svg>
-              Generating…
+              Opening Print…
             </>
           ) : (
             <>
@@ -581,11 +619,11 @@ export default function VaccinationCardPage() {
                 stroke="currentColor"
                 strokeWidth="2"
               >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
               </svg>
-              Download PDF
+              Print (Ctrl+P)
             </>
           )}
         </button>
@@ -608,7 +646,14 @@ export default function VaccinationCardPage() {
       )}
 
       {/* Card preview — this DOM node is captured by html2canvas */}
-      <div ref={cardRef}>
+      <div
+        ref={cardRef}
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+        }}
+      >
         {data && <VaccinationCardView data={data} />}
       </div>
 
