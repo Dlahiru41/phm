@@ -19,6 +19,7 @@ type DueChildWithInfo = DueChild & {
 
 type ClinicChildWithInfo = ClinicChild & {
   fullName: string;
+  registrationNumber: string;
   attendanceStatus: 'attended' | 'not_attended' | 'pending';
 };
 
@@ -148,15 +149,18 @@ export const ClinicSchedulingPage: React.FC = () => {
             const fullChildData = await dataService.getChild(child.childId);
             const firstName = fullChildData?.firstName || 'Unknown';
             const lastName = fullChildData?.lastName || '';
+            const registrationNumber = fullChildData?.registrationNumber || '—';
             return {
               ...child,
               fullName: `${firstName} ${lastName}`.trim(),
+              registrationNumber,
               attendanceStatus: child.attended ? 'attended' : 'not_attended',
             };
           } catch {
             return {
               ...child,
               fullName: 'Unknown',
+              registrationNumber: '—',
               attendanceStatus: child.attended ? 'attended' : 'not_attended',
             };
           }
@@ -490,7 +494,7 @@ export const ClinicSchedulingPage: React.FC = () => {
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                             <div>
                               <p className="font-medium text-slate-900 dark:text-white">{child.fullName}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">ID: {child.childId}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">Reg #: {child.registrationNumber}</p>
                             </div>
                             <div className="flex gap-2">
                               <button

@@ -119,7 +119,7 @@ export const ChildDetailsModal: React.FC<ChildDetailsModalProps> = ({
                     {child.firstName} {child.lastName}
                   </h4>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Registration: {child.registrationNumber || '—'}
+                    Registration #: {child.registrationNumber || '—'}
                   </p>
                 </div>
               </div>
@@ -199,5 +199,6 @@ export const ChildDetailsModal: React.FC<ChildDetailsModalProps> = ({
     </div>
   );
 };
+
 
 
