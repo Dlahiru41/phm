@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
+import { VaccinationCardButton } from '../components/VaccinationCardButton';
 import type { VaccinationRecord } from '../types/models';
 
 type ParentDashboardChild = {
@@ -129,7 +130,7 @@ export const ParentDashboardMobilePage: React.FC = () => {
                         <label
                             className="flex cursor-pointer h-full items-center justify-center rounded px-4 bg-white dark:bg-slate-600 shadow-sm text-primary text-xs font-bold">
                             <span>EN</span>
-                            <input checked="" className="hidden" name="lang" type="radio" value="English"/>
+                            <input defaultChecked className="hidden" name="lang" type="radio" value="English"/>
                         </label>
                         <label
                             className="flex cursor-pointer h-full items-center justify-center rounded px-4 text-[#4c739a] dark:text-slate-400 text-xs font-bold">
@@ -198,6 +199,12 @@ export const ParentDashboardMobilePage: React.FC = () => {
                                     >
                                         View full history
                                     </button>
+                                    <VaccinationCardButton
+                                        childId={child.childId}
+                                        childName={child.name}
+                                        variant="secondary"
+                                        style={{ width: '100%', justifyContent: 'center' }}
+                                    />
                                 </div>
                             );
                         })}

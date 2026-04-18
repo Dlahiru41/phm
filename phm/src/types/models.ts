@@ -486,3 +486,29 @@ export interface ClinicAttendanceStatus {
   childId: string;
   status: 'attended' | 'not_attended';
 }
+
+// Vaccination Card Types
+export interface VaccinationCardRecord {
+  vaccineName: string;
+  doseNumber: number;
+  dateGiven: string;
+  nextDueDate: string;
+  status: 'administered' | 'pending' | 'overdue';
+}
+
+export interface VaccinationCardChild {
+  childId: string;
+  name: string;
+  dateOfBirth: string;
+  registrationNumber: string;
+  gender: string;
+}
+
+export interface VaccinationCardPayload {
+  title: string;
+  fileName: string;
+  generatedAt: string;
+  child: VaccinationCardChild;
+  vaccinationHistory: VaccinationCardRecord[];
+}
+

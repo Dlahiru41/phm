@@ -7,6 +7,7 @@ import { PhmDashboardPage } from '../pages/PhmDashboardPage';
 import { ChildProfileSchedulePage } from '../pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from '../pages/GrowthChartPage';
 import { MohAnalyticsDashboardPage } from '../pages/MohAnalyticsDashboardPage';
+import VaccinationCardPage from '../pages/VaccinationCardPage';
 
 export const routes: Route[] = [
   {
@@ -43,6 +44,11 @@ export const routes: Route[] = [
     path: '/growth-chart/:childId',
     name: 'Growth Chart',
     component: async () => GrowthChartPage(),
+  },
+  {
+    path: '/vaccination-card/:childId',
+    name: 'Vaccination Card',
+    component: async () => VaccinationCardPage(),
   },
   {
     path: '/moh-analytics-dashboard',

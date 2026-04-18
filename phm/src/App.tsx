@@ -12,6 +12,7 @@ import { PhmDashboardPage } from './pages/PhmDashboardPage';
 import { ClinicSchedulingPage } from './pages/ClinicSchedulingPage';
 import { ChildProfileSchedulePage } from './pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from './pages/GrowthChartPage';
+import VaccinationCardPage from './pages/VaccinationCardPage';
 import { MohLayout } from './components/MohLayout';
 import { MohDashboardContent } from './pages/MohDashboardContent';
 import { RegionalAnalyticsPage } from './pages/RegionalAnalyticsPage';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
       <Route path="/add-child" element={<AddChildPage />} />
       <Route path="/child-profile-schedule" element={<ChildProfileSchedulePage />} />
       <Route path="/growth-chart/:childId" element={<GrowthChartPage />} />
+      <Route path="/vaccination-card/:childId" element={<VaccinationCardPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/vaccine-guide" element={<VaccineGuidePage />} />

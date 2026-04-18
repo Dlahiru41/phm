@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
+import { VaccinationCardButton } from '../components/VaccinationCardButton';
 import type { VaccinationRecord } from '../types/models';
 
 type ParentDashboardChild = {
@@ -184,7 +185,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                     className="flex h-9 items-center justify-center rounded-lg bg-[#e7edf3] dark:bg-slate-700 p-1">
                                     <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 bg-white dark:bg-slate-600 shadow-sm text-primary text-xs font-bold">
                                         <span>EN</span>
-                                        <input checked="" className="hidden" name="lang" type="radio" value="English"/>
+                                        <input defaultChecked className="hidden" name="lang" type="radio" value="English"/>
                                     </label>
                                     <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold">
                                         <span>සිං</span>
@@ -270,6 +271,12 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                             className="w-full py-3 bg-[#e7edf3] dark:bg-slate-700 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary font-bold rounded-lg transition-colors">
                                             View Full History
                                         </button>
+                                        <VaccinationCardButton
+                                            childId={child.childId}
+                                            childName={child.name}
+                                            variant="primary"
+                                            style={{ width: '100%', padding: '12px 16px', fontSize: '14px' }}
+                                        />
                                     </div>
                                 );
                             })}
