@@ -142,11 +142,26 @@ export const ClinicSchedulingPage: React.FC = () => {
         };
       });
 
-      const attendanceState: ClinicChildWithInfo[] = enrolled.map((child) => ({
-        ...child,
-        fullName: child.childId,
-        attendanceStatus: child.attended ? 'attended' : 'not_attended',
-      }));
+      const attendanceState: ClinicChildWithInfo[] = await Promise.all(
+        enrolled.map(async (child) => {
+          try {
+            const fullChildData = await dataService.getChild(child.childId);
+            const firstName = fullChildData?.firstName || 'Unknown';
+            const lastName = fullChildData?.lastName || '';
+            return {
+              ...child,
+              fullName: `${firstName} ${lastName}`.trim(),
+              attendanceStatus: child.attended ? 'attended' : 'not_attended',
+            };
+          } catch {
+            return {
+              ...child,
+              fullName: 'Unknown',
+              attendanceStatus: child.attended ? 'attended' : 'not_attended',
+            };
+          }
+        })
+      );
 
       setDueChildren(enriched);
       setClinicChildren(attendanceState);
@@ -475,7 +490,7 @@ export const ClinicSchedulingPage: React.FC = () => {
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                             <div>
                               <p className="font-medium text-slate-900 dark:text-white">{child.fullName}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">Attendance status: {child.attendanceStatus}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">ID: {child.childId}</p>
                             </div>
                             <div className="flex gap-2">
                               <button
