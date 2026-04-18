@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
+import { ChildDetailsModal } from '../components/ChildDetailsModal';
 import type { Child } from '../types/models';
 
 type PhmDashboardStats = {
@@ -31,6 +32,7 @@ export const PhmDashboardPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [totalChildren, setTotalChildren] = useState(0);
     const [passwordJustChanged, setPasswordJustChanged] = useState(false);
+    const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
     const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId ?? '';
     const areaName = (currentUser as { assignedRegion?: string; areaCode?: string })?.assignedRegion
@@ -312,7 +314,7 @@ export const PhmDashboardPage: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
                                                     <button
-                                                        onClick={() => navigate(`/child-profile-schedule?childId=${c.childId}`)}
+                                                        onClick={() => setSelectedChildId(c.childId)}
                                                         className={c.statusDisplay === 'missed' ? 'text-rose-600 hover:underline text-sm font-semibold' : 'text-primary hover:underline text-sm font-semibold'}
                                                     >
                                                         {c.statusDisplay === 'missed' ? 'Call Parent' : 'Details'}
@@ -439,6 +441,11 @@ export const PhmDashboardPage: React.FC = () => {
                     </div>
                 </footer>
             </div>
+            <ChildDetailsModal
+                isOpen={!!selectedChildId}
+                childId={selectedChildId || ''}
+                onClose={() => setSelectedChildId(null)}
+            />
         </PhmLayout>
     );
 };
