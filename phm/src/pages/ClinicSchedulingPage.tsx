@@ -499,17 +499,17 @@ export const ClinicSchedulingPage: React.FC = () => {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'attended')}
-                                disabled={savingAttendanceId === child.childId || child.attendanceStatus === 'attended'}
-                                className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50"
+                                disabled={savingAttendanceId === child.childId}
+                                className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50 hover:bg-green-700 transition-colors"
                               >
-                                {savingAttendanceId === child.childId && child.attendanceStatus !== 'attended' ? 'Saving...' : 'Attended'}
+                                {savingAttendanceId === child.childId ? 'Saving...' : 'Attended'}
                               </button>
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'not_attended')}
-                                disabled={savingAttendanceId === child.childId || child.attendanceStatus === 'not_attended'}
-                                className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50"
+                                disabled={savingAttendanceId === child.childId}
+                                className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50 hover:bg-red-700 transition-colors"
                               >
-                                {savingAttendanceId === child.childId && child.attendanceStatus !== 'not_attended' ? 'Saving...' : 'Not attended'}
+                                {savingAttendanceId === child.childId ? 'Saving...' : 'Not attended'}
                               </button>
                             </div>
                           </div>
