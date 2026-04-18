@@ -33,6 +33,8 @@ export const PhmDashboardPage: React.FC = () => {
     const [totalChildren, setTotalChildren] = useState(0);
     const [passwordJustChanged, setPasswordJustChanged] = useState(false);
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+    const [nextClinic, setNextClinic] = useState<any>(null);
+    const [clinicDueChildren, setClinicDueChildren] = useState<number>(0);
 
     const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId ?? '';
     const areaName = (currentUser as { assignedRegion?: string; areaCode?: string })?.assignedRegion
@@ -48,6 +50,31 @@ export const PhmDashboardPage: React.FC = () => {
             setPasswordJustChanged(true);
             sessionStorage.removeItem('passwordChanged');
         }
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const clinics = await dataService.getMyClinicList();
+                if (!cancelled && clinics.length > 0) {
+                    // Get the next upcoming clinic (sorted by date)
+                    const upcoming = clinics.filter(c => new Date(c.clinicDate) >= new Date()).sort((a, b) => new Date(a.clinicDate).getTime() - new Date(b.clinicDate).getTime());
+                    if (upcoming.length > 0) {
+                        const clinic = upcoming[0];
+                        setNextClinic(clinic);
+                        // Get due children count for the clinic
+                        const dueChildren = await dataService.getClinicDueChildren(clinic.clinicId);
+                        if (!cancelled) {
+                            setClinicDueChildren(dueChildren.length);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch clinic data:', err);
+            }
+        })();
+        return () => { cancelled = true; };
     }, []);
 
     useEffect(() => {
@@ -390,25 +417,82 @@ export const PhmDashboardPage: React.FC = () => {
                                     Next Clinic Day
                                 </h4>
                             </div>
-                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-                                <p className="text-slate-500 dark:text-slate-400 text-sm">Clinic schedule data can be shown here when available from the system.</p>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span>Expected Attendance:</span>
-                                    <span className="font-bold">—</span>
+                            {nextClinic ? (
+                                <div className="space-y-4">
+                                    <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4 border border-primary/20">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Scheduled Date</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white">
+                                            {new Date(nextClinic.clinicDate).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Location</p>
+                                            <p className="text-sm text-slate-900 dark:text-white font-medium">{nextClinic.location}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Area</p>
+                                            <p className="text-sm text-slate-900 dark:text-white font-medium">{nextClinic.gnDivision}</p>
+                                        </div>
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">
+                                            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-1">Due Children</p>
+                                            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{clinicDueChildren}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate('/clinic-scheduling')}
+                                        className="w-full mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                                    >
+                                        View Clinic Details
+                                    </button>
                                 </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span>Inventory Check:</span>
-                                    <span className="font-bold">—</span>
+                            ) : (
+                                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">No upcoming clinics scheduled. Create one to get started.</p>
+                                    <button
+                                        onClick={() => navigate('/clinic-scheduling')}
+                                        className="mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                                    >
+                                        Schedule Clinic
+                                    </button>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         <div
                             className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
-                            <h4 className="font-bold mb-4">Recent Area Activity</h4>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm">Activity feed can be shown here when an API is available.</p>
+                            <h4 className="font-bold mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">trending_up</span>
+                                Area Activity Summary
+                            </h4>
+                            {stats ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+                                        <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-2">Recent Registrations</p>
+                                        <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{stats.recentRegistrations}</p>
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">New children registered this month</p>
+                                    </div>
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                        <p className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2">Growth Records</p>
+                                        <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{stats.growthRecordsThisMonth}</p>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">Growth measurements recorded</p>
+                                    </div>
+                                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                                        <p className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-2">Missed Vaccinations</p>
+                                        <p className="text-3xl font-bold text-amber-700 dark:text-amber-300">{stats.missedVaccinations}</p>
+                                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">Require immediate follow-up</p>
+                                    </div>
+                                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                                        <p className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-2">Upcoming Vaccinations</p>
+                                        <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">{stats.upcomingVaccinations}</p>
+                                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-2">Scheduled for next 30 days</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Activity data will appear here once data is loaded.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </main>
