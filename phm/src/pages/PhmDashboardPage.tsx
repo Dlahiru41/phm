@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
@@ -501,9 +501,9 @@ export const PhmDashboardPage: React.FC = () => {
                         <div className="flex items-center gap-4 text-slate-400 text-sm">
                             <span>© 2026 Ministry of Health Sri Lanka</span>
                             <span className="hidden md:block">•</span>
-                            <Link to="/settings" className="hover:text-primary">Data Protection Policy</Link>
+                            <span  className="hover:text-primary">Data Protection Policy</span>
                             <span className="hidden md:block">•</span>
-                            <Link to="/settings" className="hover:text-primary">Help Center</Link>
+                            <span className="hover:text-primary">Help Center</span>
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
