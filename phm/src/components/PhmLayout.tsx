@@ -8,9 +8,7 @@ export type PhmNavKey =
   | 'register-baby'
   | 'record-vaccination'
   | 'record-growth'
-  | 'clinic-scheduling'
-  | 'notifications'
-  | 'settings';
+  | 'clinic-scheduling';
 
 export const PhmSidebar: React.FC<{ activeNav?: PhmNavKey }> = ({ activeNav }) => {
   const navigate = useNavigate();
@@ -54,24 +52,9 @@ export const PhmSidebar: React.FC<{ activeNav?: PhmNavKey }> = ({ activeNav }) =
             <span className="material-symbols-outlined">monitoring</span>
             <p className="text-sm font-medium">Record Growth</p>
           </Link>
-          <Link to="/notifications" className={navClass('notifications')}>
-            <span className="material-symbols-outlined">notifications</span>
-            <p className="text-sm font-medium">Notifications</p>
-          </Link>
-          <Link to="/settings" className={navClass('settings')}>
-            <span className="material-symbols-outlined">settings</span>
-            <p className="text-sm font-medium">Settings</p>
-          </Link>
         </nav>
       </div>
       <div className="flex flex-col gap-2">
-        <Link
-          to="/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] dark:text-slate-400 hover:bg-primary/10 dark:hover:bg-slate-800 transition-colors"
-        >
-          <span className="material-symbols-outlined">help</span>
-          <p className="text-sm font-medium">Help Center</p>
-        </Link>
         <button
           type="button"
           onClick={async () => {
