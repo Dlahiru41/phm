@@ -1,6 +1,7 @@
 import {
   getLanguage,
   getLanguageOptions,
+  LANGUAGE_LABEL_KEYS,
   setLanguage,
   t,
   type InterpolationValues,
@@ -19,14 +20,14 @@ export class TranslationService {
     return getLanguage();
   }
 
-  static t(key: TranslationKey, values?: InterpolationValues): string {
-    return t(key, values);
+  static t(key: TranslationKey, values?: InterpolationValues, language?: Language): string {
+    return t(key, values, language);
   }
 
   static getAllLanguages(): Array<{ code: Language; name: string; flag: string }> {
     return getLanguageOptions().map((option) => ({
       ...option,
-      name: t(option.code === 'en' ? 'languages.english' : option.code === 'si' ? 'languages.sinhala' : 'languages.tamil'),
+      name: t(LANGUAGE_LABEL_KEYS[option.code]),
     }));
   }
 }

@@ -44,16 +44,27 @@ export const I18nProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
     });
   }, [language]);
 
+  const translatedLanguages = useMemo(
+    () =>
+      getLanguageOptions().map((option) => ({
+        ...option,
+        name: t(LANGUAGE_LABEL_KEYS[option.code], undefined, language),
+      })),
+    [language],
+  );
+
+  const translate = useCallback(
+    (key: TranslationKey, values?: InterpolationValues) => t(key, values, language),
+    [language],
+  );
+
   const value = useMemo<I18nContextValue>(() => ({
     language,
     isLoading,
     setLanguage: applyLanguage,
-    t: (key, values) => t(key, values, language),
-    languages: getLanguageOptions().map((option) => ({
-      ...option,
-      name: t(LANGUAGE_LABEL_KEYS[option.code], undefined, language),
-    })),
-  }), [applyLanguage, isLoading, language]);
+    t: translate,
+    languages: translatedLanguages,
+  }), [applyLanguage, isLoading, language, translate, translatedLanguages]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };

@@ -48,7 +48,7 @@ export const LoginPage: React.FC = () => {
                     <div className="mb-8">
                         <span className="material-symbols-outlined text-6xl text-white">shield_with_heart</span>
                     </div>
-                    <h1 className="text-5xl font-black leading-tight tracking-[-0.033em] mb-6">
+                    <h1 className="text-5xl font-black leading-tight tracking-[-0.033em] mb-6 whitespace-pre-line">
                         {t('login.heroTitle')}
                     </h1>
                     <p className="text-lg font-normal leading-relaxed text-white/90 max-w-md">

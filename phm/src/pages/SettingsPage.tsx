@@ -44,7 +44,7 @@ export const SettingsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [setLanguage]);
+  }, []);
 
   const handleSave = async () => {
     localStorage.setItem('darkMode', darkMode.toString());
@@ -114,7 +114,9 @@ export const SettingsPage: React.FC = () => {
               {languages.map((lang) => (
                 <button
                   key={lang.code}
-                  onClick={() => void setLanguage(lang.code)}
+                  onClick={() => {
+                    void setLanguage(lang.code).catch(() => undefined);
+                  }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                     language === lang.code
                       ? 'border-primary bg-primary/10 text-primary'

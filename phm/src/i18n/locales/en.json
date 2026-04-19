@@ -78,7 +78,7 @@
       "missedVaccination": "Missed Vaccine Sessions",
       "missedClinic": "Missed Clinic Sessions",
       "cancelledClinic": "Cancelled Clinic Sessions Notification",
-      "cancelledVaccination": "Cancelled Vaccination Sessions Notifications",
+      "cancelledVaccination": "Cancelled Vaccination Sessions Notification",
       "reminder": "Vaccination Reminder",
       "scheduledVaccination": "Scheduled Vaccination Sessions",
       "growthRecord": "Growth Record Update",
@@ -117,7 +117,7 @@
     "scheduled": "Scheduled"
   },
   "login": {
-    "heroTitle": "Protecting the Next Generation",
+    "heroTitle": "Protecting the\nNext Generation",
     "heroDescription": "The National Child Vaccination Management System (SuwaCare LK) provides a secure platform for tracking, scheduling, and certifying vaccinations across the country.",
     "heroTag": "Ministry of Health Official Portal",
     "title": "Login to Your Account",
