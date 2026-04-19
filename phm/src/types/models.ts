@@ -26,7 +26,9 @@ export enum NotificationType {
   MISSED_VACCINATION = 'missed_vaccination',
   MISSED_CLINIC = 'missed_clinic',
   CANCELLED_CLINIC = 'cancelled_clinic',
-  CANCELLED_VACCINATION = 'cancelled_vaccination'
+  CANCELLED_VACCINATION = 'cancelled_vaccination',
+  NORMAL_CLINIC = 'normal_clinic',
+  VACCINATION_CLINIC = 'vaccination_clinic'
 }
 
 export enum ScheduleStatus {

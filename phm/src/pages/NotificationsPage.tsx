@@ -68,15 +68,12 @@ export const NotificationsPage: React.FC = () => {
     }
   };
 
-  const markAllAsRead = async () => {
-    const ok = await dataService.markAllNotificationsAsRead();
-    if (ok) setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  };
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
       case NotificationType.UPCOMING:
       case NotificationType.VACCINATION_DUE:
+      case NotificationType.VACCINATION_CLINIC:
         return 'event_upcoming';
       case NotificationType.MISSED:
       case NotificationType.MISSED_VACCINATION:
@@ -90,6 +87,7 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.GROWTH_RECORD:
         return 'monitoring';
       case NotificationType.CLINIC_REMINDER:
+      case NotificationType.NORMAL_CLINIC:
         return 'local_hospital';
       case 'child_linked' as any:
         return 'person_add';
@@ -102,6 +100,7 @@ export const NotificationsPage: React.FC = () => {
     switch (type) {
       case NotificationType.UPCOMING:
       case NotificationType.VACCINATION_DUE:
+      case NotificationType.VACCINATION_CLINIC:
         return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
       case NotificationType.MISSED:
       case NotificationType.MISSED_VACCINATION:
@@ -115,6 +114,7 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.GROWTH_RECORD:
         return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
       case NotificationType.CLINIC_REMINDER:
+      case NotificationType.NORMAL_CLINIC:
         return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
       case 'child_linked' as any:
         return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
@@ -141,6 +141,10 @@ export const NotificationsPage: React.FC = () => {
         return 'Vaccination Reminder';
       case NotificationType.VACCINATION_DUE:
         return 'Scheduled Vaccination Sessions';
+      case NotificationType.VACCINATION_CLINIC:
+        return 'Scheduled Vaccination Sessions';
+      case NotificationType.NORMAL_CLINIC:
+        return 'Scheduled Clinic Sessions';
       case NotificationType.GROWTH_RECORD:
         return 'Growth Record Update';
       case NotificationType.CLINIC_REMINDER:
@@ -195,7 +199,7 @@ export const NotificationsPage: React.FC = () => {
           >
             All
           </button>
-          {[NotificationType.VACCINATION_DUE, NotificationType.CLINIC_REMINDER, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION].map(
+          {[NotificationType.VACCINATION_DUE, NotificationType.VACCINATION_CLINIC, NotificationType.CLINIC_REMINDER, NotificationType.NORMAL_CLINIC, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION].map(
             (type) => (
               <button
                 key={type}
@@ -243,7 +247,7 @@ export const NotificationsPage: React.FC = () => {
                 <div className="flex items-start gap-4">
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-                      notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE
+                      notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE || notification.type === NotificationType.VACCINATION_CLINIC
                         ? 'bg-blue-100 dark:bg-blue-900/30'
                         : notification.type === NotificationType.MISSED || notification.type === NotificationType.MISSED_VACCINATION || notification.type === NotificationType.MISSED_CLINIC
                         ? 'bg-red-100 dark:bg-red-900/30'
@@ -253,14 +257,14 @@ export const NotificationsPage: React.FC = () => {
                         ? 'bg-yellow-100 dark:bg-yellow-900/30'
                         : notification.type === NotificationType.GROWTH_RECORD
                         ? 'bg-green-100 dark:bg-green-900/30'
-                        : notification.type === NotificationType.CLINIC_REMINDER
+                        : notification.type === NotificationType.CLINIC_REMINDER || notification.type === NotificationType.NORMAL_CLINIC
                         ? 'bg-purple-100 dark:bg-purple-900/30'
                         : 'bg-slate-100 dark:bg-slate-800'
                     }`}
                   >
                     <span
                       className={`material-symbols-outlined text-xl ${
-                        notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE
+                        notification.type === NotificationType.UPCOMING || notification.type === NotificationType.VACCINATION_DUE || notification.type === NotificationType.VACCINATION_CLINIC
                           ? 'text-blue-600 dark:text-blue-400'
                           : notification.type === NotificationType.MISSED || notification.type === NotificationType.MISSED_VACCINATION || notification.type === NotificationType.MISSED_CLINIC
                           ? 'text-red-600 dark:text-red-400'
@@ -270,7 +274,7 @@ export const NotificationsPage: React.FC = () => {
                           ? 'text-yellow-600 dark:text-yellow-400'
                           : notification.type === NotificationType.GROWTH_RECORD
                           ? 'text-green-600 dark:text-green-400'
-                          : notification.type === NotificationType.CLINIC_REMINDER
+                          : notification.type === NotificationType.CLINIC_REMINDER || notification.type === NotificationType.NORMAL_CLINIC
                           ? 'text-purple-600 dark:text-purple-400'
                           : 'text-slate-600 dark:text-slate-400'
                       }`}
