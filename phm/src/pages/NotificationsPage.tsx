@@ -181,15 +181,6 @@ export const NotificationsPage: React.FC = () => {
                 : 'All caught up!'}
             </p>
           </div>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllAsRead}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              <span className="material-symbols-outlined text-lg">done_all</span>
-              Mark all as read
-            </button>
-          )}
         </div>
 
         {/* Filter Buttons */}
