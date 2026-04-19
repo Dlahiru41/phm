@@ -204,7 +204,7 @@ export const NotificationsPage: React.FC = () => {
           >
             All
           </button>
-          {[NotificationType.VACCINATION_DUE, NotificationType.CLINIC_REMINDER, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION, NotificationType.GROWTH_RECORD, NotificationType.CHILD_LINKED, NotificationType.VACCINATION_COMPLETED].map(
+          {[NotificationType.VACCINATION_DUE, NotificationType.CLINIC_REMINDER, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION].map(
             (type) => (
               <button
                 key={type}
