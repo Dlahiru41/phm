@@ -36,15 +36,6 @@ function daysUntil(dateStr: string | null): number | null {
     return Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function progressFromStatus(status: string): number {
-    switch (status) {
-        case 'up-to-date': return 100;
-        case 'on-track': return 85;
-        case 'behind': return 40;
-        default: return 60;
-    }
-}
-
 type RecentRecordRow = VaccinationRecord & { childName: string };
 
 export const ParentDashboardMobilePage: React.FC = () => {
@@ -151,12 +142,9 @@ export const ParentDashboardMobilePage: React.FC = () => {
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar -mx-4 px-4 snap-x">
                         {children.map((child) => {
-                            const progress = progressFromStatus(child.vaccinationStatus);
                             const days = daysUntil(child.nextVaccinationDate);
                             const hasNextDue = child.nextVaccinationDate && child.nextVaccineName;
                             const isPending = !hasNextDue || (days !== null && days < 0);
-                            const circumference = 2 * Math.PI * 20;
-                            const strokeDashoffset = circumference - (progress / 100) * circumference;
                             return (
                                 <div
                                     key={child.childId}
@@ -171,13 +159,6 @@ export const ParentDashboardMobilePage: React.FC = () => {
                                                 <h4 className="font-bold text-base">{child.name}</h4>
                                                 <p className="text-[#4c739a] dark:text-slate-400 text-xs">{child.age}</p>
                                             </div>
-                                        </div>
-                                        <div className="relative h-12 w-12 flex items-center justify-center">
-                                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
-                                                <circle className="text-[#e7edf3] dark:text-slate-700" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" strokeWidth="4" />
-                                                <circle className="text-primary" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeWidth="4" />
-                                            </svg>
-                                            <span className="absolute text-[10px] font-bold">{progress}%</span>
                                         </div>
                                     </div>
                                     <div className={`rounded-xl p-3 shadow-lg ${isPending ? 'bg-yellow-500 text-white shadow-yellow-500/20' : 'bg-primary text-white shadow-primary/20'}`}>

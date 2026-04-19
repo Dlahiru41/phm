@@ -37,15 +37,6 @@ function daysUntil(dateStr: string | null): number | null {
     return diff;
 }
 
-function progressFromStatus(status: string): number {
-    switch (status) {
-        case 'up-to-date': return 100;
-        case 'on-track': return 85;
-        case 'behind': return 40;
-        default: return 60;
-    }
-}
-
 type RecentRecordRow = VaccinationRecord & { childName: string };
 
 export const ParentDashboardDesktopPage: React.FC = () => {
@@ -222,7 +213,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {children.map((child) => {
-                                const progress = progressFromStatus(child.vaccinationStatus);
                                 const days = daysUntil(child.nextVaccinationDate);
                                 const hasNextDue = child.nextVaccinationDate && child.nextVaccineName;
                                 const isPending = !hasNextDue || (days !== null && days < 0);
@@ -256,15 +246,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                                     ? (days < 0 ? `Overdue (${formatDate(child.nextVaccinationDate)})` : `Due in ${days} days (${formatDate(child.nextVaccinationDate)})`)
                                                     : 'Book next appointment'}
                                             </p>
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex justify-between text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">
-                                                <span>Vaccination Progress</span>
-                                                <span>{progress}%</span>
-                                            </div>
-                                            <div className="w-full bg-[#e7edf3] dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                                <div className="bg-primary h-full rounded-full" style={{ width: `${progress}%` }}></div>
-                                            </div>
                                         </div>
                                         <button
                                             onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}
