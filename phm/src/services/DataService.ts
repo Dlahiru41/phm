@@ -959,6 +959,23 @@ class DataService {
     }
   }
 
+  /**
+   * Update the next due date for a child's vaccination record
+   * Called after marking a child as attended in a vaccination clinic
+   * PATCH /api/v1/vaccination-records/child/:childId/next-due-date
+   */
+  async updateVaccinationNextDueDate(childId: string, nextDueDate: string | Date): Promise<boolean> {
+    try {
+      const dateStr = typeof nextDueDate === 'string' ? nextDueDate : nextDueDate.toISOString().split('T')[0];
+      await api.patch(`/vaccination-records/child/${encodeURIComponent(childId)}/next-due-date`, {
+        nextDueDate: dateStr,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async getAssignedArea(): Promise<string | null> {
     try {
       const res = await api.get<{ assignedArea: string; userId: string }>('/users/me/assigned-area');

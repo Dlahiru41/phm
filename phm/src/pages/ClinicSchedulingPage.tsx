@@ -46,6 +46,11 @@ export const ClinicSchedulingPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [assignedArea, setAssignedArea] = useState<string | null>(null);
 
+  // State for next due date modal
+  const [showNextDueDateModal, setShowNextDueDateModal] = useState(false);
+  const [nextDueDateChildId, setNextDueDateChildId] = useState<string | null>(null);
+  const [nextDueDateInput, setNextDueDateInput] = useState<string>('');
+
   const [formData, setFormData] = useState<CreateClinicState>({
     clinicDate: '',
     gnDivision: '',
@@ -181,6 +186,16 @@ export const ClinicSchedulingPage: React.FC = () => {
 
   const handleAttendanceSubmit = async (childId: string, status: 'attended' | 'not_attended') => {
     if (!selectedClinic) return;
+
+    // If marking as attended, show modal for next due date
+    if (status === 'attended') {
+      setNextDueDateChildId(childId);
+      setNextDueDateInput('');
+      setShowNextDueDateModal(true);
+      return;
+    }
+
+    // Otherwise, proceed with not_attended status
     setSavingAttendanceId(childId);
     setError(null);
     try {
@@ -195,6 +210,66 @@ export const ClinicSchedulingPage: React.FC = () => {
     } finally {
       setSavingAttendanceId(null);
     }
+  };
+
+  const handleConfirmNextDueDate = async () => {
+    if (!selectedClinic || !nextDueDateChildId) {
+      setError('Invalid state for updating next due date');
+      return;
+    }
+
+    if (!nextDueDateInput) {
+      setError('Please enter a next due date');
+      return;
+    }
+
+    setSavingAttendanceId(nextDueDateChildId);
+    setError(null);
+
+    try {
+      // Step 1: Mark attendance as attended
+      const attendanceOk = await dataService.updateClinicChildAttendance(
+        selectedClinic.clinicId,
+        nextDueDateChildId,
+        'attended'
+      );
+
+      if (!attendanceOk) {
+        setError('Failed to update attendance');
+        setSavingAttendanceId(null);
+        return;
+      }
+
+      // Step 2: Update the next due date for the vaccination record
+      const nextDueDateOk = await dataService.updateVaccinationNextDueDate(
+        nextDueDateChildId,
+        nextDueDateInput
+      );
+
+      if (!nextDueDateOk) {
+        setError('Attendance updated but failed to update next due date. Please update manually.');
+        setSavingAttendanceId(null);
+        setShowNextDueDateModal(false);
+        await handleViewDetails(selectedClinic);
+        return;
+      }
+
+      setSuccessMessage('Attendance marked and next due date updated successfully!');
+      setShowNextDueDateModal(false);
+      setNextDueDateChildId(null);
+      setNextDueDateInput('');
+      await handleViewDetails(selectedClinic);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to process attendance and next due date update');
+    } finally {
+      setSavingAttendanceId(null);
+    }
+  };
+
+  const handleCancelNextDueDate = () => {
+    setShowNextDueDateModal(false);
+    setNextDueDateChildId(null);
+    setNextDueDateInput('');
   };
 
   const handleStatusUpdate = async (status: string) => {
@@ -563,6 +638,51 @@ export const ClinicSchedulingPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Next Due Date Modal */}
+      {showNextDueDateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Set Next Due Date</h3>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">
+              Enter the next vaccination due date for this child after marking them as attended.
+            </p>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Next Due Date *
+              </label>
+              <input
+                type="date"
+                value={nextDueDateInput}
+                onChange={(e) => setNextDueDateInput(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={savingAttendanceId !== null}
+              />
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Format: YYYY-MM-DD (e.g., 2026-05-15)
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmNextDueDate}
+                disabled={savingAttendanceId !== null || !nextDueDateInput}
+                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
+              >
+                {savingAttendanceId ? 'Processing...' : 'Confirm & Mark Attended'}
+              </button>
+              <button
+                onClick={handleCancelNextDueDate}
+                disabled={savingAttendanceId !== null}
+                className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-medium hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PhmLayout>
   );
 };
