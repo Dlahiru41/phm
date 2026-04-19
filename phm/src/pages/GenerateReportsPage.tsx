@@ -19,8 +19,6 @@ export const GenerateReportsPage: React.FC = () => {
   const [generateError, setGenerateError] = useState('');
 
   const reportTypes = [
-    { value: 'coverage', label: 'Vaccination Coverage Report', icon: 'bar_chart' },
-    { value: 'missed', label: 'Missed Vaccinations Report', icon: 'warning' },
     { value: 'phm-performance', label: 'PHM Performance Report', icon: 'assignment' },
     { value: 'audit', label: 'Audit Report', icon: 'history' },
   ];
@@ -38,11 +36,7 @@ export const GenerateReportsPage: React.FC = () => {
         role: reportType === 'audit' ? (role || undefined) : undefined,
       };
 
-      if (reportType === 'coverage') {
-        reportData = await mohService.getVaccinationCoverageReport(params);
-      } else if (reportType === 'missed') {
-        reportData = await mohService.getMissedVaccinationReport(params);
-      } else if (reportType === 'phm-performance') {
+      if (reportType === 'phm-performance') {
         reportData = await mohService.getPHMPerformanceReport(params);
       } else if (reportType === 'audit') {
         reportData = await mohService.getAuditReport(params as any);
