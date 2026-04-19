@@ -53,18 +53,6 @@ export const MohLayout: React.FC = () => {
             </div>
           </label>
           <div className="flex gap-2">
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              <span className="material-symbols-outlined">settings</span>
-            </button>
           </div>
           <button
             type="button"
