@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
-import { dataService } from '../services/DataService';
 import { ParentLayout } from '../components/ParentLayout';
 import { TranslationService } from '../services/TranslationService';
 import { sriLankaVaccineSchedule } from '../config/vaccineSchedule';
 import type { Vaccine } from '../types/models';
 
-function formatRecommendedAge(months: number): string {
-  if (months === 0) return 'At birth';
-  if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
-  const years = Math.floor(months / 12);
-  const m = months % 12;
-  return m === 0 ? `${years} year${years !== 1 ? 's' : ''}` : `${years}y ${m}m`;
+function formatAge(recommendedAge: number): string {
+  if (recommendedAge === 0) return 'At birth';
+  if (recommendedAge < 12) return `${recommendedAge} month${recommendedAge !== 1 ? 's' : ''}`;
+  const years = Math.floor(recommendedAge / 12);
+  const months = recommendedAge % 12;
+  return months === 0 ? `${years} year${years !== 1 ? 's' : ''}` : `${years}y ${months}m`;
 }
 
 export const VaccineGuidePage: React.FC = () => {
@@ -20,47 +19,13 @@ export const VaccineGuidePage: React.FC = () => {
   const isParent = AuthService.isParent();
   const [vaccines, setVaccines] = useState<Vaccine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'schedule' | 'detailed'>('schedule');
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        let list = await dataService.getAllVaccines();
-        if ((!list || list.length === 0) && !cancelled) {
-          // Fallback to local vaccine schedule if API returns empty
-          list = sriLankaVaccineSchedule as unknown as Vaccine[];
-        }
-        if (!cancelled) setVaccines(list ? list.filter((v) => v.isActive) : []);
-      } catch {
-        // Fallback to local vaccine schedule on error
-        if (!cancelled) {
-          setVaccines(sriLankaVaccineSchedule as unknown as Vaccine[]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    // Always use the corrected local vaccine schedule
+    setVaccines(sriLankaVaccineSchedule as unknown as Vaccine[]);
+    setLoading(false);
   }, []);
 
-  const scheduleByAge = vaccines.reduce(
-    (acc, vaccine) => {
-      const age = formatRecommendedAge(vaccine.recommendedAge);
-      if (!acc[age]) acc[age] = [];
-      acc[age].push(vaccine);
-      return acc;
-    },
-    {} as Record<string, Vaccine[]>
-  );
-
-  const sortedAges = Object.keys(scheduleByAge).sort((a, b) => {
-    const aMonths = a === 'At birth' ? 0 : parseInt(a.split(' ')[0]);
-    const bMonths = b === 'At birth' ? 0 : parseInt(b.split(' ')[0]);
-    return aMonths - bMonths;
-  });
 
   const content = (
     <div className="w-full max-w-4xl mx-auto px-6 py-12">
@@ -77,39 +42,8 @@ export const VaccineGuidePage: React.FC = () => {
           {TranslationService.t('vaccine.title')}
         </h1>
         <p className="text-[#4c739a] dark:text-slate-400">
-          {TranslationService.t('vaccine.guide')} - Overview of vaccines recommended for your child's health and
-          development.
+          Sri Lanka National Immunization Schedule
         </p>
-      </div>
-
-      {/* View Mode Toggle */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setViewMode('schedule')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            viewMode === 'schedule'
-              ? 'bg-primary text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-[#0d141b] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          <span className="inline-flex items-center gap-2">
-            <span className="material-symbols-outlined">schedule</span>
-            Schedule View
-          </span>
-        </button>
-        <button
-          onClick={() => setViewMode('detailed')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            viewMode === 'detailed'
-              ? 'bg-primary text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-[#0d141b] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          <span className="inline-flex items-center gap-2">
-            <span className="material-symbols-outlined">info</span>
-            Detailed View
-          </span>
-        </button>
       </div>
 
       {loading ? (
@@ -121,93 +55,57 @@ export const VaccineGuidePage: React.FC = () => {
           </span>
           <p className="text-[#0d141b] dark:text-white font-medium">No vaccine information available at the moment.</p>
         </div>
-      ) : viewMode === 'schedule' ? (
-        // Schedule View - Group by age
-        <div className="space-y-8">
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      ) : (
+        <div>
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
             <p className="text-blue-700 dark:text-blue-300 text-sm">
-              <strong>📋 Sri Lanka National Immunization Schedule:</strong> This schedule is based on WHO recommendations
-              and adapted for Sri Lankan public health guidelines.
+              <strong>📋 National Immunization Schedule:</strong> This schedule follows Sri Lanka's official vaccination guidelines.
             </p>
           </div>
 
-          {sortedAges.map((age) => (
-            <div key={age}>
-              <h3 className="text-lg font-semibold text-[#0d141b] dark:text-white mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">schedule</span>
-                Age: {age}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {scheduleByAge[age]?.map((vaccine) => (
-                  <div
+          {/* Simple Table View */}
+          <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[#f8fafc] dark:bg-slate-800 border-b border-[#e7edf3] dark:border-slate-700">
+                  <th className="text-left px-6 py-4 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">Vaccine</th>
+                  <th className="text-left px-6 py-4 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">Age</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vaccines.map((vaccine, idx) => (
+                  <tr
                     key={vaccine.vaccineId}
-                    className="bg-white dark:bg-[#1a2632] rounded-xl border border-[#e7edf3] dark:border-slate-700 p-4 shadow-sm hover:shadow-md transition-shadow"
+                    className={`border-b border-[#e7edf3] dark:border-slate-700 ${
+                      idx % 2 === 0 ? 'bg-white dark:bg-[#1a2632]' : 'bg-[#f8fafc] dark:bg-slate-800/50'
+                    } hover:bg-[#f0f9ff] dark:hover:bg-slate-700/50 transition-colors`}
                   >
-                    <h4 className="font-bold text-[#0d141b] dark:text-white mb-2">{vaccine.name}</h4>
-                    {vaccine.dosageInfo && (
-                      <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-2">
-                        <strong>Dosage:</strong> {vaccine.dosageInfo}
-                      </p>
-                    )}
-                    {vaccine.description && (
-                      <p className="text-sm text-[#4c739a] dark:text-slate-400">{vaccine.description}</p>
-                    )}
-                  </div>
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="font-semibold text-[#0d141b] dark:text-white text-sm">{vaccine.name}</p>
+                        {vaccine.description && (
+                          <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">{vaccine.description}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
+                        <span className="material-symbols-outlined text-base">schedule</span>
+                        {vaccine.notes || formatAge(vaccine.recommendedAge)}
+                      </span>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        // Detailed View - All vaccines with full details
-        <div className="space-y-4">
-          {vaccines.map((v) => (
-            <div
-              key={v.vaccineId}
-              className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-[#0d141b] dark:text-white mb-1">{v.name}</h2>
-                  {v.description && (
-                    <p className="text-[#4c739a] dark:text-slate-400 text-sm mb-4">{v.description}</p>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    <span className="inline-flex items-center gap-2 text-[#4c739a] dark:text-slate-400">
-                      <span className="material-symbols-outlined text-base">schedule</span>
-                      <strong>Age:</strong> {formatRecommendedAge(v.recommendedAge)}
-                    </span>
-                    {v.dosageInfo && (
-                      <span className="inline-flex items-center gap-2 text-[#4c739a] dark:text-slate-400">
-                        <span className="material-symbols-outlined text-base">science</span>
-                        <strong>Dosage:</strong> {v.dosageInfo}
-                      </span>
-                    )}
-                    {v.manufacturer && (
-                      <span className="text-[#4c739a] dark:text-slate-400">
-                        <strong>Manufacturer:</strong> {v.manufacturer}
-                      </span>
-                    )}
-                    {v.intervalDays > 0 && (
-                      <span className="text-[#4c739a] dark:text-slate-400">
-                        <strong>Interval:</strong> {v.intervalDays} days from previous dose
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-2xl">vaccines</span>
-                </div>
-              </div>
-            </div>
-          ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
   );
 
   if (isParent) {
-    return <ParentLayout activeNav="dashboard">{content}</ParentLayout>;
+    return <ParentLayout activeNav="dashboard" showBackToDashboard={false}>{content}</ParentLayout>;
   }
 
   return <div className="flex min-h-screen bg-background-light dark:bg-background-dark">{content}</div>;

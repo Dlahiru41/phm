@@ -156,6 +156,7 @@ export interface Vaccine {
   intervalDays: number;
   description: string;
   isActive: boolean;
+  notes?: string;
 }
 
 // Vaccine methods
