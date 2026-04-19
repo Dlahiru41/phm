@@ -476,29 +476,9 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Due Children</h3>
-                    <div className="space-y-3">
-                      {dueChildren.map((child) => (
-                        <div key={child.childId} className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="font-medium text-slate-900 dark:text-white">{child.fullName}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {child.registrationNumber} • {child.vaccineName}
-                              </p>
-                            </div>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{child.ageInDays} days</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Attendance</h3>
-                    <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Attendance</h3>
+                  <div className="space-y-3">
                       {clinicChildren.map((child) => (
                         <div key={child.childId} className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -509,14 +489,14 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'attended')}
-                                disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed' || selectedClinic?.status === 'cancelled'}
+                                disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed' || selectedClinic?.status === 'cancelled' || child.attendanceStatus === 'attended'}
                                 className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
                               >
                                 {savingAttendanceId === child.childId ? 'Saving...' : 'Attended'}
                               </button>
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'not_attended')}
-                                disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed' || selectedClinic?.status === 'cancelled'}
+                                disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed' || selectedClinic?.status === 'cancelled' || child.attendanceStatus === 'not_attended'}
                                 className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
                               >
                                 {savingAttendanceId === child.childId ? 'Saving...' : 'Not attended'}
@@ -543,7 +523,6 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
                 </div>
 
                 <div className="mt-6 flex gap-3">
