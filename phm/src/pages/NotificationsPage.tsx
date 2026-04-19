@@ -128,23 +128,23 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.UPCOMING:
         return 'Upcoming Vaccination';
       case NotificationType.MISSED:
-        return 'Missed Vaccination';
+        return 'Missed Vaccine Sessions';
       case NotificationType.MISSED_VACCINATION:
-        return 'Missed Vaccination';
+        return 'Missed Vaccine Sessions';
       case NotificationType.MISSED_CLINIC:
-        return 'Missed Clinic';
+        return 'Missed Clinic Sessions';
       case NotificationType.CANCELLED_CLINIC:
-        return 'Cancelled Clinic';
+        return 'Cancelled Clinic Sessions Notification';
       case NotificationType.CANCELLED_VACCINATION:
-        return 'Cancelled Vaccination';
+        return 'Cancelled Vaccination Sessions Notifications';
       case NotificationType.REMINDER:
         return 'Vaccination Reminder';
       case NotificationType.VACCINATION_DUE:
-        return 'Vaccination Due';
+        return 'Scheduled Vaccination Sessions';
       case NotificationType.GROWTH_RECORD:
         return 'Growth Record Update';
       case NotificationType.CLINIC_REMINDER:
-        return 'Clinic Reminder';
+        return 'Scheduled Clinic Sessions';
       case NotificationType.CHILD_LINKED:
         return 'Child Account Linked';
       case NotificationType.VACCINATION_COMPLETED:
