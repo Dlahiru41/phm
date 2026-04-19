@@ -38,6 +38,7 @@ export const ClinicSchedulingPage: React.FC = () => {
   const [dueChildren, setDueChildren] = useState<DueChildWithInfo[]>([]);
   const [clinicChildren, setClinicChildren] = useState<ClinicChildWithInfo[]>([]);
   const [missedAlertedCount, setMissedAlertedCount] = useState<number | null>(null);
+  const [cancelledAlertedCount, setCancelledAlertedCount] = useState<number | null>(null);
   const [savingAttendanceId, setSavingAttendanceId] = useState<string | null>(null);
   const [closingClinic, setClosingClinic] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -203,21 +204,31 @@ export const ClinicSchedulingPage: React.FC = () => {
     setError(null);
 
     try {
-      const updated = await dataService.updateClinicStatus(selectedClinic.clinicId, status as any);
+      const response = await dataService.updateClinicStatus(selectedClinic.clinicId, status as any);
 
-      if (updated) {
-        setSelectedClinic(updated);
-        setSuccessMessage(`Clinic status updated to ${status}`);
+      if (response) {
+        const { clinic, missedAlerted, cancelledAlerted } = response;
+        setSelectedClinic(clinic);
+
         if (status === 'completed') {
-          const refreshed = await dataService.getClinicChildren(selectedClinic.clinicId);
-          setMissedAlertedCount(refreshed.filter((c: any) => c.attended === false).length);
-          await handleViewDetails(selectedClinic);
+          setMissedAlertedCount(missedAlerted ?? 0);
+          setCancelledAlertedCount(cancelledAlerted ?? 0);
+          const msg = `Clinic completed. ${missedAlerted ?? 0} missed alerts sent${cancelledAlerted && cancelledAlerted > 0 ? `, ${cancelledAlerted} cancellation alerts sent` : ''}.`;
+          setSuccessMessage(msg);
+          await handleViewDetails(clinic);
+        } else if (status === 'cancelled') {
+          setCancelledAlertedCount(cancelledAlerted ?? 0);
+          const msg = `Clinic cancelled. ${cancelledAlerted ?? 0} parents notified.`;
+          setSuccessMessage(msg);
+        } else {
+          setSuccessMessage(`Clinic status updated to ${status}`);
         }
+
         setTimeout(() => {
           setSuccessMessage(null);
           setView('list');
           loadClinics();
-        }, 2000);
+        }, 2500);
       } else {
         setError('Failed to update clinic status');
       }
@@ -461,9 +472,18 @@ export const ClinicSchedulingPage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Clinic Details</h2>
                     <p className="text-slate-600 dark:text-slate-400">{selectedClinic.gnDivision} • {formatDate(selectedClinic.clinicDate)}</p>
                   </div>
-                  {missedAlertedCount !== null && (
-                    <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-amber-800 dark:text-amber-200">
-                      Missed alerts sent: {missedAlertedCount}
+                  {(missedAlertedCount !== null || cancelledAlertedCount !== null) && (
+                    <div className="space-y-2">
+                      {missedAlertedCount !== null && (
+                        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-2 text-red-800 dark:text-red-200 text-sm">
+                          Missed alerts sent: {missedAlertedCount}
+                        </div>
+                      )}
+                      {cancelledAlertedCount !== null && cancelledAlertedCount > 0 && (
+                        <div className="rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 px-4 py-2 text-orange-800 dark:text-orange-200 text-sm">
+                          Cancellation alerts sent: {cancelledAlertedCount}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -499,15 +519,15 @@ export const ClinicSchedulingPage: React.FC = () => {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'attended')}
-                                disabled={savingAttendanceId === child.childId}
-                                className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50 hover:bg-green-700 transition-colors"
+                                disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed'}
+                                className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
                               >
                                 {savingAttendanceId === child.childId ? 'Saving...' : 'Attended'}
                               </button>
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'not_attended')}
-                                disabled={savingAttendanceId === child.childId}
-                                className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50 hover:bg-red-700 transition-colors"
+                                disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed'}
+                                className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
                               >
                                 {savingAttendanceId === child.childId ? 'Saving...' : 'Not attended'}
                               </button>
@@ -531,13 +551,24 @@ export const ClinicSchedulingPage: React.FC = () => {
                 </div>
 
                 <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={() => handleStatusUpdate('completed')}
-                    disabled={closingClinic}
-                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
-                  >
-                    {closingClinic ? 'Closing Clinic...' : 'Mark Clinic Completed'}
-                  </button>
+                  {selectedClinic?.status !== 'completed' && selectedClinic?.status !== 'cancelled' && (
+                    <>
+                      <button
+                        onClick={() => handleStatusUpdate('completed')}
+                        disabled={closingClinic}
+                        className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {closingClinic ? 'Closing Clinic...' : 'Mark Clinic Completed'}
+                      </button>
+                      <button
+                        onClick={() => handleStatusUpdate('cancelled')}
+                        disabled={closingClinic}
+                        className="px-6 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {closingClinic ? 'Cancelling Clinic...' : 'Cancel Clinic'}
+                      </button>
+                    </>
+                  )}
                   <button onClick={() => setView('list')} className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-medium transition-colors">Back</button>
                 </div>
               </div>

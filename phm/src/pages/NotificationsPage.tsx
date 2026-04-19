@@ -82,6 +82,9 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.MISSED_VACCINATION:
       case NotificationType.MISSED_CLINIC:
         return 'warning';
+      case NotificationType.CANCELLED_CLINIC:
+      case NotificationType.CANCELLED_VACCINATION:
+        return 'event_busy';
       case NotificationType.REMINDER:
         return 'notifications_active';
       case NotificationType.GROWTH_RECORD:
@@ -104,6 +107,9 @@ export const NotificationsPage: React.FC = () => {
       case NotificationType.MISSED_VACCINATION:
       case NotificationType.MISSED_CLINIC:
         return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+      case NotificationType.CANCELLED_CLINIC:
+      case NotificationType.CANCELLED_VACCINATION:
+        return 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800';
       case NotificationType.REMINDER:
         return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
       case NotificationType.GROWTH_RECORD:
@@ -127,6 +133,10 @@ export const NotificationsPage: React.FC = () => {
         return 'Missed Vaccination';
       case NotificationType.MISSED_CLINIC:
         return 'Missed Clinic';
+      case NotificationType.CANCELLED_CLINIC:
+        return 'Cancelled Clinic';
+      case NotificationType.CANCELLED_VACCINATION:
+        return 'Cancelled Vaccination';
       case NotificationType.REMINDER:
         return 'Vaccination Reminder';
       case NotificationType.VACCINATION_DUE:
@@ -194,7 +204,7 @@ export const NotificationsPage: React.FC = () => {
           >
             All
           </button>
-          {[NotificationType.VACCINATION_DUE, NotificationType.MISSED, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.GROWTH_RECORD, NotificationType.CLINIC_REMINDER, NotificationType.CHILD_LINKED, NotificationType.VACCINATION_COMPLETED].map(
+          {[NotificationType.VACCINATION_DUE, NotificationType.CLINIC_REMINDER, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION, NotificationType.GROWTH_RECORD, NotificationType.CHILD_LINKED, NotificationType.VACCINATION_COMPLETED].map(
             (type) => (
               <button
                 key={type}
@@ -246,6 +256,8 @@ export const NotificationsPage: React.FC = () => {
                         ? 'bg-blue-100 dark:bg-blue-900/30'
                         : notification.type === NotificationType.MISSED || notification.type === NotificationType.MISSED_VACCINATION || notification.type === NotificationType.MISSED_CLINIC
                         ? 'bg-red-100 dark:bg-red-900/30'
+                        : notification.type === NotificationType.CANCELLED_CLINIC || notification.type === NotificationType.CANCELLED_VACCINATION
+                        ? 'bg-orange-100 dark:bg-orange-900/30'
                         : notification.type === NotificationType.REMINDER
                         ? 'bg-yellow-100 dark:bg-yellow-900/30'
                         : notification.type === NotificationType.GROWTH_RECORD
@@ -261,6 +273,8 @@ export const NotificationsPage: React.FC = () => {
                           ? 'text-blue-600 dark:text-blue-400'
                           : notification.type === NotificationType.MISSED || notification.type === NotificationType.MISSED_VACCINATION || notification.type === NotificationType.MISSED_CLINIC
                           ? 'text-red-600 dark:text-red-400'
+                          : notification.type === NotificationType.CANCELLED_CLINIC || notification.type === NotificationType.CANCELLED_VACCINATION
+                          ? 'text-orange-600 dark:text-orange-400'
                           : notification.type === NotificationType.REMINDER
                           ? 'text-yellow-600 dark:text-yellow-400'
                           : notification.type === NotificationType.GROWTH_RECORD

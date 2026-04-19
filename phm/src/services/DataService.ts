@@ -447,6 +447,7 @@ class DataService {
     scheduledDate: string;
     dueDate: string;
   }): Promise<{ scheduleId: string } | null> {
+    // Note: Backend sends immediate vaccination_due notification + SMS to parent
     try {
       const res = await api.post<{ scheduleId: string }>('/schedules', body);
       return res ?? null;
@@ -456,6 +457,7 @@ class DataService {
   }
 
   async updateScheduleStatus(scheduleId: string, status: ScheduleStatus): Promise<boolean> {
+    // Note: Cancellation (status=cancelled) sends cancelled_vaccination notification + SMS to parent
     try {
       await api.put(`/schedules/${encodeURIComponent(scheduleId)}/status`, { status });
       return true;
@@ -553,9 +555,9 @@ class DataService {
     administeredDate?: string;
     location?: string;
     notes?: string;
-  }): Promise<{ message?: string } | null> {
+  }): Promise<{ message?: string; smsSent?: boolean } | null> {
     try {
-      const res = await api.post<{ message?: string }>('/vaccination-records/tracking', body);
+      const res = await api.post<{ message?: string; smsSent?: boolean }>('/vaccination-records/tracking', body);
       return res ?? null;
     } catch {
       return null;
@@ -930,10 +932,17 @@ class DataService {
     }
   }
 
-  async updateClinicStatus(clinicId: string, status: ClinicStatus): Promise<ClinicSchedule | null> {
+  async updateClinicStatus(clinicId: string, status: ClinicStatus): Promise<{ clinic: ClinicSchedule; missedAlerted?: number; cancelledAlerted?: number } | null> {
     try {
       const res = await api.put<any>(`/clinics/${encodeURIComponent(clinicId)}/status`, { status });
-      return res ? clinicScheduleFromApi(res) : null;
+      if (res && res.clinic) {
+        return {
+          clinic: clinicScheduleFromApi(res.clinic),
+          missedAlerted: res.missedAlerted ?? 0,
+          cancelledAlerted: res.cancelledAlerted ?? 0,
+        };
+      }
+      return null;
     } catch {
       return null;
     }
