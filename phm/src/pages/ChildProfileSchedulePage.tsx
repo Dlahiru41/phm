@@ -290,11 +290,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                             <div className="flex w-full max-w-[480px] gap-3 @[480px]:w-auto">
                                                 <button
                                                     type="button"
-                                                    className="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-[#e7edf3] dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 text-sm font-bold transition-all hover:bg-slate-200 dark:hover:bg-slate-700">
-                                                    <span className="material-symbols-outlined mr-2 text-xl">edit</span> Edit Profile
-                                                </button>
-                                                <button
-                                                    type="button"
+                                                    onClick={() => navigate(`/vaccination-card/${selectedChild.childId}`)}
                                                     className="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold shadow-md shadow-primary/20 transition-all hover:brightness-110">
                                                     <span className="material-symbols-outlined mr-2 text-xl">badge</span> Print Card
                                                 </button>
@@ -328,20 +324,6 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                 <span className="material-symbols-outlined text-primary">event_note</span>
                                                 Immunization Timeline
                                             </h3>
-                                            <div className="flex gap-4">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="size-2 rounded-full bg-green-500"></span>
-                                                    <span className="text-xs text-[#4c739a] dark:text-slate-400 font-medium">Done</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="size-2 rounded-full bg-primary"></span>
-                                                    <span className="text-xs text-[#4c739a] dark:text-slate-400 font-medium">Upcoming</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="size-2 rounded-full bg-red-500"></span>
-                                                    <span className="text-xs text-[#4c739a] dark:text-slate-400 font-medium">Missed</span>
-                                                </div>
-                                            </div>
                                         </div>
                                         <div className="grid grid-cols-[48px_1fr] gap-x-4">
                                             {timeline.length === 0 ? (
