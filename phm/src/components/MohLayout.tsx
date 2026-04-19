@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -121,13 +121,6 @@ export const MohLayout: React.FC = () => {
                 <span className="text-xs text-slate-600 dark:text-slate-300">Data live: Colombo District</span>
               </div>
             </div>
-            <Link
-              to="/moh/reports"
-              className="w-full flex items-center justify-center gap-2 rounded-lg h-11 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all"
-            >
-              <span className="material-symbols-outlined text-[20px]">ios_share</span>
-              <span>Generate Report</span>
-            </Link>
             <button
               type="button"
               onClick={handleLogout}
