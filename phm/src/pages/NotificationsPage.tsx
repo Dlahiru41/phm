@@ -161,15 +161,24 @@ export const NotificationsPage: React.FC = () => {
   const filteredNotifications = (() => {
     if (filter === 'all') return notifications;
 
-    // Handle grouped filters
-    if (filter === NotificationType.VACCINATION_DUE) {
-      return notifications.filter(n => n.type === NotificationType.VACCINATION_DUE || n.type === NotificationType.VACCINATION_CLINIC);
-    }
-    if (filter === NotificationType.CLINIC_REMINDER) {
-      return notifications.filter(n => n.type === NotificationType.CLINIC_REMINDER || n.type === NotificationType.NORMAL_CLINIC);
+    const filterType = filter as NotificationType; // Explicitly cast to NotificationType after 'all' check
+
+    // If filtering for Vaccination Sessions, show both VACCINATION_DUE and VACCINATION_CLINIC
+    if (filterType === NotificationType.VACCINATION_DUE) {
+      return notifications.filter((n): n is CombinedNotification =>
+        n.type === NotificationType.VACCINATION_DUE || n.type === NotificationType.VACCINATION_CLINIC
+      );
     }
 
-    return notifications.filter(n => n.type === filter);
+    // If filtering for Clinic Sessions, show both CLINIC_REMINDER and NORMAL_CLINIC
+    if (filterType === NotificationType.CLINIC_REMINDER) {
+      return notifications.filter((n): n is CombinedNotification =>
+        n.type === NotificationType.CLINIC_REMINDER || n.type === NotificationType.NORMAL_CLINIC
+      );
+    }
+
+    // For all other filters, only show exact matches
+    return notifications.filter((n): n is CombinedNotification => n.type === filterType);
   })();
 
   const unreadCount = filteredNotifications.filter((n) => !n.isRead).length;
