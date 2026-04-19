@@ -2,18 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { api } from '../services/apiClient';
-import { TranslationService, type Language } from '../services/TranslationService';
 import { ParentLayout } from '../components/ParentLayout';
 import { PhmLayout } from '../components/PhmLayout';
-
-const langToCode: Record<string, Language> = { english: 'en', sinhala: 'si', tamil: 'ta' };
-const codeToLang: Record<Language, string> = { en: 'english', si: 'sinhala', ta: 'tamil' };
+import { useTranslation } from '../i18n/I18nProvider';
+import type { Language } from '../i18n';
 
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const isParent = AuthService.isParent();
   const isPHM = AuthService.isPHM();
-  const [language, setLanguage] = useState('english');
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
     email: true,
@@ -22,6 +19,7 @@ export const SettingsPage: React.FC = () => {
   });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t, language, setLanguage, languages } = useTranslation();
 
   useEffect(() => {
     let cancelled = false;
@@ -30,9 +28,7 @@ export const SettingsPage: React.FC = () => {
         const user = await AuthService.refreshProfile();
         if (cancelled || !user) return;
         const pref = (user.languagePreference || 'en').toLowerCase() as Language;
-        const lang = codeToLang[pref] || 'english';
-        setLanguage(lang);
-        TranslationService.setLanguage(pref);
+        await setLanguage(pref);
       } catch {
         // keep defaults
       }
@@ -48,16 +44,9 @@ export const SettingsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const languages = [
-    { value: 'english', label: 'English', flag: '🇬🇧' },
-    { value: 'sinhala', label: 'සිංහල', flag: '🇱🇰' },
-    { value: 'tamil', label: 'தமிழ்', flag: '🇱🇰' }
-  ];
+  }, [setLanguage]);
 
   const handleSave = async () => {
-    localStorage.setItem('language', language);
     localStorage.setItem('darkMode', darkMode.toString());
     localStorage.setItem('notifications', JSON.stringify(notifications));
     if (darkMode) {
@@ -65,14 +54,11 @@ export const SettingsPage: React.FC = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    // Update TranslationService
-    const langCode = langToCode[language] || 'en';
-    TranslationService.setLanguage(langCode);
 
     setLoading(true);
     try {
       await api.put('/users/me/settings', {
-        languagePreference: langCode,
+        languagePreference: language,
         notifications: { email: notifications.email, sms: notifications.sms, push: notifications.push },
       });
       setSaved(true);
@@ -100,18 +86,18 @@ export const SettingsPage: React.FC = () => {
             className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
           >
             <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back</span>
+            <span className="text-sm font-medium">{t('common.back')}</span>
           </button>
         )}
-        <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Settings</h1>
-        <p className="text-[#4c739a] dark:text-slate-400">Manage your SuwaCare LK account settings and preferences.</p>
+        <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">{t('settings.title')}</h1>
+        <p className="text-[#4c739a] dark:text-slate-400">{t('settings.subtitle')}</p>
         {isParent && (
           <Link
             to="/parent-profile"
             className="inline-flex items-center gap-2 text-primary text-sm font-medium mt-4 hover:underline"
           >
             <span className="material-symbols-outlined">person</span>
-            Go to Profile Management
+            {t('settings.goToProfile')}
           </Link>
         )}
       </div>
@@ -121,22 +107,22 @@ export const SettingsPage: React.FC = () => {
           <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <span className="material-symbols-outlined text-primary text-2xl">language</span>
-              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">Language Settings</h2>
+              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">{t('settings.languageSettings')}</h2>
             </div>
-            <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-4">Select your preferred language for the interface.</p>
+            <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-4">{t('settings.languageDescription')}</p>
             <div className="flex flex-wrap gap-3">
               {languages.map((lang) => (
                 <button
-                  key={lang.value}
-                  onClick={() => setLanguage(lang.value)}
+                  key={lang.code}
+                  onClick={() => void setLanguage(lang.code)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                    language === lang.value
+                    language === lang.code
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-[#cfdbe7] dark:border-slate-700 text-[#0d141b] dark:text-white hover:border-primary/50'
                   }`}
                 >
                   <span className="text-xl">{lang.flag}</span>
-                  <span className="text-sm font-medium">{lang.label}</span>
+                  <span className="text-sm font-medium">{lang.name}</span>
                 </button>
               ))}
             </div>
@@ -146,12 +132,12 @@ export const SettingsPage: React.FC = () => {
           <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <span className="material-symbols-outlined text-primary text-2xl">palette</span>
-              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">Appearance</h2>
+              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">{t('settings.appearance')}</h2>
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">Dark Mode</p>
-                <p className="text-xs text-[#4c739a] dark:text-slate-400">Switch between light and dark themes</p>
+                <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">{t('settings.darkMode')}</p>
+                <p className="text-xs text-[#4c739a] dark:text-slate-400">{t('settings.darkModeDescription')}</p>
               </div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -172,14 +158,14 @@ export const SettingsPage: React.FC = () => {
           <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <span className="material-symbols-outlined text-primary text-2xl">notifications</span>
-              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">Notification Preferences</h2>
+              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">{t('settings.notificationPreferences')}</h2>
             </div>
-            <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-4">Choose how you want to receive notifications.</p>
+            <p className="text-sm text-[#4c739a] dark:text-slate-400 mb-4">{t('settings.notificationPreferencesDescription')}</p>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">Email Notifications</p>
-                  <p className="text-xs text-[#4c739a] dark:text-slate-400">Receive notifications via email</p>
+                  <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">{t('settings.emailNotifications')}</p>
+                  <p className="text-xs text-[#4c739a] dark:text-slate-400">{t('settings.emailNotificationsDescription')}</p>
                 </div>
                 <button
                   onClick={() => setNotifications({ ...notifications, email: !notifications.email })}
@@ -196,8 +182,8 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">SMS Notifications</p>
-                  <p className="text-xs text-[#4c739a] dark:text-slate-400">Receive notifications via SMS</p>
+                  <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">{t('settings.smsNotifications')}</p>
+                  <p className="text-xs text-[#4c739a] dark:text-slate-400">{t('settings.smsNotificationsDescription')}</p>
                 </div>
                 <button
                   onClick={() => setNotifications({ ...notifications, sms: !notifications.sms })}
@@ -214,8 +200,8 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">Push Notifications</p>
-                  <p className="text-xs text-[#4c739a] dark:text-slate-400">Receive push notifications in browser</p>
+                  <p className="text-sm font-medium text-[#0d141b] dark:text-white mb-1">{t('settings.pushNotifications')}</p>
+                  <p className="text-xs text-[#4c739a] dark:text-slate-400">{t('settings.pushNotificationsDescription')}</p>
                 </div>
                 <button
                   onClick={() => setNotifications({ ...notifications, push: !notifications.push })}
@@ -237,7 +223,7 @@ export const SettingsPage: React.FC = () => {
           <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <span className="material-symbols-outlined text-primary text-2xl">account_circle</span>
-              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">Account</h2>
+              <h2 className="text-lg font-bold text-[#0d141b] dark:text-white">{t('settings.account')}</h2>
             </div>
             <div className="space-y-3">
               <button
@@ -245,7 +231,7 @@ export const SettingsPage: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
                 <span className="material-symbols-outlined">logout</span>
-                Log Out
+                {t('settings.logOut')}
               </button>
             </div>
           </div>
@@ -260,12 +246,12 @@ export const SettingsPage: React.FC = () => {
               {saved ? (
                 <>
                   <span className="material-symbols-outlined">check</span>
-                  Settings Saved!
+                  {t('settings.saved')}
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined">save</span>
-                  Save Settings
+                  {t('settings.saveSettings')}
                 </>
               )}
             </button>
