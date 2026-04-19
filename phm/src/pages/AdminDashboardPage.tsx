@@ -19,6 +19,7 @@ export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'create-moh' | 'moh-users'>('dashboard');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [mohUsers, setMohUsers] = useState<MohUser[]>([]);
   const [stats, setStats] = useState({
     totalMohUsers: 0,
@@ -46,28 +47,28 @@ export const AdminDashboardPage: React.FC = () => {
     if (!AuthService.isAdmin()) {
       navigate('/login');
     }
-    loadData();
+    loadMohUsers();
   }, [navigate]);
 
-  const loadData = async () => {
+  const loadMohUsers = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const users = await AdminService.getMohUsers();
+      console.log('Loaded MOH users:', users);
       setMohUsers(users || []);
-
-      const dash = await AdminService.getAdminDashboard();
-      if (dash) {
-        setStats({
-          totalMohUsers: dash.totalMohUsers || 0,
-          totalPhmUsers: dash.totalPhmUsers || 0,
-          totalChildren: dash.totalChildren || 0,
-        });
-      }
     } catch (err: any) {
-      console.error('Failed to load admin data:', err);
+      console.error('Failed to load MOH users:', err);
+      setLoadError(err?.message || 'Failed to load MOH users. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Load MOH users when switching to moh-users tab
+  const handleMohUsersTab = () => {
+    setActiveTab('moh-users');
+    loadMohUsers();
   };
 
   const handleCreateMohAccount = async (e: FormEvent<HTMLFormElement>) => {
@@ -136,37 +137,7 @@ export const AdminDashboardPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400">System overview and statistics</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">MOH Officers</p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats.totalMohUsers}</p>
-                  </div>
-                  <span className="material-symbols-outlined text-4xl text-blue-500">supervised_user_circle</span>
-                </div>
-              </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">PHM Officers</p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats.totalPhmUsers}</p>
-                  </div>
-                  <span className="material-symbols-outlined text-4xl text-green-500">person</span>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Total Children</p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{stats.totalChildren}</p>
-                  </div>
-                  <span className="material-symbols-outlined text-4xl text-purple-500">child_care</span>
-                </div>
-              </div>
-            </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h3>
@@ -182,7 +153,7 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 </button>
                 <button
-                  onClick={() => setActiveTab('moh-users')}
+                  onClick={handleMohUsersTab}
                   className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-3 text-left"
                 >
                   <span className="material-symbols-outlined text-slate-600 dark:text-slate-400 text-2xl">group</span>
@@ -349,6 +320,15 @@ export const AdminDashboardPage: React.FC = () => {
               <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">MOH Users</h2>
               <p className="text-slate-600 dark:text-slate-400">All MOH officers in the system</p>
             </div>
+
+            {loadError && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
+                  <p className="text-red-600 dark:text-red-400 font-medium">{loadError}</p>
+                </div>
+              </div>
+            )}
 
             {loading ? (
               <div className="text-center py-12">

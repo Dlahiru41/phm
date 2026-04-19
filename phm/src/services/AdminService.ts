@@ -32,16 +32,26 @@ export class AdminService {
 
   /**
    * Get list of all MOH users (for admin dashboard)
+   * Backend returns: { count: X, items: [...] }
+   * Endpoint: GET /api/v1/admin/moh-accounts (requires JWT token + admin role)
    */
   static async getMohUsers(): Promise<any[]> {
-    return api.get<any[]>('/admin/moh-accounts');
-  }
+    try {
+      const response = await api.get<{ count: number; items: any[] }>('/admin/moh-accounts');
+      console.log('Admin getMohUsers response:', response);
 
-  /**
-   * Get admin dashboard statistics
-   */
-  static async getAdminDashboard(): Promise<any> {
-    return api.get<any>('/admin/dashboard');
+      // Handle the actual response structure
+      if (response?.items && Array.isArray(response.items)) {
+        console.log('Returning MOH users:', response.items);
+        return response.items;
+      }
+
+      console.warn('Unexpected response structure from getMohUsers:', response);
+      return [];
+    } catch (error) {
+      console.error('Error fetching MOH users:', error);
+      throw error;
+    }
   }
 }
 
