@@ -158,7 +158,20 @@ export const NotificationsPage: React.FC = () => {
     }
   };
 
-  const filteredNotifications = filter === 'all' ? notifications : notifications.filter(n => n.type === filter);
+  const filteredNotifications = (() => {
+    if (filter === 'all') return notifications;
+
+    // Handle grouped filters
+    if (filter === NotificationType.VACCINATION_DUE) {
+      return notifications.filter(n => n.type === NotificationType.VACCINATION_DUE || n.type === NotificationType.VACCINATION_CLINIC);
+    }
+    if (filter === NotificationType.CLINIC_REMINDER) {
+      return notifications.filter(n => n.type === NotificationType.CLINIC_REMINDER || n.type === NotificationType.NORMAL_CLINIC);
+    }
+
+    return notifications.filter(n => n.type === filter);
+  })();
+
   const unreadCount = filteredNotifications.filter((n) => !n.isRead).length;
 
   const content = (
@@ -199,7 +212,7 @@ export const NotificationsPage: React.FC = () => {
           >
             All
           </button>
-          {[NotificationType.VACCINATION_DUE, NotificationType.VACCINATION_CLINIC, NotificationType.CLINIC_REMINDER, NotificationType.NORMAL_CLINIC, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION].map(
+          {[NotificationType.VACCINATION_DUE, NotificationType.CLINIC_REMINDER, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION].map(
             (type) => (
               <button
                 key={type}
