@@ -30,6 +30,7 @@ import { AuditLogsPage } from './pages/AuditLogsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { VaccineGuidePage } from './pages/VaccineGuidePage';
 import { MohProfilePage } from './pages/MohProfilePage';
+import { MohSystemOverviewReportPage } from './pages/MohSystemOverviewReportPage';
 
 const App: React.FC = () => {
   return (
@@ -68,6 +69,7 @@ const App: React.FC = () => {
         <Route index element={<MohDashboardContent />} />
         <Route path="regional-analytics" element={<RegionalAnalyticsPage />} />
         <Route path="reports" element={<GenerateReportsPage />} />
+        <Route path="system-overview" element={<MohSystemOverviewReportPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="phm-management" element={<MohPhmManagementPage />} />
         <Route path="profile" element={<MohProfilePage />} />

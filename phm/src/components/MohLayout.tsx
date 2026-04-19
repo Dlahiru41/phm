@@ -97,6 +97,10 @@ export const MohLayout: React.FC = () => {
                 <span className="material-symbols-outlined">description</span>
                 <span className="text-sm font-medium">PHM Reports</span>
               </NavLink>
+              <NavLink to="/moh/system-overview" className={navLinkClass}>
+                <span className="material-symbols-outlined">assessment</span>
+                <span className="text-sm font-medium">System Overview</span>
+              </NavLink>
               <NavLink to="/moh/audit-logs" className={navLinkClass}>
                 <span className="material-symbols-outlined">history</span>
                 <span className="text-sm font-medium">Audit Logs</span>

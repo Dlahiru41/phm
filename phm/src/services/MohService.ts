@@ -111,6 +111,87 @@ export interface AuditReportResponse {
   }>;
 }
 
+export interface SystemOverviewReportResponse {
+  reportType: string;
+  summary: {
+    totalChildren: number;
+    linkedChildren: number;
+    totalPhmUsers: number;
+    totalMohUsers: number;
+    totalVaccinationRecords: number;
+    administeredRecords: number;
+    pendingRecords: number;
+    missedRecords: number;
+    cancelledRecords: number;
+    coveragePct: number;
+    upcomingDueNext7Days: number;
+    overdueRecords: number;
+    pendingSchedules: number;
+    completedSchedules: number;
+    scheduledClinics: number;
+    completedClinics: number;
+    unreadNotifications: number;
+    auditEventsLast30Days: number;
+  };
+  deepDive: {
+    byGNDivision: Array<{
+      gnDivision: string;
+      registeredChildren: number;
+      linkedChildren: number;
+      vaccinatedChildren: number;
+      missedChildren: number;
+      overdueRecords: number;
+      coveragePct: number;
+    }>;
+    byVaccine: Array<{
+      vaccineId: string;
+      vaccineName: string;
+      totalDoses: number;
+      administeredDoses: number;
+      pendingDoses: number;
+      missedDoses: number;
+      cancelledDoses: number;
+      completionRatePct: number;
+    }>;
+    dataQuality: {
+      childrenWithoutGnDivision: number;
+      childrenWithoutLinkedParent: number;
+      childrenWithoutWhatsAppNumber: number;
+      pendingRecordsWithoutDueDate: number;
+      overduePendingSchedules: number;
+    };
+    databaseFootprint: {
+      users: number;
+      children: number;
+      vaccines: number;
+      vaccinationRecords: number;
+      vaccinationSchedules: number;
+      clinicSchedules: number;
+      clinicChildren: number;
+      notifications: number;
+      auditLogs: number;
+      reports: number;
+    };
+    monthlyTrend: Array<{
+      month: string;
+      newChildren: number;
+      administeredDoses: number;
+      missedDoses: number;
+      completedClinics: number;
+      notificationsSent: number;
+      auditEvents: number;
+    }>;
+  };
+  filters: {
+    startDate: string;
+    endDate: string;
+    gnDivision: string;
+    trendMonths: number;
+  };
+  insights: string[];
+  generatedAt: string;
+}
+
 /**
  * MOH Dashboard and Reports API Service
  */
@@ -287,6 +368,30 @@ export class MohService {
       return response ?? null;
     } catch (error) {
       console.error('Error fetching audit report:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get system overview report with optional filtering
+   */
+  async getSystemOverviewReport(params?: {
+    startDate?: string;
+    endDate?: string;
+    gnDivision?: string;
+    trendMonths?: number;
+  }): Promise<SystemOverviewReportResponse | null> {
+    try {
+      const queryParams: Record<string, string> = {};
+      if (params?.startDate) queryParams.startDate = params.startDate;
+      if (params?.endDate) queryParams.endDate = params.endDate;
+      if (params?.gnDivision) queryParams.gnDivision = params.gnDivision;
+      if (params?.trendMonths) queryParams.trendMonths = params.trendMonths.toString();
+
+      const response = await api.get<SystemOverviewReportResponse>('/moh/reports/system-overview', queryParams);
+      return response ?? null;
+    } catch (error) {
+      console.error('Error fetching system overview report:', error);
       return null;
     }
   }
