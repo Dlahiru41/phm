@@ -8,6 +8,7 @@ import { ChildProfileSchedulePage } from '../pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from '../pages/GrowthChartPage';
 import { MohAnalyticsDashboardPage } from '../pages/MohAnalyticsDashboardPage';
 import VaccinationCardPage from '../pages/VaccinationCardPage';
+import { VaccinationClinicSchedulePage } from '../pages/VaccinationClinicSchedulePage';
 
 export const routes: Route[] = [
   {
@@ -54,5 +55,10 @@ export const routes: Route[] = [
     path: '/moh-analytics-dashboard',
     name: 'MOH Analytics Dashboard',
     component: async () => MohAnalyticsDashboardPage(),
+  },
+  {
+    path: '/vaccination-clinic-schedule',
+    name: 'Vaccination Clinic Schedule',
+    component: async () => VaccinationClinicSchedulePage(),
   },
 ];

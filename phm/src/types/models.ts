@@ -423,6 +423,7 @@ export interface ClinicSchedule {
   location: string;
   description?: string;
   status: ClinicStatus;
+  clinicType?: 'normal' | 'vaccination';
   createdAt: Date;
   updatedAt: Date;
 }

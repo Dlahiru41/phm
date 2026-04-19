@@ -877,6 +877,7 @@ class DataService {
     gnDivision: string;
     location: string;
     description?: string;
+    clinicType?: 'normal' | 'vaccination';
   }): Promise<{ clinic: ClinicSchedule; dueChildren: DueChild[]; childCount: number } | null> {
     try {
       const res = await api.post<any>('/clinics', body);
@@ -893,11 +894,12 @@ class DataService {
     }
   }
 
-  async getMyClinicList(params?: { fromDate?: string; toDate?: string }): Promise<ClinicSchedule[]> {
+  async getMyClinicList(params?: { fromDate?: string; toDate?: string; clinicType?: 'normal' | 'vaccination' }): Promise<ClinicSchedule[]> {
     try {
       const p: Record<string, string> = {};
       if (params?.fromDate) p.fromDate = params.fromDate;
       if (params?.toDate) p.toDate = params.toDate;
+      if (params?.clinicType) p.clinicType = params.clinicType;
       const list = await api.get<any[]>('/clinics/my', p);
       return Array.isArray(list) ? list.map(clinicScheduleFromApi) : [];
     } catch {
