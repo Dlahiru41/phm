@@ -2,6 +2,7 @@ import React, { useEffect, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { AdminService, MohAccountCreateResponse } from '../services/AdminService';
+import { TranslationService } from '../services/TranslationService';
 
 interface MohUser {
   userId: string;
@@ -21,11 +22,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [mohUsers, setMohUsers] = useState<MohUser[]>([]);
-  const [stats, setStats] = useState({
-    totalMohUsers: 0,
-    totalPhmUsers: 0,
-    totalChildren: 0,
-  });
+
 
   // Create MOH Account Form State
   const [creating, setCreating] = useState(false);
@@ -92,7 +89,7 @@ export const AdminDashboardPage: React.FC = () => {
       });
 
       // Reload MOH users list
-      setTimeout(() => loadData(), 1500);
+      setTimeout(() => loadMohUsers(), 1500);
     } catch (err: any) {
       setCreateError(err?.message || 'Failed to create MOH account. Please try again.');
     } finally {
@@ -113,8 +110,8 @@ export const AdminDashboardPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-primary text-3xl">admin_panel_settings</span>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">System Administrator</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">NCVMS Admin Portal</p>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.title')}</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{TranslationService.t('adminDashboard.subtitle')}</p>
             </div>
           </div>
           <button
@@ -122,7 +119,7 @@ export const AdminDashboardPage: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
           >
             <span className="material-symbols-outlined text-lg">logout</span>
-            Logout
+            {TranslationService.t('common.logout')}
           </button>
         </div>
       </div>
@@ -133,14 +130,14 @@ export const AdminDashboardPage: React.FC = () => {
         {activeTab === 'dashboard' && (
           <>
             <div className="mb-8">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">Dashboard</h2>
-              <p className="text-slate-600 dark:text-slate-400">System overview and statistics</p>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{TranslationService.t('adminDashboard.dashboard.title')}</h2>
+              <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('adminDashboard.dashboard.subtitle')}</p>
             </div>
 
 
 
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{TranslationService.t('adminDashboard.dashboard.quickActions')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setActiveTab('create-moh')}
@@ -148,8 +145,8 @@ export const AdminDashboardPage: React.FC = () => {
                 >
                   <span className="material-symbols-outlined text-primary text-2xl">person_add</span>
                   <div>
-                    <p className="font-semibold text-slate-900 dark:text-white">Create MOH Account</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Add new MOH officer instantly</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.dashboard.createMohAccount')}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">{TranslationService.t('adminDashboard.dashboard.createMohAccountSubtitle')}</p>
                   </div>
                 </button>
                 <button
@@ -158,8 +155,8 @@ export const AdminDashboardPage: React.FC = () => {
                 >
                   <span className="material-symbols-outlined text-slate-600 dark:text-slate-400 text-2xl">group</span>
                   <div>
-                    <p className="font-semibold text-slate-900 dark:text-white">View MOH Users</p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Manage existing MOH accounts</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.dashboard.viewMohUsers')}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">{TranslationService.t('adminDashboard.dashboard.viewMohUsersSubtitle')}</p>
                   </div>
                 </button>
               </div>
@@ -171,19 +168,19 @@ export const AdminDashboardPage: React.FC = () => {
         {activeTab === 'create-moh' && (
           <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
             <div className="mb-8">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">Create MOH Account</h2>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{TranslationService.t('adminDashboard.createMoh.title')}</h2>
               <p className="text-slate-600 dark:text-slate-400">
-                Fill in MOH officer details to create account instantly. A secure temporary password will be generated and sent via WhatsApp.
+                {TranslationService.t('adminDashboard.createMoh.subtitle')}
               </p>
             </div>
 
             <form onSubmit={handleCreateMohAccount} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Employee ID *</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{TranslationService.t('adminDashboard.createMoh.employeeIdLabel')} *</label>
                   <input
                     type="text"
-                    placeholder="e.g., MOH-2024-001"
+                    placeholder={TranslationService.t('adminDashboard.createMoh.employeeIdPlaceholder')}
                     value={formData.employeeId}
                     onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                     required
@@ -191,10 +188,10 @@ export const AdminDashboardPage: React.FC = () => {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Full Name *</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{TranslationService.t('adminDashboard.createMoh.fullNameLabel')} *</label>
                   <input
                     type="text"
-                    placeholder="e.g., Dr. Ruwan Silva"
+                    placeholder={TranslationService.t('adminDashboard.createMoh.fullNamePlaceholder')}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
@@ -203,10 +200,10 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">National ID (NIC) *</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{TranslationService.t('adminDashboard.createMoh.nicLabel')} *</label>
                   <input
                     type="text"
-                    placeholder="e.g., 987654321V"
+                    placeholder={TranslationService.t('adminDashboard.createMoh.nicPlaceholder')}
                     value={formData.nic}
                     onChange={(e) => setFormData({ ...formData, nic: e.target.value })}
                     required
@@ -215,10 +212,10 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Email *</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{TranslationService.t('adminDashboard.createMoh.emailLabel')} *</label>
                   <input
                     type="email"
-                    placeholder="e.g., rsilva@moh.lk"
+                    placeholder={TranslationService.t('adminDashboard.createMoh.emailPlaceholder')}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
@@ -227,10 +224,10 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Phone Number *</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{TranslationService.t('adminDashboard.createMoh.phoneLabel')} *</label>
                   <input
                     type="tel"
-                    placeholder="e.g., +94711234567"
+                    placeholder={TranslationService.t('adminDashboard.createMoh.phonePlaceholder')}
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                     required
@@ -239,10 +236,10 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">Assigned Area *</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">{TranslationService.t('adminDashboard.createMoh.assignedAreaLabel')} *</label>
                   <input
                     type="text"
-                    placeholder="e.g., Colombo District"
+                    placeholder={TranslationService.t('adminDashboard.createMoh.assignedAreaPlaceholder')}
                     value={formData.assignedArea}
                     onChange={(e) => setFormData({ ...formData, assignedArea: e.target.value })}
                     required
@@ -261,19 +258,19 @@ export const AdminDashboardPage: React.FC = () => {
                 <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
-                    <p className="text-green-600 dark:text-green-400 font-bold">MOH Account Created Successfully!</p>
+                    <p className="text-green-600 dark:text-green-400 font-bold">{TranslationService.t('adminDashboard.createMoh.successTitle')}</p>
                   </div>
                   <div className="space-y-2 text-sm text-green-700 dark:text-green-300">
-                    <p><strong>User ID:</strong> {createSuccess.mohUserId}</p>
-                    <p><strong>Email:</strong> {createSuccess.email}</p>
-                    <p><strong>Temporary Password:</strong> <code className="bg-green-200 dark:bg-green-800 px-2 py-1 rounded">{createSuccess.tempPassword}</code></p>
-                    <p><strong>Sent to:</strong> {createSuccess.maskedDestination}</p>
+                    <p><strong>{TranslationService.t('adminDashboard.createMoh.successUserId')}:</strong> {createSuccess.mohUserId}</p>
+                    <p><strong>{TranslationService.t('adminDashboard.createMoh.successEmail')}:</strong> {createSuccess.email}</p>
+                    <p><strong>{TranslationService.t('adminDashboard.createMoh.successTempPassword')}:</strong> <code className="bg-green-200 dark:bg-green-800 px-2 py-1 rounded">{createSuccess.tempPassword}</code></p>
+                    <p><strong>{TranslationService.t('adminDashboard.createMoh.successSentTo')}:</strong> {createSuccess.maskedDestination}</p>
                     <p className="text-xs italic pt-2 border-t border-green-300 dark:border-green-700 pt-3">
-                      ✓ Temporary password sent via WhatsApp
+                      ✓ {TranslationService.t('adminDashboard.createMoh.successNote1')}
                       <br/>
-                      ✓ MOH user must change password on first login
+                      ✓ {TranslationService.t('adminDashboard.createMoh.successNote2')}
                       <br/>
-                      ✓ Password valid for 24 hours
+                      ✓ {TranslationService.t('adminDashboard.createMoh.successNote3')}
                     </p>
                   </div>
                 </div>
@@ -288,12 +285,12 @@ export const AdminDashboardPage: React.FC = () => {
                   {creating ? (
                     <>
                       <span className="material-symbols-outlined animate-spin">hourglass_top</span>
-                      Creating...
+                      {TranslationService.t('common.creating')}
                     </>
                   ) : (
                     <>
                       <span className="material-symbols-outlined">check_circle</span>
-                      Create MOH Account
+                      {TranslationService.t('adminDashboard.createMoh.createButton')}
                     </>
                   )}
                 </button>
@@ -306,7 +303,7 @@ export const AdminDashboardPage: React.FC = () => {
                   }}
                   className="flex-1 px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 transition"
                 >
-                  Back to Dashboard
+                  {TranslationService.t('common.backToDashboard')}
                 </button>
               </div>
             </form>
@@ -317,8 +314,8 @@ export const AdminDashboardPage: React.FC = () => {
         {activeTab === 'moh-users' && (
           <div>
             <div className="mb-8">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">MOH Users</h2>
-              <p className="text-slate-600 dark:text-slate-400">All MOH officers in the system</p>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{TranslationService.t('adminDashboard.mohUsers.title')}</h2>
+              <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('adminDashboard.mohUsers.subtitle')}</p>
             </div>
 
             {loadError && (
@@ -333,25 +330,25 @@ export const AdminDashboardPage: React.FC = () => {
             {loading ? (
               <div className="text-center py-12">
                 <span className="material-symbols-outlined text-4xl text-slate-400 animate-spin">hourglass_top</span>
-                <p className="text-slate-600 dark:text-slate-400 mt-4">Loading MOH users...</p>
+                <p className="text-slate-600 dark:text-slate-400 mt-4">{TranslationService.t('adminDashboard.mohUsers.loading')}</p>
               </div>
             ) : (
               <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 {mohUsers.length === 0 ? (
                   <div className="text-center py-12 px-4">
-                    <p className="text-slate-600 dark:text-slate-400">No MOH users found</p>
+                    <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('adminDashboard.mohUsers.noUsers')}</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
                         <tr>
-                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Employee ID</th>
-                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Name</th>
-                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Email</th>
-                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Assigned Area</th>
-                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Status</th>
-                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Created</th>
+                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.mohUsers.table.employeeId')}</th>
+                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.mohUsers.table.name')}</th>
+                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.mohUsers.table.email')}</th>
+                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.mohUsers.table.assignedArea')}</th>
+                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.mohUsers.table.status')}</th>
+                          <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">{TranslationService.t('adminDashboard.mohUsers.table.created')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -364,11 +361,11 @@ export const AdminDashboardPage: React.FC = () => {
                             <td className="px-6 py-4 text-sm">
                               {user.firstLogin ? (
                                 <span className="px-3 py-1 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-medium">
-                                  First Login Pending
+                                  {TranslationService.t('adminDashboard.mohUsers.status.pending')}
                                 </span>
                               ) : (
                                 <span className="px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
-                                  Active
+                                  {TranslationService.t('adminDashboard.mohUsers.status.active')}
                                 </span>
                               )}
                             </td>
@@ -388,7 +385,7 @@ export const AdminDashboardPage: React.FC = () => {
               onClick={() => setActiveTab('dashboard')}
               className="mt-6 px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 transition"
             >
-              Back to Dashboard
+              {TranslationService.t('common.backToDashboard')}
             </button>
           </div>
         )}

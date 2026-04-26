@@ -4,6 +4,7 @@ import { AuditLog as AuditLogType } from '../types/models';
 import { dataService } from '../services/DataService';
 import { mohService, AuditReportResponse } from '../services/MohService';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 
 export const AuditLogsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export const AuditLogsPage: React.FC = () => {
   const embeddedInMoh = location.pathname.startsWith('/moh');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
-  const [filterAction, setFilterAction] = useState<string>('all');
+  const [filterAction] = useState<string>('all');
   const [auditLogs, setAuditLogs] = useState<AuditLogType[]>([]);
   const [mohAuditData, setMohAuditData] = useState<AuditReportResponse | null>(null);
   const [total, setTotal] = useState(0);
@@ -125,14 +126,14 @@ export const AuditLogsPage: React.FC = () => {
               className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              <span className="text-sm font-medium">Back to Dashboard</span>
+              <span className="text-sm font-medium">{TranslationService.t('common.backToDashboard')}</span>
             </button>
           </div>
         )}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Audit Logs</h1>
+          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">{TranslationService.t('audit.title')}</h1>
           <p className="text-[#4c739a] dark:text-slate-400">
-            View SuwaCare LK system activity and user actions for security and compliance.
+            {TranslationService.t('audit.subtitle')}
           </p>
         </div>
 
@@ -143,7 +144,7 @@ export const AuditLogsPage: React.FC = () => {
             </span>
             <input
               type="text"
-              placeholder="Search by user, action, or details..."
+              placeholder={TranslationService.t('audit.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark text-[#0d141b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary"
@@ -154,10 +155,10 @@ export const AuditLogsPage: React.FC = () => {
             onChange={(e) => setFilterRole(e.target.value)}
             className="px-4 py-3 rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark text-[#0d141b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary"
           >
-            <option value="all">All Roles</option>
-            <option value="phm">PHM</option>
-            <option value="parent">Parent</option>
-            <option value="moh">MOH Officer</option>
+            <option value="all">{TranslationService.t('audit.filterAllRoles')}</option>
+            <option value="phm">{TranslationService.t('audit.filterPhm')}</option>
+            <option value="parent">{TranslationService.t('audit.filterParent')}</option>
+            <option value="moh">{TranslationService.t('audit.filterMoh')}</option>
           </select>
         </div>
 
@@ -166,17 +167,17 @@ export const AuditLogsPage: React.FC = () => {
             <table className="w-full">
               <thead className="bg-[#f6f7f8] dark:bg-slate-800 border-b border-[#e7edf3] dark:border-slate-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">Timestamp</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">Action</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">Details</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">{TranslationService.t('audit.colTimestamp')}</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">{TranslationService.t('audit.colUser')}</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">{TranslationService.t('audit.colAction')}</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">{TranslationService.t('audit.colDetails')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e7edf3] dark:divide-slate-700">
                 {displayAuditLogs.length === 0 && !loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-[#4c739a] dark:text-slate-400">
-                      No audit logs found matching your search criteria.
+                      {TranslationService.t('audit.noLogs')}
                     </td>
                   </tr>
                 ) : (
@@ -218,7 +219,7 @@ export const AuditLogsPage: React.FC = () => {
         </div>
 
         <div className="mt-6 flex items-center justify-between text-sm text-[#4c739a] dark:text-slate-400">
-          <p>{loading ? 'Loading...' : `Showing ${displayAuditLogs.length} of ${total} audit logs`}</p>
+          <p>{loading ? TranslationService.t('common.loading') : TranslationService.t('audit.showingLogs').replace('{count}', String(displayAuditLogs.length)).replace('{total}', String(total))}</p>
           {!embeddedInMoh && (
             <a
               href={dataService.getAuditLogExportUrl({
@@ -246,7 +247,7 @@ export const AuditLogsPage: React.FC = () => {
               }}
             >
               <span className="material-symbols-outlined">download</span>
-              Export Logs
+              {TranslationService.t('audit.export')}
             </a>
           )}
           {embeddedInMoh && (

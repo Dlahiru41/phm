@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ParentLayout } from '../components/ParentLayout';
 import { WHOGrowthChart } from '../components/WHOGrowthChart';
 import { dataService } from '../services/DataService';
+import { TranslationService } from '../services/TranslationService';
 import type { WHOGrowthPayload } from '../types/models';
 
 type GrowthState =
@@ -12,7 +13,7 @@ type GrowthState =
 
 function GrowthChartContent({ state }: { state: GrowthState }) {
   if (state.kind === 'loading') {
-    return <div className="max-w-[1200px] mx-auto p-8 text-center text-[#4c739a] dark:text-slate-400">Loading WHO growth chart...</div>;
+    return <div className="max-w-[1200px] mx-auto p-8 text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('growth.loading')}</div>;
   }
 
   if (state.kind === 'error') {
@@ -38,7 +39,7 @@ export const GrowthChartPage: React.FC = () => {
         if (!childId) {
           setState({
             kind: 'error',
-            message: 'Child ID is required.',
+            message: TranslationService.t('common.error'),
           });
           return;
         }
@@ -50,7 +51,7 @@ export const GrowthChartPage: React.FC = () => {
           } else {
             setState({
               kind: 'error',
-              message: 'No growth data available for this child.',
+              message: TranslationService.t('growth.noData'),
             });
           }
         }
@@ -58,7 +59,7 @@ export const GrowthChartPage: React.FC = () => {
         if (!cancelled) {
           setState({
             kind: 'error',
-            message: error?.message || 'Failed to load WHO growth chart data.',
+            message: error?.message || TranslationService.t('growth.error'),
           });
         }
       }

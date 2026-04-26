@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
+import { TranslationService } from '../services/TranslationService';
 import type { ClinicSchedule, DueChild, ClinicChild } from '../types/models';
 
 type CreateClinicState = {
@@ -68,7 +69,7 @@ export const ClinicSchedulingPage: React.FC = () => {
       const list = await dataService.getMyClinicList({ clinicType: 'normal' });
       setClinics(list);
     } catch (err: any) {
-      setError(err?.message || 'Failed to load clinics');
+      setError(err?.message || TranslationService.t('clinic.loadError'));
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,7 @@ export const ClinicSchedulingPage: React.FC = () => {
 
     try {
       if (!formData.clinicDate || !formData.gnDivision || !formData.location) {
-        setError('Please fill in all required fields');
+        setError(TranslationService.t('profile.fillAllFields'));
         setLoading(false);
         return;
       }
@@ -107,7 +108,7 @@ export const ClinicSchedulingPage: React.FC = () => {
       });
 
       if (result) {
-        setSuccessMessage(`Clinic created successfully! ${result.childCount} children identified as due.`);
+        setSuccessMessage(TranslationService.t('clinic.normalCreateSuccess'));
         setFormData({ clinicDate: '', gnDivision: '', location: '', description: '' });
         setTimeout(() => {
           setSuccessMessage(null);
@@ -115,10 +116,10 @@ export const ClinicSchedulingPage: React.FC = () => {
           loadClinics();
         }, 2000);
       } else {
-        setError('Failed to create clinic');
+        setError(TranslationService.t('clinic.createError'));
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to create clinic');
+      setError(err?.message || TranslationService.t('clinic.createError'));
     } finally {
       setLoading(false);
     }
@@ -190,12 +191,12 @@ export const ClinicSchedulingPage: React.FC = () => {
     try {
       const ok = await dataService.updateClinicChildAttendance(selectedClinic.clinicId, childId, status);
       if (!ok) {
-        setError('Failed to update attendance');
+        setError(TranslationService.t('clinic.createError'));
         return;
       }
       await handleViewDetails(selectedClinic);
     } catch (err: any) {
-      setError(err?.message || 'Failed to update attendance');
+      setError(err?.message || TranslationService.t('clinic.createError'));
     } finally {
       setSavingAttendanceId(null);
     }
@@ -264,9 +265,9 @@ export const ClinicSchedulingPage: React.FC = () => {
   };
 
   const getAttendanceLabel = (status: 'attended' | 'not_attended' | 'pending') => {
-    if (status === 'attended') return 'Attended';
-    if (status === 'not_attended') return 'Not attended';
-    return 'Pending';
+    if (status === 'attended') return TranslationService.t('status.completed');
+    if (status === 'not_attended') return TranslationService.t('status.missed');
+    return TranslationService.t('status.pending');
   };
 
   const getStatusBadge = (status: string) => {
@@ -285,10 +286,10 @@ export const ClinicSchedulingPage: React.FC = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
-              Clinic Scheduling
+              {TranslationService.t('clinic.normalTitle')}
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
-              Manage clinic schedules and track immunization due children
+              {TranslationService.t('clinic.normalSubtitle')}
             </p>
           </div>
 
@@ -316,22 +317,22 @@ export const ClinicSchedulingPage: React.FC = () => {
                   }}
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
-                  + New Clinic
+                  + {TranslationService.t('clinic.normalCreateTitle')}
                 </button>
               </div>
 
               {loading ? (
                 <div className="text-center py-12">
-                  <p className="text-slate-600 dark:text-slate-400">Loading clinics...</p>
+                  <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('common.loading')}</p>
                 </div>
               ) : clinics.length === 0 ? (
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-8 text-center">
-                  <p className="text-slate-600 dark:text-slate-400 mb-4">No clinics scheduled yet</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-4">{TranslationService.t('clinic.normalNoClinics')}</p>
                   <button
                     onClick={() => setView('create')}
                     className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    Schedule Your First Clinic
+                    {TranslationService.t('clinic.scheduleFirst')}
                   </button>
                 </div>
               ) : (
@@ -373,7 +374,7 @@ export const ClinicSchedulingPage: React.FC = () => {
                           onClick={() => handleViewDetails(clinic)}
                           className="px-6 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                         >
-                          View Details
+                          {TranslationService.t('clinic.viewDetails')}
                         </button>
                       </div>
                     </div>

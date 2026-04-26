@@ -2,6 +2,7 @@ import React, { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataService } from '../services/DataService';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 import { PhmLayout } from '../components/PhmLayout';
 
 
@@ -50,11 +51,11 @@ export const BabyRegistrationPage: React.FC = () => {
             gnDivision: assignedArea,
           }));
         } else {
-          setError('Unable to determine your assigned GN Division. Please contact administrator.');
+          setError(TranslationService.t('babyReg.errorArea'));
         }
       } catch (err) {
         console.error('Error initializing GN Division:', err);
-        setError('Failed to load your assigned area. Please try again.');
+        setError(TranslationService.t('common.error'));
       } finally {
         setLoadingArea(false);
       }
@@ -69,7 +70,7 @@ export const BabyRegistrationPage: React.FC = () => {
     const weight = parseFloat(formData.birthWeight);
     const height = parseFloat(formData.birthHeight);
     if (isNaN(weight) || isNaN(height)) {
-      setError('Please enter valid birth weight and height.');
+      setError(TranslationService.t('babyReg.errorWeight'));
       return;
     }
     try {
@@ -107,10 +108,10 @@ export const BabyRegistrationPage: React.FC = () => {
           dateOfBirth: formData.dateOfBirth,
         });
       } else {
-        setError('Registration failed. Server did not return a registration number.');
+        setError(TranslationService.t('babyReg.errorServer'));
       }
     } catch (err: unknown) {
-      let message = 'Registration failed. Please check your details and try again.';
+      let message = TranslationService.t('babyReg.errorServer');
       if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
         message = (err as { message: string }).message;
         const apiErr = err as { details?: Array<{ field?: string; message?: string }>; statusCode?: number; responseBody?: unknown };
@@ -142,19 +143,16 @@ export const BabyRegistrationPage: React.FC = () => {
               <div className="mb-6">
                 <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
               </div>
-              <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">Baby Registered Successfully!</h2>
-              <p className="text-[#4c739a] dark:text-slate-400">The child has been registered in the system.</p>
+              <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">{TranslationService.t('babyReg.successTitle')}</h2>
+              <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('babyReg.successText')}</p>
             </div>
 
             <div className="bg-primary/10 border-2 border-primary rounded-xl p-6 mb-6">
               <div className="flex items-center gap-3 mb-2">
                 <span className="material-symbols-outlined text-primary text-2xl">badge</span>
-                <p className="text-sm font-bold text-primary uppercase tracking-wider">Registration Number</p>
+                <p className="text-sm font-bold text-primary uppercase tracking-wider">{TranslationService.t('babyReg.regNumLabel')}</p>
               </div>
               <p className="text-2xl font-black text-[#0d141b] dark:text-white">{registrationNumber}</p>
-              <p className="text-sm text-[#4c739a] dark:text-slate-400 mt-2">
-                Please provide this registration number to the parents so they can link this child to their account.
-              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -164,7 +162,7 @@ export const BabyRegistrationPage: React.FC = () => {
                   className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
                 >
                   <span className="material-symbols-outlined">groups</span>
-                  View Area Children
+                  {TranslationService.t('nav.healthRecords')}
                 </button>
               )}
               <button
@@ -181,14 +179,14 @@ export const BabyRegistrationPage: React.FC = () => {
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors"
               >
                 <span className="material-symbols-outlined">add</span>
-                Register Another Child
+                {TranslationService.t('babyReg.registerAnother')}
               </button>
               <button
                 onClick={() => navigate('/phm-dashboard')}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
               >
                 <span className="material-symbols-outlined">dashboard</span>
-                Go to Dashboard
+                {TranslationService.t('common.backToDashboard')}
               </button>
             </div>
           </div>
@@ -201,15 +199,15 @@ export const BabyRegistrationPage: React.FC = () => {
     <PhmLayout activeNav="register-baby" showBackToDashboard={true}>
       <div className="w-full max-w-4xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Register New Baby</h1>
-          <p className="text-[#4c739a] dark:text-slate-400">Enter child demographic details to register in the system.</p>
+          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">{TranslationService.t('babyReg.title')}</h1>
+          <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('babyReg.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">First Name *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.firstName')} *</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="text"
@@ -251,7 +249,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Gender *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.gender')} *</p>
                 <select
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   name="gender"
@@ -259,16 +257,16 @@ export const BabyRegistrationPage: React.FC = () => {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="">{TranslationService.t('babyReg.selectGender')}</option>
+                  <option value="male">{TranslationService.t('babyReg.genderMale')}</option>
+                  <option value="female">{TranslationService.t('babyReg.genderFemale')}</option>
                 </select>
               </label>
             </div>
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Birth Weight (kg) *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.birthWeight')} *</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="number"
@@ -283,7 +281,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Birth Height (cm) *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.birthHeight')} *</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="number"
@@ -298,11 +296,11 @@ export const BabyRegistrationPage: React.FC = () => {
           </div>
 
           <div className="border-t border-[#e7edf3] dark:border-slate-700 pt-6 mb-6">
-            <h3 className="text-lg font-bold text-[#0d141b] dark:text-white mb-4">Parent Information</h3>
+            <h3 className="text-lg font-bold text-[#0d141b] dark:text-white mb-4">{TranslationService.t('babyReg.parentInfo')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Mother's Name *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.motherName')} *</p>
                   <input
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     type="text"
@@ -316,7 +314,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Mother's NIC *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.motherNic')} *</p>
                   <input
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     type="text"
@@ -330,7 +328,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Father's Name</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.fatherName')}</p>
                   <input
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     type="text"
@@ -343,7 +341,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Father's NIC</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.fatherNic')}</p>
                   <input
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     type="text"
@@ -356,7 +354,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div className="md:col-span-2">
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Parent WhatsApp Number *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.whatsapp')} *</p>
                   <input
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     type="tel"
@@ -367,7 +365,7 @@ export const BabyRegistrationPage: React.FC = () => {
                     required
                   />
                   <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">
-                    Required. Used when the parent links this child via WhatsApp OTP (e.g. +94 for Sri Lanka).
+                    {TranslationService.t('babyReg.whatsappHint')}
                   </p>
                 </label>
               </div>
@@ -375,11 +373,11 @@ export const BabyRegistrationPage: React.FC = () => {
           </div>
 
           <div className="border-t border-[#e7edf3] dark:border-slate-700 pt-6 mb-6">
-            <h3 className="text-lg font-bold text-[#0d141b] dark:text-white mb-4">Address Information</h3>
+            <h3 className="text-lg font-bold text-[#0d141b] dark:text-white mb-4">{TranslationService.t('babyReg.addressInfo')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">District *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.district')} *</p>
                   <select
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     name="district"
@@ -387,7 +385,7 @@ export const BabyRegistrationPage: React.FC = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">Select District</option>
+                    <option value="">{TranslationService.t('babyReg.district')}</option>
                     <option value="Galle">Galle</option>
                   </select>
                 </label>
@@ -395,7 +393,7 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">MOH Division *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.mohDivision')} *</p>
                   <select
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     name="dsDivision"
@@ -403,7 +401,7 @@ export const BabyRegistrationPage: React.FC = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">Select MOH Division</option>
+                    <option value="">{TranslationService.t('babyReg.selectMoh')}</option>
                     <option value="Galle">Galle</option>
                   </select>
                 </label>
@@ -411,10 +409,10 @@ export const BabyRegistrationPage: React.FC = () => {
 
               <div className="md:col-span-2">
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">GN Division (Assigned)</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.gnDivision')}</p>
                   {loadingArea ? (
                     <div className="w-full rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-12 px-4 flex items-center">
-                      <p className="text-[#4c739a] dark:text-slate-400 text-sm">Loading your assigned area...</p>
+                      <p className="text-[#4c739a] dark:text-slate-400 text-sm">{TranslationService.t('babyReg.loadingArea')}</p>
                     </div>
                   ) : assignedGnDivision ? (
                     <div className="w-full rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-slate-50 dark:bg-slate-800 h-12 px-4 flex items-center">
@@ -422,18 +420,18 @@ export const BabyRegistrationPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="w-full rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 h-12 px-4 flex items-center">
-                      <p className="text-red-600 dark:text-red-400 text-sm">Unable to load assigned area</p>
+                      <p className="text-red-600 dark:text-red-400 text-sm">{TranslationService.t('babyReg.areaError')}</p>
                     </div>
                   )}
                   <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-2">
-                    Your GN Division is automatically assigned based on your PHM account setup and cannot be changed manually.
+                    {TranslationService.t('babyReg.gnHint')}
                   </p>
                 </label>
               </div>
 
               <div className="md:col-span-2">
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Full Address *</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('babyReg.fullAddress')} *</p>
                   <textarea
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-24 px-4 py-3 text-sm resize-none"
                     name="address"
@@ -458,14 +456,14 @@ export const BabyRegistrationPage: React.FC = () => {
               onClick={() => navigate('/phm-dashboard')}
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Cancel
+              {TranslationService.t('common.cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
             >
               <span className="material-symbols-outlined">save</span>
-              Register Baby
+              {TranslationService.t('babyReg.submitBtn')}
             </button>
           </div>
         </form>

@@ -205,8 +205,8 @@ export const NotificationsPage: React.FC = () => {
               </h1>
               <p className="text-[#4c739a] dark:text-slate-400">
                 {unreadCount > 0
-                    ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
-                    : 'All caught up!'}
+                    ? TranslationService.t('notification.unread').replace('{count}', String(unreadCount))
+                    : TranslationService.t('notification.allCaughtUp')}
               </p>
             </div>
             {unreadCount > 0 && (
@@ -215,7 +215,7 @@ export const NotificationsPage: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
                   <span className="material-symbols-outlined text-lg">done_all</span>
-                  Mark all as read
+                  {TranslationService.t('notification.markAllAsRead')}
                 </button>
             )}
           </div>
@@ -230,7 +230,7 @@ export const NotificationsPage: React.FC = () => {
                         : 'bg-slate-100 dark:bg-slate-800 text-[#0d141b] dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
             >
-              All
+              {TranslationService.t('notification.filterAll')}
             </button>
             {[NotificationType.VACCINATION_DUE, NotificationType.CLINIC_REMINDER, NotificationType.MISSED_VACCINATION, NotificationType.MISSED_CLINIC, NotificationType.CANCELLED_CLINIC, NotificationType.CANCELLED_VACCINATION].map(
                 (type) => (
@@ -258,7 +258,7 @@ export const NotificationsPage: React.FC = () => {
                   <p className="text-lg font-medium text-[#0d141b] dark:text-white mb-2">
                     {TranslationService.t('notification.noNotifications')}
                   </p>
-                  <p className="text-sm text-[#4c739a] dark:text-slate-400">You're all caught up!</p>
+                  <p className="text-sm text-[#4c739a] dark:text-slate-400">{TranslationService.t('notification.allCaughtUp')}</p>
                 </div>
             ) : (
                 filteredNotifications.map((notification) => (

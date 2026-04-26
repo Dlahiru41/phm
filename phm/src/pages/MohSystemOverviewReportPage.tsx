@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { mohService, SystemOverviewReportResponse } from '../services/MohService';
+import { TranslationService } from '../services/TranslationService';
 
 export const MohSystemOverviewReportPage: React.FC = () => {
     const reportRef = useRef<HTMLDivElement>(null);
@@ -24,11 +25,11 @@ export const MohSystemOverviewReportPage: React.FC = () => {
             if (data) {
                 setReportData(data);
             } else {
-                setError('Failed to load report data');
+                setError(TranslationService.t('common.error'));
             }
         } catch (err) {
             console.error('Error fetching report:', err);
-            setError('Failed to load report data');
+            setError(TranslationService.t('common.error'));
         } finally {
             setLoading(false);
         }
@@ -92,10 +93,10 @@ export const MohSystemOverviewReportPage: React.FC = () => {
             <div className="w-full max-w-7xl mx-auto px-6 py-8">
 
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#e7edf3] dark:border-slate-800 p-6 mb-6">
-                    <h2 className="text-lg font-bold mb-4">Report Filters</h2>
+                    <h2 className="text-lg font-bold mb-4">{TranslationService.t('report.filters')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-2">Start Date</label>
+                            <label className="block text-sm font-medium mb-2">{TranslationService.t('report.startDate')}</label>
                             <input
                                 type="date"
                                 value={startDate}
@@ -104,7 +105,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">End Date</label>
+                            <label className="block text-sm font-medium mb-2">{TranslationService.t('report.endDate')}</label>
                             <input
                                 type="date"
                                 value={endDate}
@@ -113,7 +114,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Trend Months</label>
+                            <label className="block text-sm font-medium mb-2">{TranslationService.t('report.trendMonths')}</label>
                             <input
                                 type="number"
                                 value={trendMonths}
@@ -130,7 +131,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                                 className="w-full flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:brightness-110 transition-all disabled:opacity-50"
                             >
                                 <span className="material-symbols-outlined">refresh</span>
-                                Generate
+                                {TranslationService.t('report.refresh')}
                             </button>
                         </div>
                     </div>
@@ -147,7 +148,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                         <div className="animate-spin inline-block mb-2">
                             <span className="material-symbols-outlined text-4xl">hourglass_top</span>
                         </div>
-                        <p>Loading report...</p>
+                        <p>{TranslationService.t('report.loading')}</p>
                     </div>
                 )}
 
@@ -160,7 +161,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                                 className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg hover:brightness-110 transition-all"
                             >
                                 <span className="material-symbols-outlined">download</span>
-                                Download PDF
+                                {TranslationService.t('report.downloadPdf')}
                             </button>
                         </div>
 
@@ -190,57 +191,57 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                                             ></path>
                                         </svg>
                                     </div>
-                                    <h1 className="text-4xl font-bold text-[#0d141b] dark:text-white">System Overview Report</h1>
+                                    <h1 className="text-4xl font-bold text-[#0d141b] dark:text-white">{TranslationService.t('report.title')}</h1>
                                 </div>
                                 <p className="text-[#4c739a] dark:text-slate-400 text-sm mb-2">
-                                    Period: {formatDate(reportData.filters.startDate)} to {formatDate(reportData.filters.endDate)}
+                                    {TranslationService.t('report.period')}: {formatDate(reportData.filters.startDate)} to {formatDate(reportData.filters.endDate)}
                                 </p>
                                 <p className="text-[#4c739a] dark:text-slate-400 text-sm">
-                                    Generated: {new Date(reportData.generatedAt).toLocaleString()}
+                                    {TranslationService.t('report.generated')}: {new Date(reportData.generatedAt).toLocaleString()}
                                 </p>
                             </div>
 
                             {/* Executive Summary */}
                             <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-6 text-[#0d141b] dark:text-white">Executive Summary</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-[#0d141b] dark:text-white">{TranslationService.t('report.summary')}</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <SummaryCard
-                                        label="Total Children"
+                                        label={TranslationService.t('report.totalChildren')}
                                         value={reportData.summary.totalChildren}
                                         icon="child_care"
                                     />
                                     <SummaryCard
-                                        label="Linked Children"
+                                        label={TranslationService.t('report.linkedChildren')}
                                         value={reportData.summary.linkedChildren}
                                         icon="link"
                                     />
                                     <SummaryCard
-                                        label="Vaccination Records"
+                                        label={TranslationService.t('report.vaccinationRecords')}
                                         value={reportData.summary.totalVaccinationRecords}
                                         icon="vaccines"
                                     />
                                     <SummaryCard
-                                        label="Coverage"
+                                        label={TranslationService.t('report.coverage')}
                                         value={`${reportData.summary.coveragePct}%`}
                                         icon="trending_up"
                                     />
                                     <SummaryCard
-                                        label="Administered"
+                                        label={TranslationService.t('report.administered')}
                                         value={reportData.summary.administeredRecords}
                                         icon="check_circle"
                                     />
                                     <SummaryCard
-                                        label="Pending"
+                                        label={TranslationService.t('report.pending')}
                                         value={reportData.summary.pendingRecords}
                                         icon="schedule"
                                     />
                                     <SummaryCard
-                                        label="Overdue"
+                                        label={TranslationService.t('report.overdue')}
                                         value={reportData.summary.overdueRecords}
                                         icon="warning"
                                     />
                                     <SummaryCard
-                                        label="PHM Users"
+                                        label={TranslationService.t('report.phmUsers')}
                                         value={reportData.summary.totalPhmUsers}
                                         icon="person"
                                     />
@@ -250,7 +251,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                             {/* Key Insights */}
                             {reportData.insights.length > 0 && (
                                 <div className="mb-8">
-                                    <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">Key Insights</h2>
+                                    <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">{TranslationService.t('report.insights')}</h2>
                                     <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-6">
                                         <ul className="space-y-3">
                                             {reportData.insights.map((insight, idx) => (
@@ -266,28 +267,28 @@ export const MohSystemOverviewReportPage: React.FC = () => {
 
                             {/* Coverage by GN Division */}
                             <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">Coverage by GN Division</h2>
+                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">{TranslationService.t('report.coverageByGnDivision')}</h2>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm border-collapse">
                                         <thead>
                                             <tr className="bg-[#f0f4f8] dark:bg-slate-800">
                                                 <th className="text-left px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    GN Division
+                                                    {TranslationService.t('report.gnDivision')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Registered
+                                                    {TranslationService.t('report.registered')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Linked
+                                                    {TranslationService.t('report.linkedChildren')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Vaccinated
+                                                    {TranslationService.t('report.vaccinated')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Overdue
+                                                    {TranslationService.t('report.overdue')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Coverage %
+                                                    {TranslationService.t('report.coverage')} %
                                                 </th>
                                             </tr>
                                         </thead>
@@ -321,28 +322,28 @@ export const MohSystemOverviewReportPage: React.FC = () => {
 
                             {/* Vaccine Performance */}
                             <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">Vaccine Performance</h2>
+                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">{TranslationService.t('report.vaccinePerformance')}</h2>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm border-collapse">
                                         <thead>
                                             <tr className="bg-[#f0f4f8] dark:bg-slate-800">
                                                 <th className="text-left px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Vaccine
+                                                    {TranslationService.t('report.vaccine')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Total Doses
+                                                    {TranslationService.t('report.totalDosesTitle')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Administered
+                                                    {TranslationService.t('report.administered')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Pending
+                                                    {TranslationService.t('report.pending')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Missed
+                                                    {TranslationService.t('report.missedTitle')}
                                                 </th>
                                                 <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                    Completion %
+                                                    {TranslationService.t('report.completionTitle')}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -384,7 +385,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
 
                             {/* Data Quality */}
                             <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">Data Quality Metrics</h2>
+                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">{TranslationService.t('report.dataQuality')}</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <DataQualityCard
                                         label="No GN Division"
@@ -411,7 +412,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
 
                             {/* Database Footprint */}
                             <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">Database Footprint</h2>
+                                <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">{TranslationService.t('report.databaseFootprint')}</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <FootprintCard
                                         label="Users"
@@ -439,31 +440,31 @@ export const MohSystemOverviewReportPage: React.FC = () => {
                             {/* Monthly Trend */}
                             {reportData.deepDive.monthlyTrend.length > 0 && (
                                 <div className="mb-8">
-                                    <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">Monthly Trend</h2>
+                                    <h2 className="text-2xl font-bold mb-4 text-[#0d141b] dark:text-white">{TranslationService.t('report.monthlyTrend')}</h2>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm border-collapse">
                                             <thead>
                                                 <tr className="bg-[#f0f4f8] dark:bg-slate-800">
                                                     <th className="text-left px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        Month
+                                                        {TranslationService.t('report.month')}
                                                     </th>
                                                     <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        New Children
+                                                        {TranslationService.t('report.newChildren')}
                                                     </th>
                                                     <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        Doses Administered
+                                                        {TranslationService.t('report.administered')}
                                                     </th>
                                                     <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        Missed Doses
+                                                        {TranslationService.t('report.missedTitle')}
                                                     </th>
                                                     <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        Completed Clinics
+                                                        Clinics
                                                     </th>
                                                     <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        Notifications
+                                                        {TranslationService.t('report.notifications')}
                                                     </th>
                                                     <th className="text-center px-4 py-2 font-semibold border border-[#e7edf3] dark:border-slate-700">
-                                                        Audit Events
+                                                        {TranslationService.t('report.auditEvents')}
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -501,8 +502,8 @@ export const MohSystemOverviewReportPage: React.FC = () => {
 
                             {/* Footer */}
                             <div className="mt-12 pt-8 border-t border-[#e7edf3] dark:border-slate-800 text-center text-sm text-[#4c739a] dark:text-slate-400">
-                                <p>This report was automatically generated by the National Child Vaccination Management System</p>
-                                <p className="mt-2">Generated on {new Date(reportData.generatedAt).toLocaleString()}</p>
+                                <p>{TranslationService.t('report.footerText')}</p>
+                                <p className="mt-2">{TranslationService.t('report.generated')} on {new Date(reportData.generatedAt).toLocaleString()}</p>
                             </div>
                         </div>
                     </>

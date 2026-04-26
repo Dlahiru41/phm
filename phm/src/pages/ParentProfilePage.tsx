@@ -97,11 +97,11 @@ export const ParentProfilePage: React.FC = () => {
       if (updated) {
         setUser(updated);
         setEditMode(false);
-        setMessage({ type: 'success', text: 'Profile updated successfully' });
+        setMessage({ type: 'success', text: TranslationService.t('profile.updateSuccess') });
         setTimeout(() => setMessage(null), 3000);
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to update profile' });
+      setMessage({ type: 'error', text: TranslationService.t('profile.updateError') });
     } finally {
       setSaving(false);
     }
@@ -145,11 +145,11 @@ export const ParentProfilePage: React.FC = () => {
 
   const handleVerifyMobileOtp = async () => {
     if (!otpCode.trim()) {
-      setMessage({ type: 'error', text: 'Please enter the OTP code' });
+      setMessage({ type: 'error', text: TranslationService.t('forgotPassword.invalidOTP') });
       return;
     }
     if (otpCode.length !== 6) {
-      setMessage({ type: 'error', text: 'OTP must be 6 digits' });
+      setMessage({ type: 'error', text: TranslationService.t('forgotPassword.invalidOTP') });
       return;
     }
     setSaving(true);
@@ -165,10 +165,10 @@ export const ParentProfilePage: React.FC = () => {
       setMobileChangeStep('request');
       setMaskedDestination('');
       setOtpExpiresIn(0);
-      setMessage({ type: 'success', text: `Mobile number updated successfully to ${response.phoneNumber}` });
+      setMessage({ type: 'success', text: TranslationService.t('profile.mobileUpdateSuccess') });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to verify OTP';
+      const errorMessage = error instanceof Error ? error.message : TranslationService.t('profile.mobileVerifyError');
       setMessage({ type: 'error', text: errorMessage });
     } finally {
       setSaving(false);
@@ -177,21 +177,21 @@ export const ParentProfilePage: React.FC = () => {
 
   const handlePasswordChange = async () => {
     if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      setMessage({ type: 'error', text: 'Please fill all password fields' });
+      setMessage({ type: 'error', text: TranslationService.t('profile.fillAllFields') });
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setMessage({ type: 'error', text: 'New passwords do not match' });
+      setMessage({ type: 'error', text: TranslationService.t('profile.passwordMismatch') });
       return;
     }
     setSaving(true);
     try {
       await AuthService.changePassword(passwordForm.oldPassword, passwordForm.newPassword, passwordForm.confirmPassword);
       setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
-      setMessage({ type: 'success', text: 'Password changed successfully' });
+      setMessage({ type: 'success', text: TranslationService.t('profile.passwordSuccess') });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to change password' });
+      setMessage({ type: 'error', text: TranslationService.t('profile.passwordError') });
     } finally {
       setSaving(false);
     }
@@ -201,7 +201,7 @@ export const ParentProfilePage: React.FC = () => {
     return (
       <ParentLayout activeNav="profile">
         <div className="flex items-center justify-center h-96">
-          <p className="text-[#4c739a]">Loading...</p>
+          <p className="text-[#4c739a]">{TranslationService.t('common.loading')}</p>
         </div>
       </ParentLayout>
     );
@@ -216,7 +216,7 @@ export const ParentProfilePage: React.FC = () => {
             {TranslationService.t('profile.title')}
           </h1>
           <p className="text-[#4c739a] dark:text-slate-400">
-            Manage your profile, security, and account preferences
+            {TranslationService.t('profile.subtitle')}
           </p>
         </div>
 
@@ -245,10 +245,10 @@ export const ParentProfilePage: React.FC = () => {
                   : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-primary'
               }`}
             >
-              {tab === 'profile' && 'Profile Details'}
-              {tab === 'mobile' && 'Change Mobile'}
-              {tab === 'password' && 'Change Password'}
-              {tab === 'children' && 'Linked Children'}
+              {tab === 'profile' && TranslationService.t('profile.details')}
+              {tab === 'mobile' && TranslationService.t('profile.changeMobile')}
+              {tab === 'password' && TranslationService.t('profile.changePassword')}
+              {tab === 'children' && TranslationService.t('profile.linkedChildrenTab')}
             </button>
           ))}
         </div>
@@ -294,13 +294,13 @@ export const ParentProfilePage: React.FC = () => {
                     </p>
                     <p className="text-[#0d141b] dark:text-white text-lg font-semibold">{user?.address || '—'}</p>
                   </div>
-                  <button
-                    onClick={() => setEditMode(true)}
-                    className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                  >
-                    <span className="material-symbols-outlined">edit</span>
-                    Edit Profile
-                  </button>
+                    <button
+                      onClick={() => setEditMode(true)}
+                      className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      <span className="material-symbols-outlined">edit</span>
+                      {TranslationService.t('profile.editProfile')}
+                    </button>
                 </>
               ) : (
                 <>
@@ -337,7 +337,7 @@ export const ParentProfilePage: React.FC = () => {
                       disabled
                       className="w-full px-4 py-2 border border-[#e7edf3] dark:border-slate-600 rounded-lg bg-gray-100 dark:bg-slate-700 text-[#0d141b] dark:text-white opacity-60"
                     />
-                    <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">Use the "Change Mobile" tab to update this</p>
+                    <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">{TranslationService.t('profile.mobileChangeHint')}</p>
                   </div>
                   <div>
                     <label className="block text-[#4c739a] dark:text-slate-400 text-sm font-medium mb-2">
@@ -356,7 +356,7 @@ export const ParentProfilePage: React.FC = () => {
                       disabled={saving}
                       className="flex-1 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                     >
-                      {saving ? 'Saving...' : TranslationService.t('common.save')}
+                      {saving ? TranslationService.t('profile.saving') : TranslationService.t('common.save')}
                     </button>
                     <button
                       onClick={() => {
@@ -466,10 +466,10 @@ export const ParentProfilePage: React.FC = () => {
           {/* Change Password Tab */}
           {activeTab === 'password' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-[#0d141b] dark:text-white">Change Password</h3>
+              <h3 className="text-lg font-semibold text-[#0d141b] dark:text-white">{TranslationService.t('profile.changePassword')}</h3>
               <div>
                 <label className="block text-[#4c739a] dark:text-slate-400 text-sm font-medium mb-2">
-                  Current Password
+                  {TranslationService.t('profile.oldPassword')}
                 </label>
                 <input
                   type="password"
@@ -480,7 +480,7 @@ export const ParentProfilePage: React.FC = () => {
               </div>
               <div>
                 <label className="block text-[#4c739a] dark:text-slate-400 text-sm font-medium mb-2">
-                  New Password
+                  {TranslationService.t('profile.newPassword')}
                 </label>
                 <input
                   type="password"
@@ -491,7 +491,7 @@ export const ParentProfilePage: React.FC = () => {
               </div>
               <div>
                 <label className="block text-[#4c739a] dark:text-slate-400 text-sm font-medium mb-2">
-                  Confirm New Password
+                  {TranslationService.t('profile.confirmPassword')}
                 </label>
                 <input
                   type="password"
@@ -505,7 +505,7 @@ export const ParentProfilePage: React.FC = () => {
                 disabled={saving}
                 className="w-full px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
-                {saving ? 'Updating...' : 'Update Password'}
+                {saving ? TranslationService.t('profile.saving') : TranslationService.t('profile.changePassword')}
               </button>
             </div>
           )}

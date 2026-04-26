@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
+import { TranslationService } from '../services/TranslationService';
 import type { ClinicSchedule, DueChild, ClinicChild } from '../types/models';
 
 type CreateVaccinationClinicState = {
@@ -69,7 +70,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
       const list = await dataService.getMyClinicList({ clinicType: 'vaccination' });
       setClinics(list);
     } catch (err: any) {
-      setError(err?.message || 'Failed to load clinics');
+      setError(err?.message || TranslationService.t('clinic.loadError'));
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
 
     try {
       if (!formData.clinicDate || !formData.gnDivision || !formData.location) {
-        setError('Please fill in all required fields');
+        setError(TranslationService.t('clinic.createError'));
         setLoading(false);
         return;
       }
@@ -108,7 +109,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
       });
 
       if (result) {
-        setSuccessMessage(`Vaccination clinic created successfully! ${result.childCount} children identified as due.`);
+        setSuccessMessage(TranslationService.t('clinic.createSuccess'));
         setFormData({ clinicDate: '', gnDivision: '', location: '', description: '' });
         setTimeout(() => {
           setSuccessMessage(null);
@@ -116,10 +117,10 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
           loadClinics();
         }, 2000);
       } else {
-        setError('Failed to create vaccination clinic');
+        setError(TranslationService.t('clinic.createError'));
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to create vaccination clinic');
+      setError(err?.message || TranslationService.t('clinic.createError'));
     } finally {
       setLoading(false);
     }
@@ -193,7 +194,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
       // Step 1: Mark attendance
       const attendanceOk = await dataService.updateClinicChildAttendance(selectedClinic.clinicId, childId, status);
       if (!attendanceOk) {
-        setError('Failed to update attendance');
+        setError(TranslationService.t('clinic.createError'));
         return;
       }
 
@@ -201,17 +202,17 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
       if (status === 'attended') {
         const nextDueDateOk = await dataService.updateVaccinationNextDueDate(childId, null);
         if (!nextDueDateOk) {
-          setError('Attendance updated but failed to clear next due date.');
+          setError(TranslationService.t('clinic.createError'));
           setSavingAttendanceId(null);
           await handleViewDetails(selectedClinic);
           return;
         }
-        setSuccessMessage('Attendance marked and next due date cleared!');
+        setSuccessMessage(TranslationService.t('clinic.attendanceSuccess'));
       }
 
       await handleViewDetails(selectedClinic);
     } catch (err: any) {
-      setError(err?.message || 'Failed to update attendance');
+      setError(err?.message || TranslationService.t('clinic.createError'));
     } finally {
       setSavingAttendanceId(null);
     }
@@ -290,9 +291,9 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
 
   const getAttendanceLabel = (status: 'attended' | 'not_attended' | 'pending') => {
     const labels: Record<string, string> = {
-      attended: 'Attended',
-      not_attended: 'Not Attended',
-      pending: 'Pending',
+      attended: TranslationService.t('status.completed'),
+      not_attended: TranslationService.t('status.missed'),
+      pending: TranslationService.t('status.pending'),
     };
     return labels[status] || 'Unknown';
   };
@@ -317,30 +318,30 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Vaccination Clinic Schedule</h1>
-                  <p className="text-slate-600 dark:text-slate-400">Manage vaccination-focused clinics in your area</p>
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{TranslationService.t('clinic.title')}</h1>
+                  <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('clinic.subtitle')}</p>
                 </div>
                 <button
                   onClick={() => setView('create')}
                   className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined">add</span>
-                  Create Vaccination Clinic
+                  {TranslationService.t('clinic.createClinic')}
                 </button>
               </div>
 
               {loading ? (
                 <div className="text-center py-12">
-                  <p className="text-slate-600 dark:text-slate-400">Loading vaccination clinics...</p>
+                  <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('common.loading')}</p>
                 </div>
               ) : clinics.length === 0 ? (
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-8 text-center">
-                  <p className="text-slate-600 dark:text-slate-400 mb-4">No vaccination clinics scheduled yet</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-4">{TranslationService.t('clinic.noClinics')}</p>
                   <button
                     onClick={() => setView('create')}
                     className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    Schedule Your First Vaccination Clinic
+                    {TranslationService.t('clinic.scheduleFirst')}
                   </button>
                 </div>
               ) : (
@@ -381,7 +382,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                           onClick={() => handleViewDetails(clinic)}
                           className="px-6 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                         >
-                          View Details
+                          {TranslationService.t('clinic.viewDetails')}
                         </button>
                       </div>
                     </div>
@@ -394,11 +395,11 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
           {/* View: Create */}
           {view === 'create' && (
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6 md:p-8 max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Create Vaccination Clinic</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{TranslationService.t('clinic.createTitle')}</h2>
 
               <form onSubmit={handleCreateClinic} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Clinic Date *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{TranslationService.t('clinic.date')} *</label>
                   <input
                     type="date"
                     value={formData.clinicDate}
@@ -409,7 +410,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">GN Division *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{TranslationService.t('clinic.gnDivision')} *</label>
                   <input
                     type="text"
                     value={formData.gnDivision}
@@ -417,11 +418,11 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                     className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none cursor-not-allowed opacity-70"
                     required
                   />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Your assigned area: {assignedArea || 'Loading...'}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{TranslationService.t('clinic.assignedArea')}: {assignedArea || 'Loading...'}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Location *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{TranslationService.t('clinic.location')} *</label>
                   <input
                     type="text"
                     value={formData.location}
@@ -433,7 +434,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Description (Optional)</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{TranslationService.t('clinic.description')} ({TranslationService.t('clinic.optional')})</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -449,7 +450,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                     disabled={loading}
                     className="flex-1 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
                   >
-                    {loading ? 'Creating...' : 'Create Vaccination Clinic'}
+                    {loading ? TranslationService.t('common.loading') : TranslationService.t('clinic.createClinic')}
                   </button>
                   <button
                     type="button"
@@ -459,7 +460,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                     }}
                     className="flex-1 px-6 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors"
                   >
-                    Cancel
+                    {TranslationService.t('common.cancel')}
                   </button>
                 </div>
               </form>
@@ -472,7 +473,7 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
               <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Vaccination Clinic Details</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{TranslationService.t('clinic.detailsTitle')}</h2>
                     <p className="text-slate-600 dark:text-slate-400">
                       {selectedClinic.gnDivision} • {formatDate(selectedClinic.clinicDate)}
                     </p>
@@ -494,14 +495,14 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Attendance</h3>
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">{TranslationService.t('clinic.attendance')}</h3>
                   <div className="space-y-3">
                       {clinicChildren.map((child) => (
                         <div key={child.childId} className="rounded-lg border border-slate-200 dark:border-slate-700 p-4">
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                             <div>
                               <p className="font-medium text-slate-900 dark:text-white">{child.fullName}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">Reg #: {child.registrationNumber}</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">{TranslationService.t('clinic.regNum')}: {child.registrationNumber}</p>
                             </div>
                             <div className="flex gap-2">
                               <button
@@ -509,14 +510,14 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
                                 disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed' || selectedClinic?.status === 'cancelled' || child.attendanceStatus === 'attended'}
                                 className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
                               >
-                                {savingAttendanceId === child.childId ? 'Saving...' : 'Attended'}
+                                {savingAttendanceId === child.childId ? TranslationService.t('clinic.marking') : TranslationService.t('clinic.markAttended')}
                               </button>
                               <button
                                 onClick={() => handleAttendanceSubmit(child.childId, 'not_attended')}
                                 disabled={savingAttendanceId === child.childId || selectedClinic?.status === 'completed' || selectedClinic?.status === 'cancelled' || child.attendanceStatus === 'not_attended'}
                                 className="px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 transition-colors"
                               >
-                                {savingAttendanceId === child.childId ? 'Saving...' : 'Not attended'}
+                                {savingAttendanceId === child.childId ? TranslationService.t('clinic.marking') : TranslationService.t('clinic.markNotAttended')}
                               </button>
                             </div>
                           </div>

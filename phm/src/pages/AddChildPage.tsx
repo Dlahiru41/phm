@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataService } from '../services/DataService';
+import { TranslationService } from '../services/TranslationService';
 import type { Child } from '../types/models';
 import { ParentLayout } from '../components/ParentLayout';
 import type { ApiError } from '../services/apiClient';
@@ -13,12 +14,12 @@ function messageForOtpError(
   fallbackMessage: string
 ): string {
   const c = code?.toUpperCase?.() ?? '';
-  if (c === 'INVALID_OTP') return 'The code you entered is incorrect. Please check and try again.';
-  if (c === 'EXPIRED' || statusCode === 410) return 'This verification code has expired. Please request a new code.';
-  if (c === 'MAX_ATTEMPTS_REACHED' || statusCode === 429) return 'Maximum verification attempts reached. Please request a new code.';
-  if (c === 'ALREADY_CONSUMED' || statusCode === 409) return 'This code has already been used. The child may already be linked to your account.';
-  if (statusCode === 404) return 'Child or OTP session not found. Please start again.';
-  if (statusCode === 400) return 'Invalid code or request. Please check and try again.';
+  if (c === 'INVALID_OTP') return TranslationService.t('addChild.errorOtpInvalid');
+  if (c === 'EXPIRED' || statusCode === 410) return TranslationService.t('addChild.errorOtpExpired');
+  if (c === 'MAX_ATTEMPTS_REACHED' || statusCode === 429) return TranslationService.t('addChild.errorOtpMaxAttempts');
+  if (c === 'ALREADY_CONSUMED' || statusCode === 409) return TranslationService.t('addChild.errorAlreadyConsumed');
+  if (statusCode === 404) return TranslationService.t('addChild.errorNotFound');
+  if (statusCode === 400) return TranslationService.t('addChild.errorOtpInvalid');
   return fallbackMessage;
 }
 
@@ -38,7 +39,7 @@ export const AddChildPage: React.FC = () => {
     setChildInfo(null);
     const trimmed = registrationNumber.trim();
     if (!trimmed) {
-      setError('Please enter a registration number.');
+      setError(TranslationService.t('addChild.regNumLabel'));
       return;
     }
     setLoading(true);
@@ -48,10 +49,10 @@ export const AddChildPage: React.FC = () => {
         setChildInfo(child);
         setStep('confirm');
       } else {
-        setError('No child found with this registration number. Please check and try again.');
+        setError(TranslationService.t('addChild.errorNoChild'));
       }
     } catch {
-      setError('Unable to search. Please try again.');
+      setError(TranslationService.t('addChild.errorSearch'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +62,7 @@ export const AddChildPage: React.FC = () => {
     if (!childInfo) return;
     const regNum = registrationNumber.trim();
     if (!regNum) {
-      setError('Please enter a registration number.');
+      setError(TranslationService.t('addChild.regNumLabel'));
       return;
     }
     setError('');
@@ -81,7 +82,7 @@ export const AddChildPage: React.FC = () => {
       setOtp('');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
-      setError(apiErr?.message ?? 'Could not send verification code. Please try again.');
+      setError(apiErr?.message ?? TranslationService.t('addChild.errorSearch'));
     } finally {
       setLoading(false);
     }
@@ -92,11 +93,11 @@ export const AddChildPage: React.FC = () => {
     const code = otp.trim();
     const regNum = registrationNumber.trim();
     if (!code) {
-      setError('Please enter the verification code sent to your WhatsApp.');
+      setError(TranslationService.t('addChild.otpText'));
       return;
     }
     if (!regNum) {
-      setError('Registration number missing. Please start again.');
+      setError(TranslationService.t('addChild.regNumLabel'));
       return;
     }
     setError('');
@@ -114,7 +115,7 @@ export const AddChildPage: React.FC = () => {
       const message = messageForOtpError(
         apiErr?.code,
         apiErr?.statusCode,
-        apiErr?.message ?? 'Verification failed. Please try again.'
+        apiErr?.message ?? TranslationService.t('addChild.errorOtpInvalid')
       );
       setError(message);
       const codeUpper = apiErr?.code?.toUpperCase?.() ?? '';
@@ -188,10 +189,10 @@ export const AddChildPage: React.FC = () => {
     (otpMeta.attempt_count != null || otpMeta.max_attempts != null || otpMeta.expires_at) && (
       <div className="mb-4 text-sm text-[#4c739a] dark:text-slate-400">
         {otpMeta.attempt_count != null && otpMeta.max_attempts != null && (
-          <p>Attempts: {otpMeta.attempt_count} of {otpMeta.max_attempts}</p>
+          <p>{TranslationService.t('addChild.attempts').replace('{count}', String(otpMeta.attempt_count)).replace('{total}', String(otpMeta.max_attempts))}</p>
         )}
         {otpMeta.expires_at && (
-          <p>Code expires: {new Date(otpMeta.expires_at).toLocaleString()}</p>
+          <p>{TranslationService.t('addChild.codeExpires').replace('{time}', new Date(otpMeta.expires_at).toLocaleString())}</p>
         )}
       </div>
     );
@@ -204,8 +205,8 @@ export const AddChildPage: React.FC = () => {
         <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg">
           <div className="text-center mb-8">
             <span className="material-symbols-outlined text-6xl text-green-500 block mb-6">check_circle</span>
-            <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">Child Found!</h2>
-            <p className="text-[#4c739a] dark:text-slate-400">Request a verification code to be sent to the parent WhatsApp number on file.</p>
+            <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">{TranslationService.t('addChild.foundTitle')}</h2>
+            <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('addChild.foundText')}</p>
           </div>
           {errorBlock}
           {childSummaryBlock}
@@ -217,7 +218,7 @@ export const AddChildPage: React.FC = () => {
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-70"
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              Back
+              {TranslationService.t('common.back')}
             </button>
             <button
               type="button"
@@ -226,7 +227,7 @@ export const AddChildPage: React.FC = () => {
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70"
             >
               <span className="material-symbols-outlined">sms</span>
-              {loading ? 'Sending…' : 'Send verification code'}
+              {loading ? TranslationService.t('addChild.searching') : TranslationService.t('addChild.sendOtp')}
             </button>
           </div>
         </div>
@@ -237,16 +238,16 @@ export const AddChildPage: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto px-6 py-12">
         <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">Enter verification code</h2>
+            <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">{TranslationService.t('addChild.otpTitle')}</h2>
             <p className="text-[#4c739a] dark:text-slate-400 text-sm">
-              We sent a code to the parent WhatsApp number on file for this child.
+              {TranslationService.t('addChild.otpText')}
             </p>
           </div>
           {errorBlock}
           {attemptExpiryBlock}
           <div className="mb-6">
             <label className="flex flex-col">
-              <p className="text-[#0d141b] dark:text-white text-base font-medium mb-2">Verification code *</p>
+              <p className="text-[#0d141b] dark:text-white text-base font-medium mb-2">{TranslationService.t('addChild.otpTitle')} *</p>
               <input
                 className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-14 px-4 text-base font-normal tracking-widest"
                 type="text"
@@ -266,7 +267,7 @@ export const AddChildPage: React.FC = () => {
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-70"
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              Back
+              {TranslationService.t('common.back')}
             </button>
             <button
               type="button"
@@ -275,7 +276,7 @@ export const AddChildPage: React.FC = () => {
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70"
             >
               <span className="material-symbols-outlined">check</span>
-              {loading ? 'Verifying…' : 'Verify & link child'}
+              {loading ? TranslationService.t('profile.verifying') : TranslationService.t('addChild.verifyBtn')}
             </button>
           </div>
           <div className="mt-4 text-center">
@@ -285,7 +286,7 @@ export const AddChildPage: React.FC = () => {
               disabled={loading}
               className="text-primary text-sm font-medium hover:underline"
             >
-              Resend code
+              {TranslationService.t('addChild.resendCode')}
             </button>
           </div>
         </div>
@@ -296,8 +297,8 @@ export const AddChildPage: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto px-6 py-12">
         <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-lg text-center">
           <span className="material-symbols-outlined text-6xl text-green-500 block mb-4">check_circle</span>
-          <h2 className="text-xl font-bold text-[#0d141b] dark:text-white mb-2">Child linked successfully</h2>
-          <p className="text-[#4c739a] dark:text-slate-400">Redirecting to dashboard…</p>
+          <h2 className="text-xl font-bold text-[#0d141b] dark:text-white mb-2">{TranslationService.t('addChild.successTitle')}</h2>
+          <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('addChild.redirecting')}</p>
         </div>
       </div>
     );
@@ -310,22 +311,22 @@ export const AddChildPage: React.FC = () => {
             className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
           >
             <span className="material-symbols-outlined">arrow_back</span>
-            <span className="text-sm font-medium">Back to Dashboard</span>
+            <span className="text-sm font-medium">{TranslationService.t('common.backToDashboard')}</span>
           </button>
-          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Add Child to Account</h1>
+          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">{TranslationService.t('addChild.title')}</h1>
           <p className="text-[#4c739a] dark:text-slate-400">
-            Enter the registration number provided by the PHM to link a child to your account. You will verify ownership via OTP.
+            {TranslationService.t('addChild.subtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSearch} className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-sm">
           <div className="mb-6">
             <label className="flex flex-col">
-              <p className="text-[#0d141b] dark:text-white text-base font-medium mb-2">Registration Number *</p>
+              <p className="text-[#0d141b] dark:text-white text-base font-medium mb-2">{TranslationService.t('addChild.regNumLabel')} *</p>
               <input
                 className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-14 px-4 text-base font-normal"
                 type="text"
-                placeholder="NCVMS-YYYY-MMDD-XXXX"
+                placeholder={TranslationService.t('addChild.regNumPlaceholder')}
                 value={registrationNumber}
                 onChange={(e) => setRegistrationNumber(e.target.value)}
                 autoCapitalize="off"
@@ -334,7 +335,7 @@ export const AddChildPage: React.FC = () => {
                 required
               />
               <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-2">
-                Format: NCVMS-YYYY-MMDD-XXXX (e.g., NCVMS-2024-0815-1234)
+                {TranslationService.t('addChild.formatHint')}
               </p>
             </label>
           </div>
@@ -345,10 +346,9 @@ export const AddChildPage: React.FC = () => {
             <div className="flex items-start gap-3">
               <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-xl">info</span>
               <div>
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">Where to find your registration number?</p>
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">{TranslationService.t('addChild.whereToFind')}</p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  The registration number is provided by the Public Health Midwife (PHM) when your child is registered in the system.
-                  It should be in the format shown above. Linking is verified by a code sent to your mobile number.
+                  {TranslationService.t('addChild.whereToFindText')}
                 </p>
               </div>
             </div>
@@ -360,7 +360,7 @@ export const AddChildPage: React.FC = () => {
               onClick={() => navigate('/parent-dashboard-desktop')}
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Cancel
+              {TranslationService.t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -368,7 +368,7 @@ export const AddChildPage: React.FC = () => {
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70"
             >
               <span className="material-symbols-outlined">search</span>
-              {loading ? 'Searching…' : 'Search Child'}
+              {loading ? TranslationService.t('addChild.searching') : TranslationService.t('addChild.searchBtn')}
             </button>
           </div>
         </form>

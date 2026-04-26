@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { VaccinationCardButton } from '../components/VaccinationCardButton';
+import { TranslationService } from '../services/TranslationService';
 import type { VaccinationRecord } from '../types/models';
 
 type ParentDashboardChild = {
@@ -46,6 +47,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
     const [recentRecords, setRecentRecords] = useState<RecentRecordRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [language, setLanguage] = useState(TranslationService.getLanguage());
 
     useEffect(() => {
         let cancelled = false;
@@ -81,7 +83,17 @@ export const ParentDashboardDesktopPage: React.FC = () => {
             }
         }
         load();
-        return () => { cancelled = true; };
+
+        // Listen for language changes
+        const handleLanguageChange = () => {
+            setLanguage(TranslationService.getLanguage());
+        };
+        window.addEventListener('languagechange', handleLanguageChange);
+
+        return () => {
+            cancelled = true;
+            window.removeEventListener('languagechange', handleLanguageChange);
+        };
     }, []);
 
     const handleRegisterChild = () => navigate('/add-child');
@@ -89,7 +101,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
     if (loading && !dashboard) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#1a2632]">
-                <p className="text-[#4c739a] dark:text-slate-400">Loading dashboard…</p>
+                <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('parentDashboard.loading')}</p>
             </div>
         );
     }
@@ -107,39 +119,37 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                         <div className="flex flex-col gap-4">
                             <div className="border-b border-[#e7edf3] dark:border-slate-700 pb-4">
                                 <p className="text-sm font-bold text-[#0d141b] dark:text-slate-50 leading-none">{user?.name ?? 'Parent'}</p>
-                                <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">Parent Account</p>
+                                <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">{TranslationService.t('parentDashboard.parentAccount')}</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="bg-primary/10 rounded-full p-2 flex items-center justify-center">
                                     <span className="material-symbols-outlined text-primary text-2xl">child_care</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-none">Parent
-                                        Portal</h1>
-                                    <p className="text-[#4c739a] dark:text-slate-400 text-xs mt-1">Vaccination
-                                        Management</p>
+                                    <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-none">{TranslationService.t('parentDashboard.parentPortal')}</h1>
+                                    <p className="text-[#4c739a] dark:text-slate-400 text-xs mt-1">{TranslationService.t('parentDashboard.vaccinationManagement')}</p>
                                 </div>
                             </div>
                         </div>
                         <nav className="flex flex-col gap-2">
                             <Link to="/parent-dashboard-desktop" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-white">
                                 <span className="material-symbols-outlined">dashboard</span>
-                                <p className="text-sm font-medium">Dashboard</p>
+                                <p className="text-sm font-medium">{TranslationService.t('nav.dashboard')}</p>
                             </Link>
                             <Link to="/child-profile-schedule" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
                                 <span className="material-symbols-outlined">history_edu</span>
-                                <p className="text-sm font-medium">Health Records</p>
+                                <p className="text-sm font-medium">{TranslationService.t('nav.healthRecords')}</p>
                             </Link>
                             <Link to="/notifications" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
                                 <span className="material-symbols-outlined">notifications</span>
-                                <p className="text-sm font-medium">Notifications</p>
+                                <p className="text-sm font-medium">{TranslationService.t('nav.notifications')}</p>
                                 {unreadNotifications > 0 && (
                                     <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{unreadNotifications}</span>
                                 )}
                             </Link>
                             <Link to="/parent-profile" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#4c739a] hover:bg-primary/10 transition-colors">
                                 <span className="material-symbols-outlined">person</span>
-                                <p className="text-sm font-medium">Profile</p>
+                                <p className="text-sm font-medium">{TranslationService.t('nav.profile')}</p>
                             </Link>
                         </nav>
                     </div>
@@ -151,7 +161,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                             }}
                             className="flex items-center gap-3 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left w-full">
                             <span className="material-symbols-outlined">logout</span>
-                            <p className="text-sm font-medium">Logout</p>
+                            <p className="text-sm font-medium">{TranslationService.t('nav.logout')}</p>
                         </button>
                     </div>
                 </aside>
@@ -167,22 +177,34 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-6">
                                 <Link to="/vaccine-guide" className="text-[#4c739a] dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors">
-                                    Vaccine Guide
+                                    {TranslationService.t('parentDashboard.vaccineGuide')}
                                 </Link>
                             </div>
                             <div className="h-6 w-px bg-[#e7edf3] dark:bg-slate-700"></div>
                             <div className="flex items-center gap-4">
                                 <div
                                     className="flex h-9 items-center justify-center rounded-lg bg-[#e7edf3] dark:bg-slate-700 p-1">
-                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 bg-white dark:bg-slate-600 shadow-sm text-primary text-xs font-bold">
+                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 bg-white dark:bg-slate-600 shadow-sm text-primary text-xs font-bold"
+                                           onClick={() => {
+                                               TranslationService.setLanguage('en');
+                                               window.dispatchEvent(new Event('languagechange'));
+                                           }}>
                                         <span>EN</span>
                                         <input defaultChecked className="hidden" name="lang" type="radio" value="English"/>
                                     </label>
-                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold">
+                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold"
+                                           onClick={() => {
+                                               TranslationService.setLanguage('si');
+                                               window.dispatchEvent(new Event('languagechange'));
+                                           }}>
                                         <span>සිං</span>
                                         <input className="hidden" name="lang" type="radio" value="Sinhala"/>
                                     </label>
-                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold">
+                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold"
+                                           onClick={() => {
+                                               TranslationService.setLanguage('ta');
+                                               window.dispatchEvent(new Event('languagechange'));
+                                           }}>
                                         <span>தமிழ்</span>
                                         <input className="hidden" name="lang" type="radio" value="Tamil"/>
                                     </label>
@@ -194,9 +216,8 @@ export const ParentDashboardDesktopPage: React.FC = () => {
 
                         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-4xl font-black tracking-tight">Parent Dashboard</h1>
-                                <p className="text-[#4c739a] dark:text-slate-400 text-lg max-w-xl">Monitor your
-                                    children's vaccination status and upcoming health milestones.</p>
+                                <h1 className="text-4xl font-black tracking-tight">{TranslationService.t('parentDashboard.title')}</h1>
+                                <p className="text-[#4c739a] dark:text-slate-400 text-lg max-w-xl">{TranslationService.t('parentDashboard.subtitle')}</p>
                             </div>
                         </div>
 
@@ -207,8 +228,8 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                         )}
 
                         <div className="flex items-center gap-2 mb-6">
-                            <h2 className="text-2xl font-bold">Linked Children</h2>
-                            <span className="bg-primary/10 text-primary text-sm font-bold px-2 py-0.5 rounded-full">{children.length} Registered</span>
+                            <h2 className="text-2xl font-bold">{TranslationService.t('parentDashboard.linkedChildren')}</h2>
+                            <span className="bg-primary/10 text-primary text-sm font-bold px-2 py-0.5 rounded-full">{children.length} {TranslationService.t('parentDashboard.registered')}</span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -238,29 +259,29 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                                 : "bg-[#f0f9ff] dark:bg-primary/10 border border-primary/20 rounded-xl p-4"}>
                                             <div className={`flex items-center gap-3 mb-2 ${isPending ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>
                                                 <span className="material-symbols-outlined text-xl">{isPending ? 'pending_actions' : 'event_upcoming'}</span>
-                                                <p className="text-sm font-bold uppercase tracking-wider">{isPending ? 'Appointment Pending' : 'Next Dose'}</p>
+                                                <p className="text-sm font-bold uppercase tracking-wider">{isPending ? TranslationService.t('parentDashboard.appointmentPending') : TranslationService.t('parentDashboard.nextDose')}</p>
                                             </div>
                                             <p className="text-[#0d141b] dark:text-slate-50 font-bold text-lg leading-tight">{child.nextVaccineName ?? '—'}</p>
                                             <p className={`font-medium text-sm mt-1 ${isPending ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>
                                                 {hasNextDue && days !== null
-                                                    ? (days < 0 ? `Overdue (${formatDate(child.nextVaccinationDate)})` : `Due in ${days} days (${formatDate(child.nextVaccinationDate)})`)
+                                                    ? (days < 0 ? `${TranslationService.t('parentDashboard.overdue')} (${formatDate(child.nextVaccinationDate)})` : `${TranslationService.t('parentDashboard.dueIn')} ${days} ${TranslationService.t('parentDashboard.days')} (${formatDate(child.nextVaccinationDate)})`)
                                                     : ''}
                                             </p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="bg-[#f0f9ff] dark:bg-primary/10 rounded-lg p-3 border border-primary/20">
-                                                <p className="text-xs text-[#4c739a] dark:text-slate-400 font-medium mb-1">Upcoming</p>
+                                                <p className="text-xs text-[#4c739a] dark:text-slate-400 font-medium mb-1">{TranslationService.t('parentDashboard.upcoming')}</p>
                                                 <p className="text-lg font-bold text-primary">{child.upcomingCount}</p>
                                             </div>
                                             <div className="bg-[#fcebeb] dark:bg-red-900/10 rounded-lg p-3 border border-red-200 dark:border-red-800">
-                                                <p className="text-xs text-[#4c739a] dark:text-slate-400 font-medium mb-1">Missed</p>
+                                                <p className="text-xs text-[#4c739a] dark:text-slate-400 font-medium mb-1">{TranslationService.t('parentDashboard.missed')}</p>
                                                 <p className="text-lg font-bold text-red-600 dark:text-red-400">{child.missedCount}</p>
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}
                                             className="w-full py-3 bg-[#e7edf3] dark:bg-slate-700 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary font-bold rounded-lg transition-colors">
-                                            View Full History
+                                            {TranslationService.t('parentDashboard.viewFullHistory')}
                                         </button>
                                         <VaccinationCardButton
                                             childId={child.childId}
@@ -281,30 +302,30 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                     <span className="material-symbols-outlined text-3xl text-[#4c739a] group-hover:text-primary">add_circle</span>
                                 </div>
                                 <div className="text-center">
-                                    <h3 className="text-lg font-bold group-hover:text-primary transition-colors">Add another child</h3>
-                                    <p className="text-[#4c739a] dark:text-slate-400 text-sm">Using Registration Number</p>
+                                    <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{TranslationService.t('parentDashboard.addAnotherChild')}</h3>
+                                    <p className="text-[#4c739a] dark:text-slate-400 text-sm">{TranslationService.t('parentDashboard.usingRegistration')}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-12">
-                            <h2 className="text-2xl font-bold mb-6">Recent Records</h2>
+                            <h2 className="text-2xl font-bold mb-6">{TranslationService.t('parentDashboard.recentRecords')}</h2>
                             <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 overflow-hidden">
                                 <table className="w-full text-left">
                                     <thead className="bg-[#f8fafc] dark:bg-slate-800 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">
                                         <tr>
-                                            <th className="px-6 py-4">Child Name</th>
-                                            <th className="px-6 py-4">Vaccine</th>
-                                            <th className="px-6 py-4">Date Administered</th>
-                                            <th className="px-6 py-4">Officer/PHM</th>
-                                            <th className="px-6 py-4">Action</th>
+                                            <th className="px-6 py-4">{TranslationService.t('parentDashboard.childName')}</th>
+                                            <th className="px-6 py-4">{TranslationService.t('parentDashboard.vaccine')}</th>
+                                            <th className="px-6 py-4">{TranslationService.t('parentDashboard.dateAdministered')}</th>
+                                            <th className="px-6 py-4">{TranslationService.t('parentDashboard.officerPhm')}</th>
+                                            <th className="px-6 py-4">{TranslationService.t('parentDashboard.action')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#e7edf3] dark:divide-slate-700">
                                         {recentRecords.length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="px-6 py-8 text-center text-[#4c739a] dark:text-slate-400">
-                                                    No vaccination records yet.
+                                                    {TranslationService.t('parentDashboard.noRecords')}
                                                 </td>
                                             </tr>
                                         ) : (
@@ -316,7 +337,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                                     <td className="px-6 py-4 text-[#4c739a] dark:text-slate-400">{rec.administeredBy || '—'}</td>
                                                     <td className="px-6 py-4">
                                                         <Link to={`/child-profile-schedule?childId=${rec.childId}`} className="text-primary font-bold text-sm hover:underline">
-                                                            View
+                                                            {TranslationService.t('parentDashboard.view')}
                                                         </Link>
                                                     </td>
                                                 </tr>

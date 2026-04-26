@@ -36,30 +36,30 @@ export const VaccineGuidePage: React.FC = () => {
           className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
         >
           <span className="material-symbols-outlined">arrow_back</span>
-          <span className="text-sm font-medium">{isParent ? 'Back to Dashboard' : 'Back'}</span>
+          <span className="text-sm font-medium">{isParent ? TranslationService.t('common.backToDashboard') : TranslationService.t('common.back')}</span>
         </button>
         <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">
           {TranslationService.t('vaccine.title')}
         </h1>
         <p className="text-[#4c739a] dark:text-slate-400">
-          Sri Lanka National Immunization Schedule
+          {TranslationService.t('vaccine.guide')}
         </p>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-[#4c739a] dark:text-slate-400">Loading vaccines…</div>
+        <div className="text-center py-12 text-[#4c739a] dark:text-slate-400">{TranslationService.t('common.loading')}</div>
       ) : vaccines.length === 0 ? (
         <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-12 text-center">
           <span className="material-symbols-outlined text-5xl text-[#4c739a] dark:text-slate-400 mb-4 block">
             vaccines
           </span>
-          <p className="text-[#0d141b] dark:text-white font-medium">No vaccine information available at the moment.</p>
+          <p className="text-[#0d141b] dark:text-white font-medium">{TranslationService.t('vaccine.noData') || 'No vaccine information available at the moment.'}</p>
         </div>
       ) : (
         <div>
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
             <p className="text-blue-700 dark:text-blue-300 text-sm">
-              <strong>📋 National Immunization Schedule:</strong> This schedule follows Sri Lanka's official vaccination guidelines.
+              <strong>📋 {TranslationService.t('vaccine.guide')}</strong> {TranslationService.t('vaccine.scheduleDescription') || 'This schedule follows Sri Lanka\'s official vaccination guidelines.'}
             </p>
           </div>
 
@@ -68,8 +68,8 @@ export const VaccineGuidePage: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-[#f8fafc] dark:bg-slate-800 border-b border-[#e7edf3] dark:border-slate-700">
-                  <th className="text-left px-6 py-4 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">Vaccine</th>
-                  <th className="text-left px-6 py-4 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">Age</th>
+                  <th className="text-left px-6 py-4 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">{TranslationService.t('vaccine.name')}</th>
+                  <th className="text-left px-6 py-4 text-xs font-bold uppercase text-[#4c739a] dark:text-slate-400">{TranslationService.t('vaccine.recommendedAge')}</th>
                 </tr>
               </thead>
               <tbody>

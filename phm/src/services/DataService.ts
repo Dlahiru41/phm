@@ -378,19 +378,6 @@ class DataService {
     return { childId, registrationNumber };
   }
 
-  async updateChild(childId: string, body: Partial<Child>): Promise<boolean> {
-    try {
-      const payload: any = {};
-      if (body.firstName !== undefined) payload.firstName = body.firstName;
-      if (body.lastName !== undefined) payload.lastName = body.lastName;
-      if (body.bloodGroup !== undefined) payload.bloodGroup = body.bloodGroup;
-      if (body.address !== undefined) payload.address = body.address;
-      await api.put(`/children/${encodeURIComponent(childId)}`, payload);
-      return true;
-    } catch {
-      return false;
-    }
-  }
 
   /**
    * Request OTP for parent-child linking. POST /children/:childId/link-parent/otp/request
