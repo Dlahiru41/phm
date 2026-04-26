@@ -314,7 +314,7 @@ export const AddChildPage: React.FC = () => {
           </button>
           <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Add Child to Account</h1>
           <p className="text-[#4c739a] dark:text-slate-400">
-            Enter the registration number provided by the PHM to link a child to your account. You will verify ownership via WhatsApp OTP.
+            Enter the registration number provided by the PHM to link a child to your account. You will verify ownership via OTP.
           </p>
         </div>
 
@@ -348,7 +348,7 @@ export const AddChildPage: React.FC = () => {
                 <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">Where to find your registration number?</p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
                   The registration number is provided by the Public Health Midwife (PHM) when your child is registered in the system.
-                  It should be in the format shown above. Linking is verified by a code sent to your WhatsApp number.
+                  It should be in the format shown above. Linking is verified by a code sent to your mobile number.
                 </p>
               </div>
             </div>
