@@ -159,18 +159,6 @@ export const AuditLogsPage: React.FC = () => {
             <option value="parent">Parent</option>
             <option value="moh">MOH Officer</option>
           </select>
-          <select
-            value={filterAction}
-            onChange={(e) => setFilterAction(e.target.value)}
-            className="px-4 py-3 rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark text-[#0d141b] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary"
-          >
-            <option value="all">All Actions</option>
-            <option value="record">Record</option>
-            <option value="update">Update</option>
-            <option value="view">View</option>
-            <option value="generate">Generate</option>
-            <option value="register">Register</option>
-          </select>
         </div>
 
         <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 shadow-sm overflow-hidden">
