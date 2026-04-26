@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { api } from '../services/apiClient';
 
 const GN_DIVISIONS = [
@@ -54,6 +54,12 @@ const GN_DIVISIONS = [
   '130 - Eththiligoda South',
 ];
 
+interface PhmAssignment {
+  userId: string;
+  employeeId: string;
+  name: string;
+  assignedArea: string;
+}
 
 export const MohPhmManagementPage: React.FC = () => {
   const [creating, setCreating] = useState(false);
@@ -63,6 +69,8 @@ export const MohPhmManagementPage: React.FC = () => {
     userId: string;
     temporaryPassword: string;
   } | null>(null);
+  const [phmAssignments, setPhmAssignments] = useState<PhmAssignment[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(true);
   const [phmForm, setPhmForm] = useState({
     employeeId: '',
     name: '',
@@ -71,6 +79,31 @@ export const MohPhmManagementPage: React.FC = () => {
     phoneNumber: '',
     assignedArea: '',
   });
+
+  // Fetch PHM assignments on mount
+  useEffect(() => {
+    fetchPhmAssignments();
+  }, []);
+
+  const fetchPhmAssignments = async () => {
+    setLoadingAssignments(true);
+    try {
+      const res = await api.get<{ count: number; items: PhmAssignment[] }>('/users/phm/assigned-areas');
+      if (res && Array.isArray(res.items)) {
+        setPhmAssignments(res.items);
+      }
+    } catch (err) {
+      console.error('Failed to fetch PHM assignments:', err);
+    } finally {
+      setLoadingAssignments(false);
+    }
+  };
+
+  // Get list of assigned areas
+  const assignedAreas = new Set(phmAssignments.map(phm => phm.assignedArea));
+
+  // Get available areas (not yet assigned)
+  const availableAreas = GN_DIVISIONS.filter(division => !assignedAreas.has(division));
 
   return (
     <div className="max-w-[1200px] mx-auto p-6 md:p-8 flex flex-col gap-8">
@@ -126,6 +159,10 @@ export const MohPhmManagementPage: React.FC = () => {
                 phoneNumber: '',
                 assignedArea: '',
               });
+              // Refresh assignments list after successful creation
+              setTimeout(() => {
+                fetchPhmAssignments();
+              }, 1000);
             } catch (err: any) {
               setCreateError(err?.message || 'Failed to create PHM account. Please check details and try again.');
             } finally {
@@ -192,13 +229,20 @@ export const MohPhmManagementPage: React.FC = () => {
               onChange={(e) => setPhmForm({ ...phmForm, assignedArea: e.target.value })}
               required
             >
-              <option value="">Select GN Division</option>
-              {GN_DIVISIONS.map((division) => (
-                <option key={division} value={division}>
-                  {division}
-                </option>
-              ))}
+              <option value="">Select GN Division (Unassigned only)</option>
+              {availableAreas.length === 0 ? (
+                <option disabled>All areas are assigned</option>
+              ) : (
+                availableAreas.map((division) => (
+                  <option key={division} value={division}>
+                    {division}
+                  </option>
+                ))
+              )}
             </select>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Showing {availableAreas.length} unassigned area{availableAreas.length !== 1 ? 's' : ''}
+            </p>
           </div>
           <div className="md:col-span-2 flex flex-col gap-3 mt-2">
             {createError && (
@@ -237,6 +281,55 @@ export const MohPhmManagementPage: React.FC = () => {
 
       {/* Stat cards removed */}
 
+      {/* PHM Assignments Table */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h2 className="text-slate-900 dark:text-white text-xl font-bold">PHM Area Assignments</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
+              View all PHMs and their assigned GN divisions. Each area can only be assigned to one PHM.
+            </p>
+          </div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Total: {phmAssignments.length} PHM{phmAssignments.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {loadingAssignments ? (
+          <div className="text-center py-8">
+            <p className="text-slate-600 dark:text-slate-400">Loading PHM assignments...</p>
+          </div>
+        ) : phmAssignments.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-slate-600 dark:text-slate-400">No PHM assignments yet</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">Employee ID</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">Assigned Area</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">User ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {phmAssignments.map((phm) => (
+                  <tr key={phm.userId} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 font-mono text-xs">
+                      {phm.employeeId || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">{phm.name}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{phm.assignedArea}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-xs">{phm.userId}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
