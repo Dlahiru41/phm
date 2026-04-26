@@ -990,9 +990,11 @@ class DataService {
    * Calls GET /clinics/parent/due-vaccinations with Bearer token
    * Returns list of children with due vaccinations
    */
-  async getDueVaccinations(): Promise<VaccinationDue[]> {
+  async getDueVaccinations(clinicType?: 'normal' | 'vaccination'): Promise<VaccinationDue[]> {
     try {
-      const res = await api.get<{ count: number; items: any[] }>('/clinics/parent/due-vaccinations');
+      const params: Record<string, string> = {};
+      if (clinicType) params.clinicType = clinicType;
+      const res = await api.get<{ count: number; items: any[] }>('/clinics/parent/due-vaccinations', params);
       if (res && Array.isArray(res.items)) {
         return res.items.map(vaccinationDueFromApi);
       }

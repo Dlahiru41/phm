@@ -32,7 +32,7 @@ export const NotificationsPage: React.FC = () => {
       // If parent, also fetch due vaccinations and convert them to notifications
       if (isParent) {
         try {
-          const dueVaccinations = await dataService.getDueVaccinations();
+          const dueVaccinations = await dataService.getDueVaccinations('vaccination');
           const vaccinationNotifications: CombinedNotification[] = dueVaccinations.map((due) => ({
             notificationId: `due-vaccination-${due.childId}-${due.vaccineName}`,
             recipientId: AuthService.getCurrentUser()?.userId || '',
