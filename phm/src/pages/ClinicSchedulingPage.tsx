@@ -65,7 +65,7 @@ export const ClinicSchedulingPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await dataService.getMyClinicList();
+      const list = await dataService.getMyClinicList({ clinicType: 'normal' });
       setClinics(list);
     } catch (err: any) {
       setError(err?.message || 'Failed to load clinics');
@@ -103,6 +103,7 @@ export const ClinicSchedulingPage: React.FC = () => {
         gnDivision: formData.gnDivision,
         location: formData.location,
         description: formData.description || undefined,
+        clinicType: 'normal',
       });
 
       if (result) {
