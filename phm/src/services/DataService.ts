@@ -964,9 +964,12 @@ class DataService {
    * Called after marking a child as attended in a vaccination clinic
    * PATCH /api/v1/vaccination-records/child/:childId/next-due-date
    */
-  async updateVaccinationNextDueDate(childId: string, nextDueDate: string | Date): Promise<boolean> {
+  async updateVaccinationNextDueDate(childId: string, nextDueDate?: string | Date | null): Promise<boolean> {
     try {
-      const dateStr = typeof nextDueDate === 'string' ? nextDueDate : nextDueDate.toISOString().split('T')[0];
+      let dateStr: string | null = null;
+      if (nextDueDate) {
+        dateStr = typeof nextDueDate === 'string' ? nextDueDate : nextDueDate.toISOString().split('T')[0];
+      }
       await api.patch(`/vaccination-records/child/${encodeURIComponent(childId)}/next-due-date`, {
         nextDueDate: dateStr,
       });
