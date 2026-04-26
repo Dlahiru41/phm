@@ -157,4 +157,27 @@ export class AuthService {
   static async updateProfile(data: Partial<UserWithDetails>): Promise<void> {
     await api.put('/users/me', data);
   }
+
+  static async forgotPassword(email: string): Promise<{ message: string } | null> {
+    try {
+      const res = await api.post<{ message: string }>('/auth/forgot-password', { email });
+      return res;
+    } catch (error: any) {
+      throw new Error(error?.message || 'Failed to send OTP. Please try again.');
+    }
+  }
+
+  static async resetPassword(email: string, otpCode: string, newPassword: string, confirmPassword: string): Promise<{ message: string } | null> {
+    try {
+      const res = await api.post<{ message: string }>('/auth/reset-password', {
+        email,
+        otpCode,
+        newPassword,
+        confirmPassword,
+      });
+      return res;
+    } catch (error: any) {
+      throw new Error(error?.message || 'Failed to reset password. Please try again.');
+    }
+  }
 }

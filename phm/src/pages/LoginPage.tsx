@@ -2,12 +2,27 @@ import React, {useState, FormEvent} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
 import {AuthService} from '../services/AuthService';
 
+type ForgotPasswordStep = 'email' | 'otp' | 'reset';
+
 export const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    // Forgot Password States
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [forgotPasswordStep, setForgotPasswordStep] = useState<ForgotPasswordStep>('email');
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [forgotPasswordError, setForgotPasswordError] = useState('');
+    const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
+    const [isLoadingForgotPassword, setIsLoadingForgotPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -27,6 +42,96 @@ export const LoginPage: React.FC = () => {
         } else {
             setError('Invalid username or password. Please try again.');
             setPassword('');
+        }
+    };
+
+    const handleForgotPasswordClick = () => {
+        setShowForgotPassword(true);
+        setForgotPasswordStep('email');
+        setForgotPasswordError('');
+        setForgotPasswordSuccess('');
+        setForgotEmail('');
+        setOtpCode('');
+        setNewPassword('');
+        setConfirmPassword('');
+    };
+
+    const closeForgotPassword = () => {
+        setShowForgotPassword(false);
+        setForgotPasswordStep('email');
+        setForgotPasswordError('');
+        setForgotPasswordSuccess('');
+    };
+
+    const handleSendOTP = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setForgotPasswordError('');
+        setIsLoadingForgotPassword(true);
+
+        try {
+            if (!forgotEmail.trim()) {
+                setForgotPasswordError('Please enter your email address');
+                setIsLoadingForgotPassword(false);
+                return;
+            }
+
+            const res = await AuthService.forgotPassword(forgotEmail.trim());
+            if (res) {
+                setForgotPasswordSuccess('OTP has been sent to your registered mobile number. Please enter it below.');
+                setForgotPasswordStep('otp');
+            }
+        } catch (err: any) {
+            setForgotPasswordError(err?.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            setIsLoadingForgotPassword(false);
+        }
+    };
+
+    const handleVerifyOTPAndReset = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setForgotPasswordError('');
+        setIsLoadingForgotPassword(true);
+
+        try {
+            if (!otpCode.trim()) {
+                setForgotPasswordError('Please enter the OTP');
+                setIsLoadingForgotPassword(false);
+                return;
+            }
+
+            if (!newPassword) {
+                setForgotPasswordError('Please enter a new password');
+                setIsLoadingForgotPassword(false);
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                setForgotPasswordError('Passwords do not match');
+                setIsLoadingForgotPassword(false);
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                setForgotPasswordError('Password must be at least 6 characters');
+                setIsLoadingForgotPassword(false);
+                return;
+            }
+
+            const res = await AuthService.resetPassword(forgotEmail.trim(), otpCode.trim(), newPassword, confirmPassword);
+            if (res) {
+                setForgotPasswordSuccess('Password reset successfully! Redirecting to login...');
+                setTimeout(() => {
+                    closeForgotPassword();
+                    setForgotEmail('');
+                    setOtpCode('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                }, 2000);
+            }
+        } catch (err: any) {
+            setForgotPasswordError(err?.message || 'Failed to reset password. Please try again.');
+        } finally {
+            setIsLoadingForgotPassword(false);
         }
     };
 
@@ -123,8 +228,12 @@ export const LoginPage: React.FC = () => {
                         )}
 
                         <div className="flex justify-between items-center px-4 mb-4">
-                            <p className="text-primary text-sm font-semibold leading-normal underline cursor-pointer">Forgot
-                                Password?</p>
+                            <p
+                                onClick={handleForgotPasswordClick}
+                                className="text-primary text-sm font-semibold leading-normal underline cursor-pointer hover:text-primary/80 transition-colors"
+                            >
+                                Forgot Password?
+                            </p>
                         </div>
 
                         <div className="px-4 py-3">
@@ -177,6 +286,181 @@ export const LoginPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Forgot Password Modal */}
+            {showForgotPassword && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-8">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reset Password</h2>
+                            <button
+                                onClick={closeForgotPassword}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        {/* Step Indicator */}
+                        <div className="flex gap-2 mb-6">
+                            <div className={`h-1 flex-1 rounded-full ${forgotPasswordStep === 'email' || forgotPasswordStep === 'otp' || forgotPasswordStep === 'reset' ? 'bg-primary' : 'bg-slate-300'}`}></div>
+                            <div className={`h-1 flex-1 rounded-full ${forgotPasswordStep === 'otp' || forgotPasswordStep === 'reset' ? 'bg-primary' : 'bg-slate-300'}`}></div>
+                            <div className={`h-1 flex-1 rounded-full ${forgotPasswordStep === 'reset' ? 'bg-primary' : 'bg-slate-300'}`}></div>
+                        </div>
+
+                        {/* Error Message */}
+                        {forgotPasswordError && (
+                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <p className="text-red-600 dark:text-red-400 text-sm">{forgotPasswordError}</p>
+                            </div>
+                        )}
+
+                        {/* Success Message */}
+                        {forgotPasswordSuccess && (
+                            <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                <p className="text-green-600 dark:text-green-400 text-sm">{forgotPasswordSuccess}</p>
+                            </div>
+                        )}
+
+                        {/* Step 1: Email */}
+                        {forgotPasswordStep === 'email' && (
+                            <form onSubmit={handleSendOTP} className="space-y-4">
+                                <div>
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                                        Enter your email address and we'll send an OTP to your registered mobile number.
+                                    </p>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={forgotEmail}
+                                        onChange={(e) => setForgotEmail(e.target.value)}
+                                        placeholder="Enter your email"
+                                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        required
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoadingForgotPassword}
+                                    className="w-full px-4 py-2 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    {isLoadingForgotPassword ? 'Sending OTP...' : 'Send OTP'}
+                                </button>
+                            </form>
+                        )}
+
+                        {/* Step 2 & 3: OTP and Reset Password */}
+                        {(forgotPasswordStep === 'otp' || forgotPasswordStep === 'reset') && (
+                            <form onSubmit={handleVerifyOTPAndReset} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                        OTP Code
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={otpCode}
+                                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                        placeholder="Enter 6-digit OTP"
+                                        maxLength={6}
+                                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary text-center text-2xl tracking-widest"
+                                        required
+                                    />
+                                </div>
+
+                                {forgotPasswordStep === 'reset' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                                New Password
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showNewPassword ? 'text' : 'password'}
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    placeholder="Enter new password"
+                                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">
+                                                        {showNewPassword ? 'visibility_off' : 'visibility'}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                                Confirm Password
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showConfirmPassword ? 'text' : 'password'}
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    placeholder="Confirm new password"
+                                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">
+                                                        {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (forgotPasswordStep === 'reset') {
+                                                setForgotPasswordStep('otp');
+                                                setNewPassword('');
+                                                setConfirmPassword('');
+                                                setForgotPasswordError('');
+                                            } else {
+                                                setForgotPasswordStep('email');
+                                                setOtpCode('');
+                                                setForgotPasswordError('');
+                                            }
+                                        }}
+                                        className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isLoadingForgotPassword}
+                                        onClick={() => {
+                                            if (forgotPasswordStep === 'otp') {
+                                                setForgotPasswordStep('reset');
+                                                setForgotPasswordError('');
+                                            }
+                                        }}
+                                        className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white rounded-lg font-medium transition-colors"
+                                    >
+                                        {isLoadingForgotPassword ? 'Processing...' : forgotPasswordStep === 'reset' ? 'Reset Password' : 'Verify OTP'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
