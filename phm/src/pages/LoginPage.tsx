@@ -123,11 +123,6 @@ export const LoginPage: React.FC = () => {
                         )}
 
                         <div className="flex justify-between items-center px-4 mb-4">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input className="rounded border-[#cfdbe7] text-primary focus:ring-primary"
-                                       type="checkbox"/>
-                                <span className="text-sm text-[#4c739a] dark:text-slate-400">Remember me</span>
-                            </label>
                             <p className="text-primary text-sm font-semibold leading-normal underline cursor-pointer">Forgot
                                 Password?</p>
                         </div>
