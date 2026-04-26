@@ -182,7 +182,6 @@ export const AuditLogsPage: React.FC = () => {
                   <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">User</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">Action</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">Details</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-[#4c739a] dark:text-slate-400 uppercase tracking-wider">IP Address</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e7edf3] dark:divide-slate-700">
@@ -221,9 +220,6 @@ export const AuditLogsPage: React.FC = () => {
                         <p className="text-xs text-[#4c739a] dark:text-slate-400 mt-1">
                           {log.entityType} - {log.entityId}
                         </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-[#0d141b] dark:text-white font-mono">{log.ipAddress}</p>
                       </td>
                     </tr>
                   ))
