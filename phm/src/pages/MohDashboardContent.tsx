@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { mohService } from '../services/MohService';
+import { TranslationService } from '../services/TranslationService';
 
 interface DashboardStats {
   totalChildren: number;

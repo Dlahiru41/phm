@@ -182,33 +182,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                             </div>
                             <div className="h-6 w-px bg-[#e7edf3] dark:bg-slate-700"></div>
                             <div className="flex items-center gap-4">
-                                <div
-                                    className="flex h-9 items-center justify-center rounded-lg bg-[#e7edf3] dark:bg-slate-700 p-1">
-                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 bg-white dark:bg-slate-600 shadow-sm text-primary text-xs font-bold"
-                                           onClick={() => {
-                                               TranslationService.setLanguage('en');
-                                               window.dispatchEvent(new Event('languagechange'));
-                                           }}>
-                                        <span>EN</span>
-                                        <input defaultChecked className="hidden" name="lang" type="radio" value="English"/>
-                                    </label>
-                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold"
-                                           onClick={() => {
-                                               TranslationService.setLanguage('si');
-                                               window.dispatchEvent(new Event('languagechange'));
-                                           }}>
-                                        <span>සිං</span>
-                                        <input className="hidden" name="lang" type="radio" value="Sinhala"/>
-                                    </label>
-                                    <label className="flex cursor-pointer h-full items-center justify-center rounded px-3 text-[#4c739a] dark:text-slate-400 text-xs font-bold"
-                                           onClick={() => {
-                                               TranslationService.setLanguage('ta');
-                                               window.dispatchEvent(new Event('languagechange'));
-                                           }}>
-                                        <span>தமிழ்</span>
-                                        <input className="hidden" name="lang" type="radio" value="Tamil"/>
-                                    </label>
-                                </div>
+
                             </div>
                         </div>
                     </header>

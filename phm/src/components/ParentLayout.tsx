@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
+import { TranslationService } from '../services/TranslationService';
 
 export type ParentNavKey = 'dashboard' | 'health-records' | 'notifications' | 'profile';
 
@@ -32,29 +33,29 @@ export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNa
             <span className="material-symbols-outlined text-primary text-2xl">child_care</span>
           </div>
           <div className="flex flex-col">
-            <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-none">Parent Portal</h1>
-            <p className="text-[#4c739a] dark:text-slate-400 text-xs mt-1">Vaccination Management</p>
+            <h1 className="text-[#0d141b] dark:text-slate-50 text-base font-bold leading-none">{TranslationService.t('parentDashboard.parentPortal')}</h1>
+            <p className="text-[#4c739a] dark:text-slate-400 text-xs mt-1">{TranslationService.t('parentDashboard.vaccinationManagement')}</p>
           </div>
         </div>
         <nav className="flex flex-col gap-2">
           <Link to="/parent-dashboard-desktop" className={navClass('dashboard')}>
             <span className="material-symbols-outlined">dashboard</span>
-            <p className="text-sm font-medium">Dashboard</p>
+            <p className="text-sm font-medium">{TranslationService.t('nav.dashboard')}</p>
           </Link>
           <Link to="/child-profile-schedule" className={navClass('health-records')}>
             <span className="material-symbols-outlined">history_edu</span>
-            <p className="text-sm font-medium">Health Records</p>
+            <p className="text-sm font-medium">{TranslationService.t('nav.healthRecords')}</p>
           </Link>
           <Link to="/notifications" className={navClass('notifications')}>
             <span className="material-symbols-outlined">notifications</span>
-            <p className="text-sm font-medium">Notifications</p>
+            <p className="text-sm font-medium">{TranslationService.t('nav.notifications')}</p>
             {unreadCount > 0 && (
               <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{unreadCount}</span>
             )}
           </Link>
           <Link to="/parent-profile" className={navClass('profile')}>
             <span className="material-symbols-outlined">person</span>
-            <p className="text-sm font-medium">Profile</p>
+            <p className="text-sm font-medium">{TranslationService.t('nav.profile')}</p>
           </Link>
         </nav>
       </div>
@@ -69,7 +70,7 @@ export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNa
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left w-full"
         >
           <span className="material-symbols-outlined">logout</span>
-          <p className="text-sm font-medium">Logout</p>
+          <p className="text-sm font-medium">{TranslationService.t('nav.logout')}</p>
         </button>
       </div>
     </aside>
@@ -99,7 +100,7 @@ export const ParentLayout: React.FC<ParentLayoutProps> = ({
               className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-2"
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              <span className="text-sm font-medium">Back to Dashboard</span>
+              <span className="text-sm font-medium">{TranslationService.t('common.backToDashboard')}</span>
             </button>
           </div>
         )}

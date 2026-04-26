@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 
 type TabType = 'profile' | 'password' | 'activity';
 
@@ -68,10 +69,10 @@ export const MohProfilePage: React.FC = () => {
       const updated = await AuthService.refreshProfile();
       if (updated) {
         setEditMode(false);
-        setMessage({ type: 'success', text: 'Profile updated successfully' });
+        setMessage({ type: 'success', text: TranslationService.t('profile.updateSuccess') });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to update profile' });
+      setMessage({ type: 'error', text: TranslationService.t('profile.updateError') });
     } finally {
       setSaving(false);
     }
@@ -79,12 +80,12 @@ export const MohProfilePage: React.FC = () => {
 
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match' });
+      setMessage({ type: 'error', text: TranslationService.t('profile.passwordMismatch') });
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+      setMessage({ type: 'error', text: TranslationService.t('forgotPassword.passwordTooShort') });
       return;
     }
 
@@ -97,7 +98,7 @@ export const MohProfilePage: React.FC = () => {
         passwordForm.confirmPassword
       );
       setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
-      setMessage({ type: 'success', text: 'Password changed successfully' });
+      setMessage({ type: 'success', text: TranslationService.t('profile.passwordSuccess') });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to change password. Please check your current password.' });
     } finally {

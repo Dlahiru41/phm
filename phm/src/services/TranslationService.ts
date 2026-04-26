@@ -147,6 +147,8 @@ export interface TranslationKeys {
   'common.success': string;
   'common.close': string;
   'common.submit': string;
+  'common.searchPlaceholder': string;
+  'common.overview': string;
 
   // Status
   'status.pending': string;
@@ -154,6 +156,7 @@ export interface TranslationKeys {
   'status.missed': string;
   'status.cancelled': string;
   'status.scheduled': string;
+  'status.active': string;
 
     // Audit Logs
     'audit.title': string;
@@ -267,6 +270,20 @@ export interface TranslationKeys {
   'report.notifications': string;
   'report.auditEvents': string;
   'report.footerText': string;
+  'report.description': string;
+  'report.generateError': string;
+  'report.invalidType': string;
+  'report.downloadFailed': string;
+  'report.generateSuccess': string;
+  'report.type': string;
+  'report.dateRange': string;
+  'report.userRole': string;
+  'report.allRoles': string;
+  'report.allDivisions': string;
+  'report.selectType': string;
+  'report.generating': string;
+  'report.generate': string;
+  'report.downloadCsv': string;
 
   // PHM Vaccination Clinic
   'clinic.title': string;
@@ -322,6 +339,12 @@ export interface TranslationKeys {
   'profile.oldPassword': string;
   'profile.newPassword': string;
   'profile.confirmPassword': string;
+  'profile.passwordChangeHint': string;
+  'profile.enterCurrentPassword': string;
+  'profile.enterNewPassword': string;
+  'profile.reEnterNewPassword': string;
+  'profile.updating': string;
+  'profile.updatePassword': string;
 
   // Add Child Additional
   'addChild.title': string;
@@ -355,6 +378,8 @@ export interface TranslationKeys {
   'addChild.whereToFind': string;
   'addChild.whereToFindText': string;
   'addChild.formatHint': string;
+  'addChild.selectChild': string;
+  'addChild.addAnotherChild': string;
 
   // Baby Registration Additional
   'babyReg.title': string;
@@ -441,6 +466,10 @@ export interface TranslationKeys {
   'recordVac.missedNotified': string;
   'recordVac.markCompleted': string;
   'recordVac.markNotAttended': string;
+  'recordVac.updateSuccess': string;
+  'recordVac.updateDescription': string;
+  'recordVac.selectSite': string;
+  'recordVac.notesPlaceholder': string;
 
   // Growth Additional
   'growth.loading': string;
@@ -501,6 +530,58 @@ export interface TranslationKeys {
   'parentDashboard.appointments': string;
   'parentDashboard.vaccineGuide': string;
   'parentDashboard.loading': string;
+
+  // MOH Dashboard
+  'moh.subtitle': string;
+  'moh.searchPlaceholder': string;
+  'moh.officerTitle': string;
+  'moh.regionalAnalytics': string;
+  'moh.phmReports': string;
+  'moh.phmManagement': string;
+  'moh.systemHealth': string;
+  'moh.dataLive': string;
+  'moh.analyticsDashboard': string;
+  'moh.dashboardDescription': string;
+  'moh.systemOverview': string;
+  'moh.auditLogs': string;
+  'moh.viewProfile': string;
+
+  // MOH PHM Management
+  'mohPhm.title': string;
+  'mohPhm.subtitle': string;
+  'mohPhm.createAccount': string;
+  'mohPhm.createDescription': string;
+  'mohPhm.mohOnly': string;
+  'mohPhm.employeeId': string;
+  'mohPhm.employeeIdPlaceholder': string;
+  'mohPhm.fullName': string;
+  'mohPhm.fullNamePlaceholder': string;
+  'mohPhm.nic': string;
+  'mohPhm.nicPlaceholder': string;
+  'mohPhm.email': string;
+  'mohPhm.emailPlaceholder': string;
+  'mohPhm.phoneNumber': string;
+  'mohPhm.phonePlaceholder': string;
+  'mohPhm.assignedDivision': string;
+  'mohPhm.selectDivision': string;
+  'mohPhm.allAssigned': string;
+  'mohPhm.showingAreas': string;
+  'mohPhm.createSuccess': string;
+  'mohPhm.createError': string;
+  'mohPhm.employeeIdLabel': string;
+  'mohPhm.userIdLabel': string;
+  'mohPhm.tempPasswordLabel': string;
+  'mohPhm.sharePassword': string;
+  'mohPhm.creating': string;
+  'mohPhm.assignmentsTitle': string;
+  'mohPhm.assignmentsDescription': string;
+  'mohPhm.totalPhms': string;
+  'mohPhm.loading': string;
+  'mohPhm.noAssignments': string;
+  'mohPhm.colEmployeeId': string;
+  'mohPhm.colName': string;
+  'mohPhm.colAssignedArea': string;
+  'mohPhm.colUserId': string;
 }
 
 const translations: Record<Language, Partial<TranslationKeys>> = {
@@ -649,6 +730,8 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'common.success': 'Success',
     'common.close': 'Close',
     'common.submit': 'Submit',
+    'common.searchPlaceholder': 'Search data points...',
+    'common.overview': 'Overview',
 
     // Status
     'status.pending': 'Pending',
@@ -656,6 +739,7 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'status.missed': 'Missed',
     'status.cancelled': 'Cancelled',
     'status.scheduled': 'Scheduled',
+    'status.active': 'Active',
 
     // Audit Logs
     'audit.title': 'Audit Logs',
@@ -769,6 +853,20 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'report.notifications': 'Notifications',
     'report.auditEvents': 'Audit Events',
     'report.footerText': 'This report was automatically generated by the National Child Vaccination Management System',
+    'report.description': 'Generate comprehensive SuwaCare LK vaccination reports for analysis and record-keeping.',
+    'report.generateError': 'Failed to generate report. Please try again.',
+    'report.invalidType': 'Invalid report type',
+    'report.downloadFailed': 'Download as {format.toUpperCase()} failed.',
+    'report.generateSuccess': 'Your report has been successfully generated.',
+    'report.type': 'Report Type:',
+    'report.dateRange': 'Date Range:',
+    'report.userRole': 'User Role:',
+    'report.allRoles': 'All Roles',
+    'report.allDivisions': 'All Divisions',
+    'report.selectType': 'Select Report Type *',
+    'report.generating': 'Generating...',
+    'report.generate': 'Generate Report',
+    'report.downloadCsv': 'Download CSV',
 
     // PHM Vaccination Clinic
     'clinic.title': 'Vaccination Clinics',
@@ -824,6 +922,12 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'profile.oldPassword': 'Old Password',
     'profile.newPassword': 'New Password',
     'profile.confirmPassword': 'Confirm Password',
+    'profile.passwordChangeHint': 'Enter your current password and choose a new secure password.',
+    'profile.enterCurrentPassword': 'Enter your current (temporary) password',
+    'profile.enterNewPassword': 'Enter a new secure password',
+    'profile.reEnterNewPassword': 'Re-enter your new password',
+    'profile.updating': 'Updating password…',
+    'profile.updatePassword': 'Update Password',
 
     // Add Child Additional
     'addChild.title': 'Link Your Child',
@@ -857,6 +961,8 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'addChild.whereToFind': 'Where to find your registration number?',
     'addChild.whereToFindText': 'The registration number is provided by the Public Health Midwife (PHM) when your child is registered in the system. It should be in the format shown above. Linking is verified by a code sent to your mobile number.',
     'addChild.formatHint': 'Format: NCVMS-YYYY-MMDD-XXXX (e.g., NCVMS-2024-0815-1234)',
+    'addChild.selectChild': 'Select a child',
+    'addChild.addAnotherChild': 'Add another child',
 
     // Baby Registration Additional
     'babyReg.title': 'New Baby Registration',
@@ -927,6 +1033,10 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'recordVac.errorMsg': 'Failed to save vaccination record. Please try again.',
     'recordVac.dueTitle': 'Children Due for Vaccination',
     'recordVac.noDue': 'No children currently due in your area',
+    'recordVac.updateSuccess': 'The vaccination record has been successfully updated.',
+    'recordVac.updateDescription': 'Update vaccination details for a registered child.',
+    'recordVac.selectSite': 'Select site',
+    'recordVac.notesPlaceholder': 'Additional notes or observations...',
 
     // Growth Additional
     'growth.loading': 'Loading WHO growth chart...',
@@ -987,6 +1097,58 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'parentDashboard.appointments': 'Appointments',
     'parentDashboard.vaccineGuide': 'Vaccine Guide',
     'parentDashboard.loading': 'Loading dashboard…',
+
+    // MOH Dashboard
+    'moh.subtitle': 'National Child Vaccination Analytics',
+    'moh.searchPlaceholder': 'Search data points...',
+    'moh.officerTitle': 'Regional Medical Officer',
+    'moh.regionalAnalytics': 'Regional Analytics',
+    'moh.phmReports': 'PHM Reports',
+    'moh.phmManagement': 'PHM Management',
+    'moh.systemHealth': 'System Health',
+    'moh.dataLive': 'Data live: Colombo District',
+    'moh.analyticsDashboard': 'Officer Analytics Dashboard',
+    'moh.dashboardDescription': 'Real-time vaccination coverage and PHM performance across the Western Province.',
+    'moh.systemOverview': 'System Overview',
+    'moh.auditLogs': 'Audit Logs',
+    'moh.viewProfile': 'View Profile',
+
+    // MOH PHM Management
+    'mohPhm.title': 'PHM Management',
+    'mohPhm.subtitle': 'Manage PHM areas, officers, and assignments under your region.',
+    'mohPhm.createAccount': 'Create PHM Account',
+    'mohPhm.createDescription': 'MOH officers can create PHM accounts for their areas. A temporary password will be generated for first login.',
+    'mohPhm.mohOnly': 'MOH-only • PHM cannot self-register',
+    'mohPhm.employeeId': 'Employee ID',
+    'mohPhm.employeeIdPlaceholder': 'e.g. PHM001',
+    'mohPhm.fullName': 'Full Name',
+    'mohPhm.fullNamePlaceholder': 'PHM full name',
+    'mohPhm.nic': 'NIC',
+    'mohPhm.nicPlaceholder': 'National ID number',
+    'mohPhm.email': 'Email',
+    'mohPhm.emailPlaceholder': 'PHM email address',
+    'mohPhm.phoneNumber': 'Phone Number',
+    'mohPhm.phonePlaceholder': 'Contact number',
+    'mohPhm.assignedDivision': 'Assigned GN Division',
+    'mohPhm.selectDivision': 'Select GN Division (Unassigned only)',
+    'mohPhm.allAssigned': 'All areas are assigned',
+    'mohPhm.showingAreas': 'Showing {count} unassigned area{s}',
+    'mohPhm.createSuccess': 'PHM account created successfully.',
+    'mohPhm.createError': 'Failed to create PHM account. Please check details and try again.',
+    'mohPhm.employeeIdLabel': 'Employee ID:',
+    'mohPhm.userIdLabel': 'User ID:',
+    'mohPhm.tempPasswordLabel': 'Temporary password:',
+    'mohPhm.sharePassword': 'Please share this temporary password with the PHM through a secure channel. They will be required to change it on first login.',
+    'mohPhm.creating': 'Creating PHM Account…',
+    'mohPhm.assignmentsTitle': 'PHM Area Assignments',
+    'mohPhm.assignmentsDescription': 'View all PHMs and their assigned GN divisions. Each area can only be assigned to one PHM.',
+    'mohPhm.totalPhms': 'Total: {count} PHM{s}',
+    'mohPhm.loading': 'Loading PHM assignments...',
+    'mohPhm.noAssignments': 'No PHM assignments yet',
+    'mohPhm.colEmployeeId': 'Employee ID',
+    'mohPhm.colName': 'Name',
+    'mohPhm.colAssignedArea': 'Assigned Area',
+    'mohPhm.colUserId': 'User ID',
   },
 
   si: {
@@ -1128,12 +1290,15 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'common.success': 'සාර්ථකතාවය',
     'common.close': 'වසන්න',
     'common.submit': 'යොමු කරන්න',
+    'common.searchPlaceholder': 'දත්ත ලක්ෂ්‍ය සොයන්න...',
+    'common.overview': 'සමීක්ෂණය',
 
     'status.pending': 'අපේක්‍ෂණීයතාව',
     'status.completed': 'සම්පූර්ණ කිරීම',
     'status.missed': 'අඩු වූ',
     'status.cancelled': 'අවලංගු කරණි',
     'status.scheduled': 'පිළිවෙළින් සටහන් කිරීම',
+    'status.active': 'සක්‍රිය',
 
     // Audit Logs
     'audit.title': 'විගණන සටහන්',
@@ -1199,6 +1364,20 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'report.notifications': 'දැනුම්දීම්',
     'report.auditEvents': 'විගණන සිදුවීම්',
     'report.footerText': 'මෙම වාර්තාව ජාතික ළමා එන්නත් කළමනාකරණ පද්ධතිය මගින් ස්වයංක්‍රීයව ජනනය කරන ලදී',
+    'report.description': 'විශ්ලේෂණය සහ වාර්තා තැබීම සඳහා සුවා ගිග LK එන්නත් වාර්තා ජනනය කරන්න.',
+    'report.generateError': 'වාර්තාව ජනනය කිරීමට අපොහොසත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'report.invalidType': 'වැරදි වාර්තා වර්ගය',
+    'report.downloadFailed': '{format.toUpperCase()} ලෙස බාගත කිරීම අසාර්ථක විය.',
+    'report.generateSuccess': 'ඔබගේ වාර්තාව සාර්ථකව ජනනය කරන ලදී.',
+    'report.type': 'වාර්තා වර්ගය:',
+    'report.dateRange': 'දින පරාසය:',
+    'report.userRole': 'පරිශීලක භූමිකාව:',
+    'report.allRoles': 'සියලුම භූමිකාවන්',
+    'report.allDivisions': 'සියලුම කොට්ඨාස',
+    'report.selectType': 'වාර්තා වර්ගය තෝරන්න *',
+    'report.generating': 'ජනනය කරමින්...',
+    'report.generate': 'වාර්තාව ජනනය කරන්න',
+    'report.downloadCsv': 'CSV බාගත කරන්න',
 
     // PHM Vaccination Clinic
     'clinic.title': 'එන්නත් සායන',
@@ -1254,6 +1433,12 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'profile.oldPassword': 'පැරණි මුරපදය',
     'profile.newPassword': 'නව මුරපදය',
     'profile.confirmPassword': 'මුරපදය තහවුරු කරන්න',
+    'profile.passwordChangeHint': 'ඔබගේ වර්තමාන මුරපදය ඇතුළත් කර නව ආරක්ෂිත මුරපදයක් තෝරන්න.',
+    'profile.enterCurrentPassword': 'ඔබගේ වර්තමාන (තාවකාලික) මුරපදය ඇතුළත් කරන්න',
+    'profile.enterNewPassword': 'නව ආරක්ෂිත මුරපදයක් ඇතුළත් කරන්න',
+    'profile.reEnterNewPassword': 'ඔබගේ නව මුරපදය නැවත ඇතුළත් කරන්න',
+    'profile.updating': 'මුරපදය යාවත්කාලීන කරමින්...',
+    'profile.updatePassword': 'මුරපදය යාවත්කාලීන කරන්න',
 
     // Add Child Additional
     'addChild.title': 'ඔබේ දරුවා සම්බන්ධ කරන්න',
@@ -1287,6 +1472,8 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'addChild.whereToFind': 'ඔබේ ලියාපදිංචි අංකය සොයා ගන්නේ කොහෙන්ද?',
     'addChild.whereToFindText': 'ඔබේ දරුවා පද්ධතියේ ලියාපදිංචි කරන විට මහජන සෞඛ්‍ය පවුල් සෞඛ්‍ය සේවිකාව (PHM) විසින් ලියාපදිංචි අංකය ලබා දෙනු ලැබේ. එය ඉහත පෙන්වා ඇති ආකෘතියෙන් විය යුතුය. සම්බන්ධ කිරීම ඔබේ ජංගම දුරකතනයට එවන ලද කේතයක් මගින් සත්‍යාපනය වේ.',
     'addChild.formatHint': 'ආකෘතිය: NCVMS-YYYY-MMDD-XXXX (උදා: NCVMS-2024-0815-1234)',
+    'addChild.selectChild': 'දරුවෙකු තෝරන්න',
+    'addChild.addAnotherChild': 'තවත් දරුවෙකු එකතු කරන්න',
 
     // Baby Registration Additional
     'babyReg.title': 'නව බිළිඳු ලියාපදිංචිය',
@@ -1357,6 +1544,10 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'recordVac.errorMsg': 'එන්නත් වාර්තාව සුරැකීමට අපොහොසත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
     'recordVac.dueTitle': 'එන්නත් ලබා දිය යුතු දරුවන්',
     'recordVac.noDue': 'ඔබේ ප්‍රදේශයේ දැනට එන්නත් ලබා දිය යුතු දරුවන් නැත',
+    'recordVac.updateSuccess': 'එන්නත් වාර්තාව සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    'recordVac.updateDescription': 'ලියාපදිංචි කර ඇති දරුවෙකුගේ එන්නත් විස්තර යාවත්කාලීන කරන්න.',
+    'recordVac.selectSite': 'ස්ථානය තෝරන්න',
+    'recordVac.notesPlaceholder': 'අමතර සටහන් හෝ නිරීක්ෂණ...',
 
     // Growth Additional
     'growth.loading': 'ලෝක සෞඛ්‍ය සංවිධානයේ වර්ධන ප්‍රස්තාරය පූරණය වෙමින්...',
@@ -1417,6 +1608,58 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'parentDashboard.appointments': 'පත්‍රගතකිරීම්',
     'parentDashboard.vaccineGuide': 'එන්නත් මාර්ගෝපදේශ',
     'parentDashboard.loading': 'dashboard පූරණය වෙමින්…',
+
+    // MOH Dashboard
+    'moh.subtitle': 'ජාතික ළමා එන්නත් විශ්ලේෂණ',
+    'moh.searchPlaceholder': 'දත්ත ලක්ෂ්‍ය සොයන්න...',
+    'moh.officerTitle': 'ප්‍රාදේශීය වෛද්‍ය නිලධාරී',
+    'moh.regionalAnalytics': 'ප්‍රාදේශීය විශ්ලේෂණ',
+    'moh.phmReports': 'PHM වාර්තා',
+    'moh.phmManagement': 'PHM කළමනාකරණය',
+    'moh.systemHealth': 'පද්ධති සෞඛ්‍යය',
+    'moh.dataLive': 'දත්ත පවතී: කොළඹ දිස්ත්‍රික්කය',
+    'moh.analyticsDashboard': 'නිලධාරී විශ්ලේෂණ Dashboard',
+    'moh.dashboardDescription': 'බස්නාහිර පළාත් පුර තුළ එන්නත් ආවරණය සහ PHM කාර්ය සාධනය තත්කාලික වශයෙන්.',
+    'moh.systemOverview': 'පද්ධති දළුඬ',
+    'moh.auditLogs': 'තක්සා ලොග්',
+    'moh.viewProfile': 'පැතිකඩ බලන්න',
+
+    // MOH PHM Management
+    'mohPhm.title': 'PHM කළමනාකරණය',
+    'mohPhm.subtitle': 'ඔබගේ කලාපය යටතේ PHM කලාප, නිලධාරීන් සහ පැවරුම් කළමනාකරණය කරන්න.',
+    'mohPhm.createAccount': 'PHM ගිණුමක් සාදන්න',
+    'mohPhm.createDescription': 'MOH නිලධාරීන්ට ඔවුන්ගේ කලාප සඳහා PHM ගිණුන් සෑදිය හැක. පළමු ප්‍රවේශ වීම සඳහා තාවකාලික මුරපදයක් ජනනය කරනු ලැබේ.',
+    'mohPhm.mohOnly': 'MOH-පමණක් • PHM ස්වයියාව ලියාපදිංචි කළ නොහැක',
+    'mohPhm.employeeId': 'සේවක අනුක්‍රම අංකය',
+    'mohPhm.employeeIdPlaceholder': 'උදාහර. PHM001',
+    'mohPhm.fullName': 'සම්පූර්ණ නම',
+    'mohPhm.fullNamePlaceholder': 'PHM සම්පූර්ණ නම',
+    'mohPhm.nic': 'NIC',
+    'mohPhm.nicPlaceholder': 'ජාතික හැඳුනුම් අංකය',
+    'mohPhm.email': 'විද්‍යුතර ලිපිනය',
+    'mohPhm.emailPlaceholder': 'PHM විද්‍යුතර ලිපිනය',
+    'mohPhm.phoneNumber': 'දුරකථන අංකය',
+    'mohPhm.phonePlaceholder': 'සබඳපැති අංකය',
+    'mohPhm.assignedDivision': 'පැවරුණු GN කොට්ඨාසය',
+    'mohPhm.selectDivision': 'GN කොට්ඨාසයක් තෝරන්න (පැවරුම් නොකළ පමණක්)',
+    'mohPhm.allAssigned': 'සියලුම කලාප පැවරුණි',
+    'mohPhm.showingAreas': 'පැවරුම් නොකළ {count} ප්‍රදේශ{s} පෙන්වයි',
+    'mohPhm.createSuccess': 'PHM ගිණුම සාර්ථකව සාදන ලදී.',
+    'mohPhm.createError': 'PHM ගිණුක් සෑදීමට අසාර්ථක විය. විස්තර පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
+    'mohPhm.employeeIdLabel': 'සේවක අනුක්‍රම අංකය:',
+    'mohPhm.userIdLabel': 'පරිශීලක අනුක්‍රම අංකය:',
+    'mohPhm.tempPasswordLabel': 'තාවකාලික මුරපදය:',
+    'mohPhm.sharePassword': 'කරුණාකර මෙම තාවකාලික මුරපදය ආරක්ෂිත මාධ්‍යයක් හරහා PHM සමඟ බෙදා සඳහා. ඔවුන් පළමු ප්‍රවේශ වීමේදී එය වෙනස් කළ යුතුය.',
+    'mohPhm.creating': 'PHM ගිණුක් සෑදමින්...',
+    'mohPhm.assignmentsTitle': 'PHM ප්‍රදේශ පැවරුම්',
+    'mohPhm.assignmentsDescription': 'සියලුම PHM සහ ඔවුන්ගේ පැවරුණු GN කොට්ඨාස බලන්න. සෑම ප්‍රදේශයක් එක් PHM එකට පමණක් පැවරුම් කළ හැක.',
+    'mohPhm.totalPhms': 'එකතු: {count} PHM{s}',
+    'mohPhm.loading': 'PHM පැවරුම් පූරණය වෙමින්...',
+    'mohPhm.noAssignments': 'තවම PHM පැවරුම් නැත',
+    'mohPhm.colEmployeeId': 'සේවක අනුක්‍රම අංකය',
+    'mohPhm.colName': 'නම',
+    'mohPhm.colAssignedArea': 'පැවරුණු ප්‍රදේශය',
+    'mohPhm.colUserId': 'පරිශීලක අනුක්‍රම අංකය',
   },
 
   ta: {
@@ -1558,12 +1801,15 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'common.success': 'வெற்றி',
     'common.close': 'மூடவும்',
     'common.submit': 'சமர்ப்பிக்கவும்',
+    'common.searchPlaceholder': 'தரவுப் புள்ளிகளைத் தேடவும்...',
+    'common.overview': 'கண்ணோட்டம்',
 
     'status.pending': 'காத்திருக்கிறது',
     'status.completed': 'முடிந்துவிட்டது',
     'status.missed': 'தவறிய',
     'status.cancelled': 'ரத்துசெய்யப்பட்டது',
     'status.scheduled': 'திட்டமிடப்பட்டது',
+    'status.active': 'செயலில்',
 
     // Audit Logs
     'audit.title': 'தணிக்கை பதிவுகள்',
@@ -1677,6 +1923,20 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'report.notifications': 'அறிவிப்புகள்',
     'report.auditEvents': 'தணிக்கை நிகழ்வுகள்',
     'report.footerText': 'இந்த அறிக்கை தேசிய குழந்தை தடுப்பூசி மேலாண்மை அமைப்பால் தானாகவே உருவாக்கப்பட்டது',
+    'report.description': 'பகுப்பாய்வு மற்றும் பதிவுக்காக SuwaCare LK தடுப்பூசி அறிக்கைகளை உருவாக்குங்கள்.',
+    'report.generateError': 'அறிக்கையை உருவாக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+    'report.invalidType': 'தவறான அறிக்கை வகை',
+    'report.downloadFailed': '{format.toUpperCase()} ஆகப் பதிவிறக்கும் தோல்வியடைந்தது.',
+    'report.generateSuccess': 'உங்கள் அறிக்கை வெற்றிகரமாக உருவாக்கப்பட்டது.',
+    'report.type': 'அறிக்கை வகை:',
+    'report.dateRange': 'தேதி வரம்பு:',
+    'report.userRole': 'பயனர் பாத்திரம்:',
+    'report.allRoles': 'அனைத்து பாத்திரங்களும்',
+    'report.allDivisions': 'அனைத்து பிரிவுகளும்',
+    'report.selectType': 'அறிக்கை வகையைத் தேர்ந்தெடுக்கவும் *',
+    'report.generating': 'உருவாக்குகிறது...',
+    'report.generate': 'அறிக்கையை உருவாக்கு',
+    'report.downloadCsv': 'CSV ஐப் பதிவிறக்கவும்',
 
     // PHM Vaccination Clinic
     'clinic.title': 'தடுப்பூசி கிளினிக்குகள்',
@@ -1732,6 +1992,12 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'profile.oldPassword': 'பழைய கடவுச்சொல்',
     'profile.newPassword': 'புதிய கடவுச்சொல்',
     'profile.confirmPassword': 'கடவுச்சொல்லை உறுதிப்படுத்தவும்',
+    'profile.passwordChangeHint': 'உங்கள் தற்போதைய கடவுச்சொல்லை உள்ளிடவும் மற்றும் ஒரு புதிய பாதுகாப்பான கடவுச்சொல்லைத் தேர்ந்தெடுக்கவும்.',
+    'profile.enterCurrentPassword': 'உங்கள் தற்போதைய (தற்காலிக) கடவுச்சொல்லை உள்ளிடவும்',
+    'profile.enterNewPassword': 'ஒரு புதிய பாதுகாப்பான கடவுச்சொல்லை உள்ளிடவும்',
+    'profile.reEnterNewPassword': 'உங்கள் புதிய கடவுச்சொல்லை மீண்டும் உள்ளிடவும்',
+    'profile.updating': 'கடவுச்சொல்லைப் புதுப்பிக்கிறது...',
+    'profile.updatePassword': 'கடவுச்சொல்லைப் புதுப்பிக்கவும்',
 
     // Add Child Additional
     'addChild.title': 'உங்கள் குழந்தையை இணைக்கவும்',
@@ -1765,6 +2031,8 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'addChild.whereToFind': 'உங்கள் பதிவு எண்ணை எங்கே கண்டுபிடிப்பது?',
     'addChild.whereToFindText': 'உங்கள் குழந்தை அமைப்பில் பதிவு செய்யப்படும்போது பொது சுகாதார செவிலியரால் (PHM) பதிவு எண் வழங்கப்படுகிறது. இது மேலே காட்டப்பட்டுள்ள வடிவத்தில் இருக்க வேண்டும். உங்கள் மொபைல் எண்ணுக்கு அனுப்பப்பட்ட குறியீட்டின் மூலம் இணைப்பு சரிபார்க்கப்படுகிறது.',
     'addChild.formatHint': 'வடிவம்: NCVMS-YYYY-MMDD-XXXX (உதாரணம்: NCVMS-2024-0815-1234)',
+    'addChild.selectChild': 'குழந்தையைத் தேர்ந்தெடு',
+    'addChild.addAnotherChild': 'மற்றொரு குழந்தையைச் சேர்க்கவும்',
 
     // Baby Registration Additional
     'babyReg.title': 'புதிய குழந்தை பதிவு',
@@ -1835,6 +2103,10 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'recordVac.errorMsg': 'தடுப்பூசி பதிவைச் சேமிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
     'recordVac.dueTitle': 'தடுப்பூசி போட வேண்டிய குழந்தைகள்',
     'recordVac.noDue': 'உங்கள் பகுதியில் தற்போது தடுப்பூசி போட வேண்டிய குழந்தைகள் யாரும் இல்லை',
+    'recordVac.updateSuccess': 'தடுப்பூசி பதிவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது.',
+    'recordVac.updateDescription': 'பதிவுசெய்யப்பட்ட குழந்தையின் தடுப்பூசி விவரங்களைப் புதுப்பிக்கவும்.',
+    'recordVac.selectSite': 'இடத்தைத் தேர்ந்தெடு',
+    'recordVac.notesPlaceholder': 'கூடுதல் குறிப்புகள் அல்லது கவனிப்புகள்...',
 
     // Growth Additional
     'growth.loading': 'WHO வளர்ச்சி விளக்கப்படத்தை ஏற்றுகிறது...',
@@ -1895,6 +2167,58 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'parentDashboard.appointments': 'நியமனங்கள்',
     'parentDashboard.vaccineGuide': 'தடுப்பூசி வழிகாட்டி',
     'parentDashboard.loading': 'டாஷ்போர்டை ஏற்றுகிறது…',
+
+    // MOH Dashboard
+    'moh.subtitle': 'தேசிய குழந்தை தடுப்பூசி பகுப்பாய்வு',
+    'moh.searchPlaceholder': 'தரவுப் புள்ளிகளைத் தேடவும்...',
+    'moh.officerTitle': 'பிராந்திய மருத்துவ அதிகாரி',
+    'moh.regionalAnalytics': 'பிராந்திய பகுப்பாய்வு',
+    'moh.phmReports': 'PHM அறிக்கைகள்',
+    'moh.phmManagement': 'PHM நிர்வாகம்',
+    'moh.systemHealth': 'அமைப்பு ஆரோக்கியம்',
+    'moh.dataLive': 'தரவு நேரடி: கொழும்பு மாவட்டம்',
+    'moh.analyticsDashboard': 'அதிகாரி பகுப்பாய்வு டாஷ்போர்டு',
+    'moh.dashboardDescription': 'மேற்கு மாகாணம் முழுவதும் தடுப்பூசி கவரேஜ் மற்றும் PHM செயல்திறன் நேரடி.',
+    'moh.systemOverview': 'கணினி கண்ணோட்டம்',
+    'moh.auditLogs': 'தணிக்கை பதிவுகள்',
+    'moh.viewProfile': 'சுயவிவரத்தைக் காண்க',
+
+    // MOH PHM Management
+    'mohPhm.title': 'PHM நிர்வாகம்',
+    'mohPhm.subtitle': 'உங்கள் பிராந்தியத்தின் கீழ் PHM பகுதிகள், அதிகாரிகள் மற்றும் ஒதுக்கீடுகளை நிர்வகிக்கவும்.',
+    'mohPhm.createAccount': 'PHM கணக்கை உருவாக்கவும்',
+    'mohPhm.createDescription': 'MOH அதிகாரிகள் தங்கள் பகுதிகளுக்கான PHM கணக்குகளை உருவாக்கலாம். முதல் உள்நுழைவுக்கு ஒரு தற்காலிக கடவுச்சொல் உருவாக்கப்படும்.',
+    'mohPhm.mohOnly': 'MOH-மட்டும் • PHM சுயமாக பதிவு செய்ய முடியாது',
+    'mohPhm.employeeId': 'ஊழியர் ஐடி',
+    'mohPhm.employeeIdPlaceholder': 'எ.கா. PHM001',
+    'mohPhm.fullName': 'முழு பெயர்',
+    'mohPhm.fullNamePlaceholder': 'PHM முழு பெயர்',
+    'mohPhm.nic': 'NIC',
+    'mohPhm.nicPlaceholder': 'தேசிய அடையாள எண்',
+    'mohPhm.email': 'மின்னஞ்சல்',
+    'mohPhm.emailPlaceholder': 'PHM மின்னஞ்சல் முகவரி',
+    'mohPhm.phoneNumber': 'தொலைபேசி எண்',
+    'mohPhm.phonePlaceholder': 'தொடர்பு எண்',
+    'mohPhm.assignedDivision': 'ஒதுக்கப்பட்ட GN பிரிவு',
+    'mohPhm.selectDivision': 'GN பிரிவைத் தேர்ந்தெடு (ஒதுக்கீடு செய்யப்படாதவை மட்டும்)',
+    'mohPhm.allAssigned': 'அனைத்து பகுதிகளும் ஒதுக்கப்பட்டன',
+    'mohPhm.showingAreas': 'ஒதுக்கீடு செய்யப்படாத {count} பகுதி{s} காட்டுகிறது',
+    'mohPhm.createSuccess': 'PHM கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது.',
+    'mohPhm.createError': 'PHM கணக்கை உருவாக்க தோல்வியடைந்தது. விவரங்களைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
+    'mohPhm.employeeIdLabel': 'ஊழியர் ஐடி:',
+    'mohPhm.userIdLabel': 'பயனர் ஐடி:',
+    'mohPhm.tempPasswordLabel': 'தற்காலிக கடவுச்சொல்:',
+    'mohPhm.sharePassword': 'இந்த தற்காலிக கடவுச்சொல்லை PHM உடன் பாதுகாப்பான சேனல் வழியாக பகிர்ந்து கொள்ளவும். அவர்கள் முதல் உள்நுழைவில் அதை மாற்ற வேண்டும்.',
+    'mohPhm.creating': 'PHM கணக்கை உருவாக்குகிறது...',
+    'mohPhm.assignmentsTitle': 'PHM பகுதி ஒதுக்கீடுகள்',
+    'mohPhm.assignmentsDescription': 'அனைத்து PHM மற்றும் அவர்களின் ஒதுக்கப்பட்ட GN பிரிவுகளைக் காண்க. ஒவ்வொரு பகுதியும் ஒரு PHM க்கு மட்டுமே ஒதுக்கப்படலாம்.',
+    'mohPhm.totalPhms': 'மொத்தம்: {count} PHM{s}',
+    'mohPhm.loading': 'PHM ஒதுக்கீடுகளை ஏற்றுகிறது...',
+    'mohPhm.noAssignments': 'இன்னும் PHM ஒதுக்கீடுகள் இல்லை',
+    'mohPhm.colEmployeeId': 'ஊழியர் ஐடி',
+    'mohPhm.colName': 'பெயர்',
+    'mohPhm.colAssignedArea': 'ஒதுக்கப்பட்ட பகுதி',
+    'mohPhm.colUserId': 'பயனர் ஐடி',
   },
 };
 

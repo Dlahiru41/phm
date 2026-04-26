@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { VaccinationCardPayload } from '../types/models';
 import { VaccinationCardService } from '../services/VaccinationCardService';
+import { TranslationService } from '../services/TranslationService';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

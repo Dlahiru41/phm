@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 import { dataService } from '../services/DataService';
 import { ParentSidebar } from '../components/ParentLayout';
 import { WHOGrowthChart } from '../components/WHOGrowthChart';
@@ -67,7 +68,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                     setRecords([]);
                 }
             } catch {
-                if (!cancelled) setError('Failed to load data.');
+                if (!cancelled) setError(TranslationService.t('common.error'));
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -140,7 +141,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                               fill="currentColor" fill-rule="evenodd"></path>
                                     </svg>
                                 </div>
-                                <h2 className="text-[#0d141b] dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em]">SuwaCare LK</h2>
+                                <h2 className="text-[#0d141b] dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em]">{TranslationService.t('app.title')}</h2>
                             </div>
                             <label className="flex flex-col min-w-40 !h-10 max-w-64">
                                 <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
@@ -150,23 +151,23 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                     </div>
                                     <input
                                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] dark:text-slate-100 focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] dark:bg-slate-800 focus:border-none h-full placeholder:text-[#4c739a] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal"
-                                        placeholder="Search children or clinics" value=""/>
+                                        placeholder={TranslationService.t('common.searchPlaceholder')} value=""/>
                                 </div>
                             </label>
                         </div>
                         <div className="flex flex-1 justify-end gap-8">
                             <div className="flex items-center gap-9">
                                 <Link to="/parent-dashboard-desktop" className="text-[#0d141b] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors">
-                                    Dashboard
+                                    {TranslationService.t('nav.dashboard')}
                                 </Link>
                                 <Link to="/child-profile-schedule" className="text-primary text-sm font-bold leading-normal">
-                                    Children
+                                    {TranslationService.t('parentDashboard.children')}
                                 </Link>
                                 <Link to="/phm-dashboard" className="text-[#0d141b] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors">
-                                    Clinics
+                                    {TranslationService.t('clinic.title')}
                                 </Link>
                                 <Link to="/generate-reports" className="text-[#0d141b] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors">
-                                    Reports
+                                    {TranslationService.t('adminDashboard.mohUsers.table.status')}
                                 </Link>
                             </div>
                             <div
@@ -184,27 +185,27 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                     className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors"
                                 >
                                     <span className="material-symbols-outlined">arrow_back</span>
-                                    <span className="text-sm font-medium">Back to Dashboard</span>
+                                    <span className="text-sm font-medium">{TranslationService.t('common.back')}</span>
                                 </button>
                             </div>
                         )}
                         {isParent && loading && (
-                            <div className="w-full max-w-[1200px] px-6 py-12 text-center text-[#4c739a] dark:text-slate-400">Loading…</div>
+                            <div className="w-full max-w-[1200px] px-6 py-12 text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('common.loading')}</div>
                         )}
                         {isParent && !loading && children.length === 0 && (
                             <div className="w-full max-w-[1200px] px-6 py-12 text-center">
-                                <p className="text-[#4c739a] dark:text-slate-400 mb-4">No linked children yet.</p>
+                                <p className="text-[#4c739a] dark:text-slate-400 mb-4">{TranslationService.t('profile.noLinkedChildren')}</p>
                                 <button
                                     onClick={() => navigate('/add-child')}
                                     className="text-primary font-bold hover:underline"
                                 >
-                                    Add a child to your account
+                                    {TranslationService.t('addChild.addAnotherChild')}
                                 </button>
                             </div>
                         )}
                         {isParent && !loading && children.length > 0 && !selectedChild && children.length > 1 && (
                             <div className="w-full max-w-[1200px] px-6 py-8">
-                                <h2 className="text-xl font-bold mb-4">Select a child</h2>
+                                <h2 className="text-xl font-bold mb-4">{TranslationService.t('addChild.selectChild')}</h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {children.map((c) => (
                                         <button
@@ -228,27 +229,27 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                     <div
                                         className="flex items-center gap-3 px-3 py-2 text-[#4c739a] hover:bg-background-light dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all">
                                         <span className="material-symbols-outlined">dashboard</span>
-                                        <p className="text-sm font-medium">Overview</p>
+                                        <p className="text-sm font-medium">{TranslationService.t('common.overview')}</p>
                                     </div>
                                     <div
                                         className="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded-lg cursor-pointer">
                                         <span className="material-symbols-outlined">calendar_today</span>
-                                        <p className="text-sm font-bold">Schedules</p>
+                                        <p className="text-sm font-bold">{TranslationService.t('parentDashboard.vaccinationManagement')}</p>
                                     </div>
                                     <div
                                         className="flex items-center gap-3 px-3 py-2 text-[#4c739a] hover:bg-background-light dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all">
                                         <span className="material-symbols-outlined">trending_up</span>
-                                        <p className="text-sm font-medium">Growth Monitoring</p>
+                                        <p className="text-sm font-medium">{TranslationService.t('growth.title')}</p>
                                     </div>
                                     <div
                                         className="flex items-center gap-3 px-3 py-2 text-[#4c739a] hover:bg-background-light dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all">
                                         <span className="material-symbols-outlined">history</span>
-                                        <p className="text-sm font-medium">Medical History</p>
+                                        <p className="text-sm font-medium">{TranslationService.t('profile.accountActivity')}</p>
                                     </div>
                                     <div
                                         className="flex items-center gap-3 px-3 py-2 text-[#4c739a] hover:bg-background-light dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-all mt-4 border-t border-[#e7edf3] dark:border-slate-800 pt-4">
                                         <span className="material-symbols-outlined">settings</span>
-                                        <p className="text-sm font-medium">Settings</p>
+                                        <p className="text-sm font-medium">{TranslationService.t('nav.settings')}</p>
                                     </div>
                                 </div>
                             </aside>
@@ -270,10 +271,10 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                         <h1 className="text-[#0d141b] dark:text-white text-3xl font-extrabold leading-tight tracking-[-0.015em]">
                                                             {selectedChild.firstName} {selectedChild.lastName}
                                                         </h1>
-                                                        <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded-full">ACTIVE</span>
+                                                        <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded-full">{TranslationService.t('status.active').toUpperCase()}</span>
                                                     </div>
                                                     <p className="text-[#4c739a] dark:text-slate-400 text-base font-semibold">
-                                                        Reg ID: <span className="text-[#0d141b] dark:text-slate-200">{selectedChild.registrationNumber || selectedChild.childId}</span>
+                                                        {TranslationService.t('addChild.regNumLabel')}: <span className="text-[#0d141b] dark:text-slate-200">{selectedChild.registrationNumber || selectedChild.childId}</span>
                                                     </p>
                                                     <div className="flex items-center gap-4 mt-2">
                                                         <p className="text-[#4c739a] dark:text-slate-400 text-sm flex items-center gap-1">
@@ -282,7 +283,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                         </p>
                                                         <p className="text-[#4c739a] dark:text-slate-400 text-sm flex items-center gap-1 border-l border-[#cfdbe7] dark:border-slate-700 pl-4">
                                                             <span className="material-symbols-outlined text-lg">male</span>
-                                                            {selectedChild.gender === 'female' ? 'Female' : 'Male'}
+                                                            {selectedChild.gender === 'female' ? TranslationService.t('babyReg.genderFemale') : TranslationService.t('babyReg.genderMale')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -292,7 +293,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                     type="button"
                                                     onClick={() => navigate(`/vaccination-card/${selectedChild.childId}`)}
                                                     className="flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold shadow-md shadow-primary/20 transition-all hover:brightness-110">
-                                                    <span className="material-symbols-outlined mr-2 text-xl">badge</span> Print Card
+                                                    <span className="material-symbols-outlined mr-2 text-xl">badge</span> {TranslationService.t('vacCard.downloadBtn')}
                                                 </button>
                                             </div>
                                         </div>
@@ -307,13 +308,13 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                 type="button"
                                                 onClick={() => setActiveTab('schedule')}
                                                 className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'schedule' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
-                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">History</p>
+                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">{TranslationService.t('parentDashboard.viewFullHistory')}</p>
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setActiveTab('growth')}
                                                 className={`flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 transition-colors ${activeTab === 'growth' ? 'border-primary text-primary' : 'border-transparent text-[#4c739a] dark:text-slate-400 hover:text-[#0d141b] dark:hover:text-slate-200'}`}>
-                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">Growth Charts</p>
+                                                <p className="text-sm font-bold leading-normal tracking-[0.015em]">{TranslationService.t('growth.title')}</p>
                                             </button>
                                         </div>
                                     </div>
@@ -322,12 +323,12 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                         <div className="flex items-center justify-between mb-8">
                                             <h3 className="text-lg font-bold text-[#0d141b] dark:text-white flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-primary">event_note</span>
-                                                Immunization Timeline
+                                                {TranslationService.t('parentDashboard.recentRecords')}
                                             </h3>
                                         </div>
                                         <div className="grid grid-cols-[48px_1fr] gap-x-4">
                                             {timeline.length === 0 ? (
-                                                <div className="col-span-2 py-8 text-center text-[#4c739a] dark:text-slate-400">No vaccination schedule or records yet.</div>
+                                                <div className="col-span-2 py-8 text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('parentDashboard.noRecords')}</div>
                                             ) : (
                                                 timeline.map((item, idx) => (
                                                     <React.Fragment key={idx}>
@@ -355,7 +356,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                                 <p className="text-[#0d141b] dark:text-white text-base font-bold">{item.vaccineName}</p>
                                                                 {item.type === 'administered' ? (
                                                                     <div className="flex items-center gap-4 mt-1 flex-wrap">
-                                                                        <p className="text-green-700 dark:text-green-400 text-sm font-semibold flex items-center gap-1">Status: Administered</p>
+                                                                        <p className="text-green-700 dark:text-green-400 text-sm font-semibold flex items-center gap-1">{TranslationService.t('status.completed')}: {TranslationService.t('recordVac.table.status').charAt(0).toUpperCase() + TranslationService.t('recordVac.table.status').slice(1)}</p>
                                                                         <p className="text-[#4c739a] dark:text-slate-400 text-sm flex items-center gap-1">
                                                                             <span className="material-symbols-outlined text-base">calendar_month</span> {formatDateShort(item.date)}
                                                                         </p>
@@ -371,7 +372,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                                                 ) : (
                                                                     <div className="flex items-center gap-4 mt-1">
                                                                         <p className={`${item.type === 'missed' ? 'text-red-600 dark:text-red-400' : 'text-primary'} text-sm font-semibold`}>
-                                                                            Status: {item.type === 'missed' ? 'Missed' : 'Upcoming'}
+                                                                            {TranslationService.t('status.completed')}: {item.type === 'missed' ? TranslationService.t('status.missed') : TranslationService.t('notification.upcoming')}
                                                                         </p>
                                                                         <p className="text-[#4c739a] dark:text-slate-400 text-sm flex items-center gap-1">
                                                                             <span className="material-symbols-outlined text-base">event</span> {formatDateShort(item.dueDate)}
@@ -389,11 +390,11 @@ export const ChildProfileSchedulePage: React.FC = () => {
                                     {activeTab === 'growth' && (
                                     <div className="p-8">
                                         {growthLoading ? (
-                                            <div className="text-center text-[#4c739a] dark:text-slate-400">Loading growth chart...</div>
+                                            <div className="text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('growth.loading')}</div>
                                         ) : growthData ? (
                                             <WHOGrowthChart data={growthData} />
                                         ) : (
-                                            <div className="text-center text-[#4c739a] dark:text-slate-400">No growth data available.</div>
+                                            <div className="text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('growth.noData')}</div>
                                         )}
                                     </div>
                                     )}

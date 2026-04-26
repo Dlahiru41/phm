@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
@@ -29,10 +30,10 @@ export const MohLayout: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">
-                SuwaCare LK
+                {TranslationService.t('app.title')}
               </h2>
               <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                National Child Vaccination Analytics
+                {TranslationService.t('moh.subtitle')}
               </p>
             </div>
           </div>
@@ -46,7 +47,7 @@ export const MohLayout: React.FC = () => {
               </div>
               <input
                 className="form-input flex w-full min-w-0 flex-1 border-none bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-0 h-full placeholder:text-slate-400 text-sm"
-                placeholder="Search data points..."
+                placeholder={TranslationService.t('moh.searchPlaceholder')}
                 value=""
                 readOnly
               />
@@ -60,7 +61,7 @@ export const MohLayout: React.FC = () => {
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20 hover:border-primary/50 transition-all cursor-pointer"
             data-alt="MOH Officer profile photo"
             style={{ backgroundImage: "url('https://via.placeholder.com/150')" }}
-            title="View Profile"
+            title={TranslationService.t('moh.viewProfile')}
           />
         </div>
       </header>
@@ -70,35 +71,35 @@ export const MohLayout: React.FC = () => {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-1 px-2">
               <h1 className="text-slate-900 dark:text-white text-base font-bold">{displayName}</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Regional Medical Officer</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">{TranslationService.t('moh.officerTitle')}</p>
             </div>
             <nav className="flex flex-col gap-1">
               <NavLink to="/moh/system-overview" className={navLinkClass}>
                 <span className="material-symbols-outlined">assessment</span>
-                <span className="text-sm font-medium">System Overview</span>
+                <span className="text-sm font-medium">{TranslationService.t('moh.systemOverview')}</span>
               </NavLink>
               <NavLink to="/moh/reports" className={navLinkClass}>
                 <span className="material-symbols-outlined">description</span>
-                <span className="text-sm font-medium">PHM Reports</span>
+                <span className="text-sm font-medium">{TranslationService.t('moh.phmReports')}</span>
               </NavLink>
               <NavLink to="/moh/audit-logs" className={navLinkClass}>
                 <span className="material-symbols-outlined">history</span>
-                <span className="text-sm font-medium">Audit Logs</span>
+                <span className="text-sm font-medium">{TranslationService.t('moh.auditLogs')}</span>
               </NavLink>
               <NavLink to="/moh/phm-management" className={navLinkClass}>
                 <span className="material-symbols-outlined">groups</span>
-                <span className="text-sm font-medium">PHM Management</span>
+                <span className="text-sm font-medium">{TranslationService.t('moh.phmManagement')}</span>
               </NavLink>
             </nav>
           </div>
           <div className="flex flex-col gap-4">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
               <p className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
-                System Health
+                {TranslationService.t('moh.systemHealth')}
               </p>
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-slate-600 dark:text-slate-300">Data live: Colombo District</span>
+                <span className="text-xs text-slate-600 dark:text-slate-300">{TranslationService.t('moh.dataLive')}</span>
               </div>
             </div>
             <button
@@ -107,7 +108,7 @@ export const MohLayout: React.FC = () => {
               className="w-full flex items-center justify-center gap-2 rounded-lg h-11 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <span className="material-symbols-outlined text-[20px]">logout</span>
-              <span>Logout</span>
+              <span>{TranslationService.t('nav.logout')}</span>
             </button>
           </div>
         </aside>

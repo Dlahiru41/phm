@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { mohService } from '../services/MohService';
+import { TranslationService } from '../services/TranslationService';
 
 interface DashboardData {
     totalChildren: number;
@@ -82,23 +83,23 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                             </div>
                             <div className="flex flex-col">
                                 <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">
-                                    SuwaCare LK
+                                    {TranslationService.t('app.title')}
                                 </h2>
                                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                                    National Child Vaccination Analytics
+                                    {TranslationService.t('moh.subtitle')}
                                 </p>
                             </div>
                         </div>
                         <div className="hidden md:flex items-center gap-6">
-                            <Link to="/moh-analytics-dashboard" className="text-primary text-sm font-semibold leading-normal border-b-2 border-primary py-1">
-                                Overview
-                            </Link>
-                            <Link to="/generate-reports" className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary transition-colors">
-                                Reports
-                            </Link>
-                            <Link to="/audit-logs" className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary transition-colors">
-                                Audit Logs
-                            </Link>
+                                <Link to="/moh-analytics-dashboard" className="text-primary text-sm font-semibold leading-normal border-b-2 border-primary py-1">
+                                    {TranslationService.t('common.overview')}
+                                </Link>
+                                <Link to="/generate-reports" className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary transition-colors">
+                                    {TranslationService.t('report.title')}
+                                </Link>
+                                <Link to="/audit-logs" className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal hover:text-primary transition-colors">
+                                    {TranslationService.t('audit.title')}
+                                </Link>
                         </div>
                     </div>
                     <div className="flex flex-1 justify-end gap-4 items-center">
@@ -111,7 +112,7 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                                 </div>
                                 <input
                                     className="form-input flex w-full min-w-0 flex-1 border-none bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-0 h-full placeholder:text-slate-400 text-sm"
-                                    placeholder="Search data points..." value=""/>
+                                    placeholder={TranslationService.t('moh.searchPlaceholder')} value=""/>
                             </div>
                         </label>
                         <div className="flex gap-2">
@@ -143,7 +144,7 @@ export const MohAnalyticsDashboardPage: React.FC = () => {
                             <nav className="flex flex-col gap-1">
                                 <Link to="/moh-analytics-dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white shadow-md shadow-primary/20">
                                     <span className="material-symbols-outlined">dashboard</span>
-                                    <span className="text-sm font-semibold">Dashboard</span>
+                                    <span className="text-sm font-semibold">{TranslationService.t('nav.dashboard')}</span>
                                 </Link>
                                 <Link to="/moh-analytics-dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                                     <span className="material-symbols-outlined">bar_chart</span>

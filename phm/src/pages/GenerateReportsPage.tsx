@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { mohService } from '../services/MohService';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 
 export const GenerateReportsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,11 +46,11 @@ export const GenerateReportsPage: React.FC = () => {
       if (reportData) {
         setReportGenerated(true);
       } else {
-        setGenerateError('Failed to generate report.');
+        setGenerateError(TranslationService.t('report.generateError'));
       }
     } catch (err) {
       console.error('Error generating report:', err);
-      setGenerateError('Failed to generate report. Please try again.');
+      setGenerateError(TranslationService.t('report.generateError'));
     } finally {
       setGenerating(false);
     }
@@ -59,7 +60,7 @@ export const GenerateReportsPage: React.FC = () => {
     const token = AuthService.getToken();
 
     if (!reportType) {
-      alert('Invalid report type');
+      alert(TranslationService.t('report.invalidType'));
       return;
     }
 
@@ -84,7 +85,7 @@ export const GenerateReportsPage: React.FC = () => {
       a.click();
       URL.revokeObjectURL(a.href);
     } catch {
-      alert(`Download as ${format.toUpperCase()} failed.`);
+      alert(TranslationService.t('report.downloadFailed'));
     }
   };
 
@@ -97,14 +98,14 @@ export const GenerateReportsPage: React.FC = () => {
               <div className="mb-6">
                 <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
               </div>
-              <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">Report Generated!</h2>
-              <p className="text-[#4c739a] dark:text-slate-400">Your report has been successfully generated.</p>
+              <h2 className="text-3xl font-bold text-[#0d141b] dark:text-white mb-2">{TranslationService.t('report.generated')}</h2>
+              <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('report.generateSuccess')}</p>
             </div>
 
             <div className="bg-[#f0f9ff] dark:bg-primary/10 border border-primary/20 rounded-xl p-6 mb-6">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Report Type:</span>
+                  <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">{TranslationService.t('report.type')}:</span>
                   <span className="text-base font-bold text-[#0d141b] dark:text-white">
                     {reportTypes.find(r => r.value === reportType)?.label}
                   </span>
@@ -112,7 +113,7 @@ export const GenerateReportsPage: React.FC = () => {
                 {generateError && <p className="text-sm text-red-600 dark:text-red-400 mb-2">{generateError}</p>}
                 {dateRange.startDate && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">Date Range:</span>
+                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">{TranslationService.t('report.dateRange')}:</span>
                     <span className="text-base font-bold text-[#0d141b] dark:text-white">
                       {new Date(dateRange.startDate).toLocaleDateString()} - {new Date(dateRange.endDate).toLocaleDateString()}
                     </span>
@@ -120,13 +121,13 @@ export const GenerateReportsPage: React.FC = () => {
                 )}
                 {gnDivision && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">GN Division:</span>
+                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">{TranslationService.t('report.gnDivision')}:</span>
                     <span className="text-base font-bold text-[#0d141b] dark:text-white">{gnDivision}</span>
                   </div>
                 )}
                 {role && reportType === 'audit' && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">User Role:</span>
+                    <span className="text-sm font-medium text-[#4c739a] dark:text-slate-400">{TranslationService.t('report.userRole')}:</span>
                     <span className="text-base font-bold text-[#0d141b] dark:text-white">{role}</span>
                   </div>
                 )}
@@ -139,14 +140,14 @@ export const GenerateReportsPage: React.FC = () => {
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors"
               >
                 <span className="material-symbols-outlined">picture_as_pdf</span>
-                Download PDF
+                {TranslationService.t('report.downloadPdf')}
               </button>
               <button
                 onClick={() => handleDownload('csv')}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors"
               >
                 <span className="material-symbols-outlined">file_download</span>
-                Download CSV
+                {TranslationService.t('report.downloadCsv')}
               </button>
             </div>
 
@@ -161,13 +162,13 @@ export const GenerateReportsPage: React.FC = () => {
                 }}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                Generate Another Report
+                {TranslationService.t('report.generateAnother')}
               </button>
               <button
                 onClick={() => navigate(embeddedInMoh ? '/moh' : '/moh-analytics-dashboard')}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
               >
-                Return to Dashboard
+                {TranslationService.t('common.backToDashboard')}
               </button>
             </div>
           </div>
@@ -186,21 +187,21 @@ export const GenerateReportsPage: React.FC = () => {
               className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400 hover:text-primary transition-colors mb-4"
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              <span className="text-sm font-medium">Back to Dashboard</span>
+              <span className="text-sm font-medium">{TranslationService.t('common.backToDashboard')}</span>
             </button>
           </div>
         )}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Generate Reports</h1>
+          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">{TranslationService.t('report.title')}</h1>
           <p className="text-[#4c739a] dark:text-slate-400">
-            Generate comprehensive SuwaCare LK vaccination reports for analysis and record-keeping.
+            {TranslationService.t('report.description')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-sm">
           <div className="mb-6">
             <label className="flex flex-col">
-              <p className="text-[#0d141b] dark:text-white text-base font-medium mb-4">Select Report Type *</p>
+              <p className="text-[#0d141b] dark:text-white text-base font-medium mb-4">{TranslationService.t('report.selectType')} *</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {reportTypes.map((type) => (
                   <button
@@ -236,7 +237,7 @@ export const GenerateReportsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Start Date</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('report.startDate')}</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="date"
@@ -248,7 +249,7 @@ export const GenerateReportsPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">End Date</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('report.endDate')}</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="date"
@@ -261,13 +262,13 @@ export const GenerateReportsPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">GN Division</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('report.gnDivision')}</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="text"
                   value={gnDivision}
                   onChange={(e) => setGnDivision(e.target.value)}
-                  placeholder="All Divisions"
+                  placeholder={TranslationService.t('report.allDivisions')}
                 />
               </label>
             </div>
@@ -275,13 +276,13 @@ export const GenerateReportsPage: React.FC = () => {
             {reportType === 'audit' && (
               <div>
                 <label className="flex flex-col">
-                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">User Role</p>
+                  <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('report.userRole')}</p>
                   <select
                     className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
                   >
-                    <option value="">All Roles</option>
+                    <option value="">{TranslationService.t('report.allRoles')}</option>
                     <option value="admin">Admin</option>
                     <option value="moh">MOH</option>
                     <option value="phm">PHM</option>
@@ -298,7 +299,7 @@ export const GenerateReportsPage: React.FC = () => {
               onClick={() => navigate(embeddedInMoh ? '/moh' : '/moh-analytics-dashboard')}
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Cancel
+              {TranslationService.t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -308,12 +309,12 @@ export const GenerateReportsPage: React.FC = () => {
               {generating ? (
                 <>
                   <span className="material-symbols-outlined animate-spin">refresh</span>
-                  Generating...
+                  {TranslationService.t('report.generating')}
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined">description</span>
-                  Generate Report
+                  {TranslationService.t('report.generate')}
                 </>
               )}
             </button>

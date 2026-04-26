@@ -1,5 +1,6 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { api } from '../services/apiClient';
+import { TranslationService } from '../services/TranslationService';
 
 const GN_DIVISIONS = [
   '96 - Kumbalwella South',
@@ -109,10 +110,10 @@ export const MohPhmManagementPage: React.FC = () => {
     <div className="max-w-[1200px] mx-auto p-6 md:p-8 flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-tight">
-          PHM Management
+          {TranslationService.t('mohPhm.title')}
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-base font-normal">
-          Manage PHM areas, officers, and assignments under your region.
+          {TranslationService.t('mohPhm.subtitle')}
         </p>
       </div>
 
@@ -120,15 +121,14 @@ export const MohPhmManagementPage: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <h2 className="text-slate-900 dark:text-white text-xl font-bold">Create PHM Account</h2>
+            <h2 className="text-slate-900 dark:text-white text-xl font-bold">{TranslationService.t('mohPhm.createAccount')}</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              MOH officers can create PHM accounts for their areas. A temporary password will be generated for first
-              login.
+              {TranslationService.t('mohPhm.createDescription')}
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-            <span>MOH-only • PHM cannot self-register</span>
+            <span>{TranslationService.t('mohPhm.mohOnly')}</span>
           </div>
         </div>
 
@@ -164,74 +164,74 @@ export const MohPhmManagementPage: React.FC = () => {
                 fetchPhmAssignments();
               }, 1000);
             } catch (err: any) {
-              setCreateError(err?.message || 'Failed to create PHM account. Please check details and try again.');
+              setCreateError(err?.message || TranslationService.t('mohPhm.createError'));
             } finally {
               setCreating(false);
             }
           }}
         >
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Employee ID</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{TranslationService.t('mohPhm.employeeId')}</label>
             <input
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
-              placeholder="e.g. PHM001"
+              placeholder={TranslationService.t('mohPhm.employeeIdPlaceholder')}
               value={phmForm.employeeId}
               onChange={(e) => setPhmForm({ ...phmForm, employeeId: e.target.value })}
               required
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Full Name</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{TranslationService.t('mohPhm.fullName')}</label>
             <input
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
-              placeholder="PHM full name"
+              placeholder={TranslationService.t('mohPhm.fullNamePlaceholder')}
               value={phmForm.name}
               onChange={(e) => setPhmForm({ ...phmForm, name: e.target.value })}
               required
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">NIC</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{TranslationService.t('mohPhm.nic')}</label>
             <input
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
-              placeholder="National ID number"
+              placeholder={TranslationService.t('mohPhm.nicPlaceholder')}
               value={phmForm.nic}
               onChange={(e) => setPhmForm({ ...phmForm, nic: e.target.value })}
               required
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Email</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{TranslationService.t('mohPhm.email')}</label>
             <input
               type="email"
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
-              placeholder="PHM email address"
+              placeholder={TranslationService.t('mohPhm.emailPlaceholder')}
               value={phmForm.email}
               onChange={(e) => setPhmForm({ ...phmForm, email: e.target.value })}
               required
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Phone Number</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{TranslationService.t('mohPhm.phoneNumber')}</label>
             <input
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
-              placeholder="Contact number"
+              placeholder={TranslationService.t('mohPhm.phonePlaceholder')}
               value={phmForm.phoneNumber}
               onChange={(e) => setPhmForm({ ...phmForm, phoneNumber: e.target.value })}
               required
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Assigned GN Division</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{TranslationService.t('mohPhm.assignedDivision')}</label>
             <select
               className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
               value={phmForm.assignedArea}
               onChange={(e) => setPhmForm({ ...phmForm, assignedArea: e.target.value })}
               required
             >
-              <option value="">Select GN Division (Unassigned only)</option>
+              <option value="">{TranslationService.t('mohPhm.selectDivision')}</option>
               {availableAreas.length === 0 ? (
-                <option disabled>All areas are assigned</option>
+                <option disabled>{TranslationService.t('mohPhm.allAssigned')}</option>
               ) : (
                 availableAreas.map((division) => (
                   <option key={division} value={division}>
@@ -241,7 +241,7 @@ export const MohPhmManagementPage: React.FC = () => {
               )}
             </select>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Showing {availableAreas.length} unassigned area{availableAreas.length !== 1 ? 's' : ''}
+              {TranslationService.t('mohPhm.showingAreas').replace('{count}', String(availableAreas.length)).replace('{s}', availableAreas.length !== 1 ? 's' : '')}
             </p>
           </div>
           <div className="md:col-span-2 flex flex-col gap-3 mt-2">
@@ -252,16 +252,15 @@ export const MohPhmManagementPage: React.FC = () => {
             )}
             {createSuccess && (
               <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 text-sm text-emerald-800 dark:text-emerald-200">
-                <p className="font-semibold mb-1">PHM account created successfully.</p>
-                <p>Employee ID: <span className="font-mono">{createSuccess.employeeId}</span></p>
-                <p>User ID: <span className="font-mono">{createSuccess.userId}</span></p>
+                <p className="font-semibold mb-1">{TranslationService.t('mohPhm.createSuccess')}</p>
+                <p>{TranslationService.t('mohPhm.employeeIdLabel')} <span className="font-mono">{createSuccess.employeeId}</span></p>
+                <p>{TranslationService.t('mohPhm.userIdLabel')} <span className="font-mono">{createSuccess.userId}</span></p>
                 <p className="mt-1">
-                  Temporary password:{' '}
+                  {TranslationService.t('mohPhm.tempPasswordLabel')}{' '}
                   <span className="font-mono font-semibold">{createSuccess.temporaryPassword}</span>
                 </p>
                 <p className="text-xs mt-2">
-                  Please share this temporary password with the PHM through a secure channel. They will be required to
-                  change it on first login.
+                  {TranslationService.t('mohPhm.sharePassword')}
                 </p>
               </div>
             )}
@@ -272,7 +271,7 @@ export const MohPhmManagementPage: React.FC = () => {
                 className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-70"
               >
                 <span className="material-symbols-outlined text-sm">person_add</span>
-                {creating ? 'Creating PHM Account…' : 'Create PHM Account'}
+                {creating ? TranslationService.t('mohPhm.creating') : TranslationService.t('mohPhm.createAccount')}
               </button>
             </div>
           </div>
@@ -285,33 +284,33 @@ export const MohPhmManagementPage: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col gap-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <h2 className="text-slate-900 dark:text-white text-xl font-bold">PHM Area Assignments</h2>
+            <h2 className="text-slate-900 dark:text-white text-xl font-bold">{TranslationService.t('mohPhm.assignmentsTitle')}</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              View all PHMs and their assigned GN divisions. Each area can only be assigned to one PHM.
+              {TranslationService.t('mohPhm.assignmentsDescription')}
             </p>
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400">
-            Total: {phmAssignments.length} PHM{phmAssignments.length !== 1 ? 's' : ''}
+            {TranslationService.t('mohPhm.totalPhms').replace('{count}', String(phmAssignments.length)).replace('{s}', phmAssignments.length !== 1 ? 's' : '')}
           </div>
         </div>
 
         {loadingAssignments ? (
           <div className="text-center py-8">
-            <p className="text-slate-600 dark:text-slate-400">Loading PHM assignments...</p>
+            <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('mohPhm.loading')}</p>
           </div>
         ) : phmAssignments.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-slate-600 dark:text-slate-400">No PHM assignments yet</p>
+            <p className="text-slate-600 dark:text-slate-400">{TranslationService.t('mohPhm.noAssignments')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">Employee ID</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">Name</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">Assigned Area</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">User ID</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">{TranslationService.t('mohPhm.colEmployeeId')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">{TranslationService.t('mohPhm.colName')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">{TranslationService.t('mohPhm.colAssignedArea')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-900 dark:text-white">{TranslationService.t('mohPhm.colUserId')}</th>
                 </tr>
               </thead>
               <tbody>

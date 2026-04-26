@@ -1,6 +1,7 @@
 import React, { FormEvent, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { TranslationService } from '../services/TranslationService';
 import type { ApiError } from '../services/apiClient';
 
 export const ChangePasswordPage: React.FC = () => {
@@ -28,25 +29,25 @@ export const ChangePasswordPage: React.FC = () => {
     setSuccess('');
 
     if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters long.');
+      setError(TranslationService.t('forgotPassword.passwordTooShort'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('New password and confirmation do not match.');
+      setError(TranslationService.t('forgotPassword.passwordMismatch'));
       return;
     }
 
     setLoading(true);
     try {
       await AuthService.changePassword(oldPassword, newPassword, confirmPassword);
-      setSuccess('Password changed successfully. Redirecting to your dashboard...');
+      setSuccess(TranslationService.t('profile.passwordSuccess'));
       setTimeout(() => {
         const dashboardPath = AuthService.getDashboardPath();
         navigate(dashboardPath);
       }, 1500);
     } catch (err) {
       const apiErr = err as ApiError;
-      setError(apiErr?.message || 'Failed to change password. Please check your current password and try again.');
+      setError(apiErr?.message || TranslationService.t('profile.passwordError'));
     } finally {
       setLoading(false);
     }
@@ -68,9 +69,7 @@ export const ChangePasswordPage: React.FC = () => {
             <span className="material-symbols-outlined text-6xl text-white">lock_reset</span>
           </div>
           <h1 className="text-5xl font-black leading-tight tracking-[-0.033em] mb-6">
-            Secure Your
-            <br />
-            SuwaCare Account
+            {TranslationService.t('login.hero.title').split(' ').slice(0, 2).join(' ')}<br/>{TranslationService.t('login.hero.title').split(' ').slice(2).join(' ')}
           </h1>
           <p className="text-lg font-normal leading-relaxed text-white/90 max-w-md">
             As a Public Health Midwife, please change your temporary password to complete your first login and keep
@@ -84,13 +83,13 @@ export const ChangePasswordPage: React.FC = () => {
           <div className="mb-10 px-4">
             <div className="flex items-center gap-2 mb-6 lg:hidden">
               <span className="material-symbols-outlined text-primary text-3xl">shield_with_heart</span>
-              <span className="font-bold text-xl text-[#0d141b] dark:text-white">SuwaCare LK</span>
+              <span className="font-bold text-xl text-[#0d141b] dark:text-white">{TranslationService.t('app.title')}</span>
             </div>
             <h2 className="text-[#0d141b] dark:text-white text-3xl font-bold leading-tight tracking-[-0.015em]">
-              Change Your Password
+              {TranslationService.t('profile.changePassword')}
             </h2>
             <p className="text-[#4c739a] dark:text-slate-400 mt-2">
-              Enter your current password and choose a new secure password.
+              {TranslationService.t('profile.passwordChangeHint')}
             </p>
             <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
               <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
@@ -103,12 +102,12 @@ export const ChangePasswordPage: React.FC = () => {
             <div className="px-4">
               <label className="flex flex-col">
                 <p className="text-[#0d141b] dark:text-white text-base font-medium leading-normal pb-2">
-                  Current Password
+                  {TranslationService.t('profile.oldPassword')}
                 </p>
                 <div className="flex w-full items-stretch rounded-lg">
                   <input
                     className="flex w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-14 placeholder:text-[#4c739a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal"
-                    placeholder="Enter your current (temporary) password"
+                    placeholder={TranslationService.t('profile.enterCurrentPassword')}
                     type={showOld ? 'text' : 'password'}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
@@ -126,11 +125,11 @@ export const ChangePasswordPage: React.FC = () => {
 
             <div className="px-4">
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-base font-medium leading-normal pb-2">New Password</p>
+                <p className="text-[#0d141b] dark:text-white text-base font-medium leading-normal pb-2">{TranslationService.t('profile.newPassword')}</p>
                 <div className="flex w-full items-stretch rounded-lg">
                   <input
                     className="flex w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-14 placeholder:text-[#4c739a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal"
-                    placeholder="Enter a new secure password"
+                    placeholder={TranslationService.t('profile.enterNewPassword')}
                     type={showNew ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -149,12 +148,12 @@ export const ChangePasswordPage: React.FC = () => {
             <div className="px-4">
               <label className="flex flex-col">
                 <p className="text-[#0d141b] dark:text-white text-base font-medium leading-normal pb-2">
-                  Confirm New Password
+                  {TranslationService.t('profile.confirmPassword')}
                 </p>
                 <div className="flex w-full items-stretch rounded-lg">
                   <input
                     className="flex w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-14 placeholder:text-[#4c739a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal"
-                    placeholder="Re-enter your new password"
+                    placeholder={TranslationService.t('profile.reEnterNewPassword')}
                     type={showConfirm ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -187,7 +186,7 @@ export const ChangePasswordPage: React.FC = () => {
                 type="submit"
                 disabled={loading}
               >
-                <span className="truncate">{loading ? 'Updating password…' : 'Update Password'}</span>
+                <span className="truncate">{loading ? TranslationService.t('profile.updating') : TranslationService.t('profile.updatePassword')}</span>
               </button>
             </div>
           </form>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { dataService } from '../services/DataService';
+import { TranslationService } from '../services/TranslationService';
 import { PhmLayout } from '../components/PhmLayout';
 
 export const EditVaccinationPage: React.FC = () => {
@@ -53,7 +54,7 @@ export const EditVaccinationPage: React.FC = () => {
     e.preventDefault();
     setError('');
     if (!recordId || !formData.vaccineId || !formData.dateGiven) {
-      setError('Please fill in all required fields');
+      setError(TranslationService.t('profile.fillAllFields'));
       return;
     }
     setSubmitting(true);
@@ -74,7 +75,7 @@ export const EditVaccinationPage: React.FC = () => {
         setSuccess(true);
         setTimeout(() => navigate('/view-area-children'), 2000);
       } else {
-        setError('Failed to update record. Please try again.');
+        setError(TranslationService.t('recordVac.errorMsg'));
       }
     } catch {
       setError('Failed to update record. Please try again.');
@@ -98,14 +99,14 @@ export const EditVaccinationPage: React.FC = () => {
             <div className="mb-6">
               <span className="material-symbols-outlined text-6xl text-green-500">check_circle</span>
             </div>
-            <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">Vaccination Updated!</h2>
-            <p className="text-[#4c739a] dark:text-slate-400 mb-6">The vaccination record has been successfully updated.</p>
+            <h2 className="text-2xl font-bold text-[#0d141b] dark:text-white mb-2">{TranslationService.t('recordVac.successMsg')}</h2>
+            <p className="text-[#4c739a] dark:text-slate-400 mb-6">{TranslationService.t('recordVac.updateSuccess')}</p>
             <button
               type="button"
               onClick={() => navigate('/phm-dashboard')}
               className="inline-flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
             >
-              Return to Dashboard
+              {TranslationService.t('common.backToDashboard')}
             </button>
           </div>
         </div>
@@ -117,15 +118,15 @@ export const EditVaccinationPage: React.FC = () => {
     <PhmLayout activeNav="record-vaccination" showBackToDashboard={true}>
       <div className="w-full max-w-4xl mx-auto px-6 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">Edit Vaccination Record</h1>
-          <p className="text-[#4c739a] dark:text-slate-400">Update vaccination details for a registered child.</p>
+          <h1 className="text-3xl font-black text-[#0d141b] dark:text-white mb-2">{TranslationService.t('common.edit')} {TranslationService.t('vaccine.title')}</h1>
+          <p className="text-[#4c739a] dark:text-slate-400">{TranslationService.t('recordVac.updateDescription')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a2632] rounded-2xl border border-[#e7edf3] dark:border-slate-700 p-8 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Vaccine *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('vaccine.name')} *</p>
                 <select
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   name="vaccineId"
@@ -133,7 +134,7 @@ export const EditVaccinationPage: React.FC = () => {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Select vaccine</option>
+                  <option value="">{TranslationService.t('recordVac.selectVaccine')}</option>
                   {vaccines.map((v) => (
                     <option key={v.vaccineId} value={v.vaccineId}>{v.name}</option>
                   ))}
@@ -143,7 +144,7 @@ export const EditVaccinationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Dose Number *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.doseNumber')} *</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="number"
@@ -157,7 +158,7 @@ export const EditVaccinationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Date Given *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.dateGiven')} *</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="date"
@@ -172,7 +173,7 @@ export const EditVaccinationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Batch Number</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.batchNumber')}</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="text"
@@ -185,7 +186,7 @@ export const EditVaccinationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Administered By *</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.administeredBy')} *</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="text"
@@ -198,26 +199,26 @@ export const EditVaccinationPage: React.FC = () => {
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Injection Site</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.site')}</p>
                 <select
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   name="site"
                   value={formData.site}
                   onChange={handleChange}
                 >
-                  <option value="">Select site</option>
-                  <option value="left-arm">Left Arm</option>
-                  <option value="right-arm">Right Arm</option>
-                  <option value="left-thigh">Left Thigh</option>
-                  <option value="right-thigh">Right Thigh</option>
-                  <option value="oral">Oral</option>
+                  <option value="">{TranslationService.t('recordVac.selectSite')}</option>
+                  <option value="left-arm">{TranslationService.t('recordVac.site.leftArm')}</option>
+                  <option value="right-arm">{TranslationService.t('recordVac.site.rightArm')}</option>
+                  <option value="left-thigh">{TranslationService.t('recordVac.site.leftThigh')}</option>
+                  <option value="right-thigh">{TranslationService.t('recordVac.site.rightThigh')}</option>
+                  <option value="oral">{TranslationService.t('recordVac.site.oral')}</option>
                 </select>
               </label>
             </div>
 
             <div>
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Next Due Date</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.nextDueDate')}</p>
                 <input
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-12 px-4 text-sm"
                   type="date"
@@ -230,13 +231,13 @@ export const EditVaccinationPage: React.FC = () => {
 
             <div className="md:col-span-2">
               <label className="flex flex-col">
-                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">Notes</p>
+                <p className="text-[#0d141b] dark:text-white text-sm font-medium mb-2">{TranslationService.t('recordVac.notes')}</p>
                 <textarea
                   className="w-full rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-background-dark focus:border-primary h-24 px-4 py-3 text-sm resize-none"
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
-                  placeholder="Additional notes or observations..."
+                  placeholder={TranslationService.t('recordVac.notesPlaceholder')}
                 />
               </label>
             </div>
@@ -254,14 +255,14 @@ export const EditVaccinationPage: React.FC = () => {
               onClick={() => navigate('/phm-dashboard')}
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
-              Cancel
+              {TranslationService.t('common.cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
             >
               <span className="material-symbols-outlined">save</span>
-              Update Vaccination Record
+              {TranslationService.t('common.edit')} {TranslationService.t('vaccine.title')}
             </button>
           </div>
         </form>
