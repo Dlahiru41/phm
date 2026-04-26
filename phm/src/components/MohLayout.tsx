@@ -73,21 +73,13 @@ export const MohLayout: React.FC = () => {
               <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Regional Medical Officer</p>
             </div>
             <nav className="flex flex-col gap-1">
-              <NavLink to="/moh" end className={navLinkClass}>
-                <span className="material-symbols-outlined">dashboard</span>
-                <span className="text-sm font-semibold">Dashboard</span>
-              </NavLink>
-              <NavLink to="/moh/regional-analytics" className={navLinkClass}>
-                <span className="material-symbols-outlined">bar_chart</span>
-                <span className="text-sm font-medium">Regional Analytics</span>
+              <NavLink to="/moh/system-overview" className={navLinkClass}>
+                <span className="material-symbols-outlined">assessment</span>
+                <span className="text-sm font-medium">System Overview</span>
               </NavLink>
               <NavLink to="/moh/reports" className={navLinkClass}>
                 <span className="material-symbols-outlined">description</span>
                 <span className="text-sm font-medium">PHM Reports</span>
-              </NavLink>
-              <NavLink to="/moh/system-overview" className={navLinkClass}>
-                <span className="material-symbols-outlined">assessment</span>
-                <span className="text-sm font-medium">System Overview</span>
               </NavLink>
               <NavLink to="/moh/audit-logs" className={navLinkClass}>
                 <span className="material-symbols-outlined">history</span>

@@ -14,8 +14,6 @@ import { ChildProfileSchedulePage } from './pages/ChildProfileSchedulePage';
 import { GrowthChartPage } from './pages/GrowthChartPage';
 import VaccinationCardPage from './pages/VaccinationCardPage';
 import { MohLayout } from './components/MohLayout';
-import { MohDashboardContent } from './pages/MohDashboardContent';
-import { RegionalAnalyticsPage } from './pages/RegionalAnalyticsPage';
 import { MohPhmManagementPage } from './pages/MohPhmManagementPage';
 import { BabyRegistrationPage } from './pages/BabyRegistrationPage';
 import { AddChildPage } from './pages/AddChildPage';
@@ -63,12 +61,11 @@ const App: React.FC = () => {
       <Route path="/view-area-children" element={<ViewAreaChildrenPage />} />
       
       {/* MOH Routes: layout keeps sidebar visible for all MOH pages */}
-      <Route path="/moh-analytics-dashboard" element={<Navigate to="/moh" replace />} />
+      <Route path="/moh-analytics-dashboard" element={<Navigate to="/moh/system-overview" replace />} />
       <Route path="/moh" element={<MohLayout />}>
-        <Route index element={<MohDashboardContent />} />
-        <Route path="regional-analytics" element={<RegionalAnalyticsPage />} />
-        <Route path="reports" element={<GenerateReportsPage />} />
+        <Route index element={<Navigate to="/moh/system-overview" replace />} />
         <Route path="system-overview" element={<MohSystemOverviewReportPage />} />
+        <Route path="reports" element={<GenerateReportsPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="phm-management" element={<MohPhmManagementPage />} />
         <Route path="profile" element={<MohProfilePage />} />

@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { mohService, SystemOverviewReportResponse } from '../services/MohService';
 
 export const MohSystemOverviewReportPage: React.FC = () => {
-    const navigate = useNavigate();
     const reportRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -92,18 +90,7 @@ export const MohSystemOverviewReportPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
             <div className="w-full max-w-7xl mx-auto px-6 py-8">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <button
-                        onClick={() => navigate('/moh')}
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                    >
-                        <span className="material-symbols-outlined">arrow_back</span>
-                        <span className="text-sm font-medium">Back to Dashboard</span>
-                    </button>
-                </div>
 
-                {/* Filters */}
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-[#e7edf3] dark:border-slate-800 p-6 mb-6">
                     <h2 className="text-lg font-bold mb-4">Report Filters</h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
