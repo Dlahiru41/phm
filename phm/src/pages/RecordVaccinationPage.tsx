@@ -324,14 +324,14 @@ export const RecordVaccinationPage: React.FC = () => {
         </form>
 
         <div className="overflow-hidden rounded-2xl border border-[#e7edf3] dark:border-slate-700 bg-white dark:bg-[#1a2632] shadow-sm">
-          <div className="border-b border-[#e7edf3] dark:border-slate-700 px-6 py-4">
-            <h2 className="text-xl font-bold text-[#0d141b] dark:text-white">{TranslationService.t('recordVac.dueTitle')}</h2>
-            <p className="text-sm text-[#4c739a] dark:text-slate-400">{TranslationService.t('recordVac.reviewDueLabel') || 'Review due and missed vaccinations, then mark the outcome.'}</p>
-          </div>
+          {/*<div className="border-b border-[#e7edf3] dark:border-slate-700 px-6 py-4">*/}
+          {/*  <h2 className="text-xl font-bold text-[#0d141b] dark:text-white">{TranslationService.t('recordVac.dueTitle')}</h2>*/}
+          {/*  <p className="text-sm text-[#4c739a] dark:text-slate-400">{TranslationService.t('recordVac.reviewDueLabel') || 'Review due and missed vaccinations, then mark the outcome.'}</p>*/}
+          {/*</div>*/}
           {loading ? (
-            <div className="p-10 text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('common.loading')}</div>
+            <div className="p-10 text-center text-[#4c739a] dark:text-slate-400"></div>
           ) : records.length === 0 ? (
-            <div className="p-10 text-center text-[#4c739a] dark:text-slate-400">{TranslationService.t('recordVac.noDue')}</div>
+            <div className="p-10 text-center text-[#4c739a] dark:text-slate-400"></div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-[#e7edf3] dark:divide-slate-700">
