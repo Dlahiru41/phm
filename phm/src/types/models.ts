@@ -139,6 +139,10 @@ export interface Child {
   headCircumference?: number;
   /** Set when child is linked via WhatsApp OTP; matches backend parent_whatsapp_number */
   parentWhatsappNumber?: string;
+  /** Parent name from linked parent or registration data */
+  parentName?: string;
+  /** Parent phone number from linked parent or registration data */
+  parentPhone?: string;
 }
 
 // Child methods

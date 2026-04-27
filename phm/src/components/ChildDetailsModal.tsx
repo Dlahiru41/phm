@@ -14,6 +14,7 @@ export const ChildDetailsModal: React.FC<ChildDetailsModalProps> = ({
   onClose,
 }) => {
   const [child, setChild] = useState<Child | null>(null);
+  const [parentInfo, setParentInfo] = useState<{ name?: string; phoneNumber?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +31,13 @@ export const ChildDetailsModal: React.FC<ChildDetailsModalProps> = ({
         if (!cancelled) {
           if (result) {
             setChild(result);
+            // Fetch parent information if parentId is available
+            if (result.parentId) {
+              const parent = await dataService.getParentById(result.parentId);
+              if (!cancelled) {
+                setParentInfo(parent);
+              }
+            }
           } else {
             setError('Failed to load child details');
           }
@@ -149,12 +157,46 @@ export const ChildDetailsModal: React.FC<ChildDetailsModalProps> = ({
               {/* Contact Information */}
               <div>
                 <h5 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
-                  Parent WhatsApp Contact
+                  Parent Contact
                 </h5>
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {child.parentWhatsappNumber || '—'}
-                  </p>
+                <div className="space-y-3">
+                  {parentInfo?.name && (
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        Parent Name
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {parentInfo.name}
+                      </p>
+                    </div>
+                  )}
+                  {parentInfo?.phoneNumber && (
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        Phone Number
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {parentInfo.phoneNumber}
+                      </p>
+                    </div>
+                  )}
+                  {child.parentWhatsappNumber && (
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        WhatsApp Number
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {child.parentWhatsappNumber}
+                      </p>
+                    </div>
+                  )}
+                  {!parentInfo?.name && !parentInfo?.phoneNumber && !child.parentWhatsappNumber && (
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        No parent contact information available
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

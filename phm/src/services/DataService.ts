@@ -46,6 +46,8 @@ function childFromApi(a: any): Child {
     areaCode: a.areaCode || '',
     areaName: a.areaName || '',
     parentWhatsappNumber: a.parentWhatsappNumber ?? a.parent_whatsapp_number ?? undefined,
+    parentName: a.parentName || undefined,
+    parentPhone: a.parentPhone || undefined,
   };
 }
 
@@ -976,21 +978,20 @@ class DataService {
   }
 
   /**
-   * Get due vaccinations for parent's children
-   * Calls GET /clinics/parent/due-vaccinations with Bearer token
-   * Returns list of children with due vaccinations
+   * Get parent information by parent ID
    */
-  async getDueVaccinations(clinicType?: 'normal' | 'vaccination'): Promise<VaccinationDue[]> {
+  async getParentById(parentId: string): Promise<{ name?: string; phoneNumber?: string } | null> {
     try {
-      const params: Record<string, string> = {};
-      if (clinicType) params.clinicType = clinicType;
-      const res = await api.get<{ count: number; items: any[] }>('/clinics/parent/due-vaccinations', params);
-      if (res && Array.isArray(res.items)) {
-        return res.items.map(vaccinationDueFromApi);
+      const res = await api.get<any>(`/users/${encodeURIComponent(parentId)}`);
+      if (res) {
+        return {
+          name: res.name || res.firstName + ' ' + res.lastName || undefined,
+          phoneNumber: res.phoneNumber || undefined,
+        };
       }
-      return [];
+      return null;
     } catch {
-      return [];
+      return null;
     }
   }
 }

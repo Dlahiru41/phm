@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
-import { TranslationService } from '../services/TranslationService';
 import { PhmLayout } from '../components/PhmLayout';
 import { ChildDetailsModal } from '../components/ChildDetailsModal';
 import type { Child } from '../types/models';
@@ -94,9 +93,10 @@ export const PhmDashboardPage: React.FC = () => {
                 setTotalChildren(childrenRes.total);
                 const withLastVacc: ChildRow[] = await Promise.all(
                     childrenRes.data.map(async (c) => {
-                        const [records, schedules] = await Promise.all([
+                        const [records, schedules, parentInfo] = await Promise.all([
                             dataService.getVaccinationRecordsByChild(c.childId),
                             dataService.getScheduleItemsByChild(c.childId),
+                            c.parentId ? dataService.getParentById(c.parentId) : Promise.resolve(null),
                         ]);
                         const lastRec = records.length > 0
                             ? records.sort((a, b) => b.administeredDate.getTime() - a.administeredDate.getTime())[0]
@@ -109,6 +109,8 @@ export const PhmDashboardPage: React.FC = () => {
                         else if (records.length > 0) statusDisplay = 'completed';
                         return {
                             ...c,
+                            parentName: parentInfo?.name || c.parentName,
+                            parentPhone: parentInfo?.phoneNumber || c.parentPhone,
                             lastVaccinationText: lastRec
                                 ? `${lastRec.vaccineName ?? 'Vaccine'} (${lastRec.administeredDate.toLocaleDateString()})`
                                 : undefined,
@@ -275,7 +277,7 @@ export const PhmDashboardPage: React.FC = () => {
                                                         <span className="font-semibold text-slate-900 dark:text-slate-200">{c.firstName} {c.lastName}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">—</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">{c.parentName || '—'}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm italic">{dobStr}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400 text-sm">{c.lastVaccinationText ?? '—'}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
