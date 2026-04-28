@@ -12,7 +12,6 @@ export const AuditLogsPage: React.FC = () => {
   const embeddedInMoh = location.pathname.startsWith('/moh');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
-  const [filterAction] = useState<string>('all');
   const [auditLogs, setAuditLogs] = useState<AuditLogType[]>([]);
   const [mohAuditData, setMohAuditData] = useState<AuditReportResponse | null>(null);
   const [total, setTotal] = useState(0);
@@ -29,7 +28,6 @@ export const AuditLogsPage: React.FC = () => {
         startDate: undefined,
         endDate: undefined,
         role: filterRole !== 'all' ? filterRole : undefined,
-        action: filterAction !== 'all' ? filterAction : undefined,
       };
 
       mohService.getAuditReport(params as any).then((res) => {
@@ -50,7 +48,6 @@ export const AuditLogsPage: React.FC = () => {
       // Use DataService for regular audit logs
       const params: Record<string, string> = { page: String(page), limit: '50' };
       if (filterRole !== 'all') params.userRole = filterRole;
-      if (filterAction !== 'all') params.action = filterAction;
       if (searchTerm.trim()) params.search = searchTerm.trim();
 
       dataService.getAuditLogs(params).then((res) => {
@@ -70,29 +67,64 @@ export const AuditLogsPage: React.FC = () => {
     }
 
     return () => { cancelled = true; };
-  }, [page, filterRole, filterAction, searchTerm, embeddedInMoh]);
+  }, [page, filterRole, searchTerm, embeddedInMoh]);
 
   useEffect(() => {
     setPage(1);
-  }, [filterRole, filterAction, searchTerm]);
+  }, [filterRole, searchTerm]);
 
 
   const getMohLogDisplayData = () => {
     if (!mohAuditData?.data) return [];
-    return mohAuditData.data.map(log => ({
-      logId: `${log.date}-${log.user}`,
-      timestamp: new Date(log.date),
-      userName: log.user,
-      userRole: log.role,
-      action: log.action,
-      details: log.details,
-      entityType: 'System',
-      entityId: log.action,
-      ipAddress: '—',
-    })) as AuditLogType[];
+    return mohAuditData.data
+      .map(log => ({
+        logId: `${log.date}-${log.user}`,
+        timestamp: new Date(log.date),
+        userName: log.user,
+        userRole: log.role,
+        action: log.action,
+        details: log.details,
+        entityType: 'System',
+        entityId: log.action,
+        ipAddress: '—',
+      }))
+      .filter(log => {
+        // Filter by role
+        if (filterRole !== 'all' && log.userRole !== filterRole) return false;
+
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+          const term = searchTerm.toLowerCase();
+          return (
+            log.userName?.toLowerCase().includes(term) ||
+            log.action?.toLowerCase().includes(term) ||
+            log.details?.toLowerCase().includes(term)
+          );
+        }
+
+        return true;
+      }) as AuditLogType[];
   };
 
-  const displayAuditLogs = embeddedInMoh ? getMohLogDisplayData() : auditLogs;
+  const displayAuditLogs = embeddedInMoh ? getMohLogDisplayData() : auditLogs.filter(log => {
+    // Filter by role
+    if (filterRole !== 'all' && log.userRole !== filterRole) return false;
+
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      return (
+        log.userName?.toLowerCase().includes(term) ||
+        log.userId?.toLowerCase().includes(term) ||
+        log.action?.toLowerCase().includes(term) ||
+        log.details?.toLowerCase().includes(term)
+      );
+    }
+
+    return true;
+  });
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -224,7 +256,6 @@ export const AuditLogsPage: React.FC = () => {
             <a
               href={dataService.getAuditLogExportUrl({
                 userRole: filterRole !== 'all' ? filterRole : '',
-                action: filterAction !== 'all' ? filterAction : '',
                 search: searchTerm,
                 format: 'csv',
               })}
