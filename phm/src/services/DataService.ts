@@ -980,6 +980,32 @@ class DataService {
       return null;
     }
   }
+
+  async getAreaSummary(): Promise<{
+    area: string;
+    summary: {
+      coveragePercentage: number;
+      growthRecordsThisMonth: number;
+      missedVaccinations: number;
+      newRegistrationsThisMonth: number;
+      scheduledClinics: number;
+      totalChildren: number;
+      upcomingVaccinations: number;
+      vaccinatedCount: number;
+      vaccinationStatusBreakdown: {
+        delayed: number;
+        notStarted: number;
+        onTrack: number;
+      };
+    };
+  } | null> {
+    try {
+      const res = await api.get<any>('/analytics/area-summary');
+      return res ?? null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 export const dataService = new DataService();

@@ -7,12 +7,22 @@ import { ChildDetailsModal } from '../components/ChildDetailsModal';
 import type { Child } from '../types/models';
 
 type PhmDashboardStats = {
-    totalChildrenInArea: number;
-    vaccinatedCount: number;
-    missedVaccinations: number;
-    upcomingVaccinations: number;
-    growthRecordsThisMonth: number;
-    recentRegistrations: number;
+    area: string;
+    summary: {
+        coveragePercentage: number;
+        growthRecordsThisMonth: number;
+        missedVaccinations: number;
+        newRegistrationsThisMonth: number;
+        scheduledClinics: number;
+        totalChildren: number;
+        upcomingVaccinations: number;
+        vaccinatedCount: number;
+        vaccinationStatusBreakdown: {
+            delayed: number;
+            notStarted: number;
+            onTrack: number;
+        };
+    };
 };
 
 type ChildRow = Child & {
@@ -83,7 +93,7 @@ export const PhmDashboardPage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const dashboardPromise = dataService.getPHMDashboard();
+                const dashboardPromise = dataService.getAreaSummary();
                 const childrenPromise = phmId
                     ? dataService.getChildrenByPHMPaginated(phmId, page, CHILDREN_PAGE_SIZE)
                     : Promise.resolve({ total: 0, page: 1, limit: CHILDREN_PAGE_SIZE, data: [] });
@@ -423,22 +433,22 @@ export const PhmDashboardPage: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
                                         <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider mb-2">Recent Registrations</p>
-                                        <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{stats.recentRegistrations}</p>
+                                        <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{stats.summary.newRegistrationsThisMonth}</p>
                                         <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">New children registered this month</p>
                                     </div>
                                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                                         <p className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2">Growth Records</p>
-                                        <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{stats.growthRecordsThisMonth}</p>
+                                        <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{stats.summary.growthRecordsThisMonth}</p>
                                         <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">Growth measurements recorded</p>
                                     </div>
                                     <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                                         <p className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-2">Missed Vaccinations</p>
-                                        <p className="text-3xl font-bold text-amber-700 dark:text-amber-300">{stats.missedVaccinations}</p>
+                                        <p className="text-3xl font-bold text-amber-700 dark:text-amber-300">{stats.summary.missedVaccinations}</p>
                                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">Require immediate follow-up</p>
                                     </div>
                                     <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                                         <p className="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider mb-2">Upcoming Vaccinations</p>
-                                        <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">{stats.upcomingVaccinations}</p>
+                                        <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">{stats.summary.upcomingVaccinations}</p>
                                         <p className="text-xs text-purple-600 dark:text-purple-400 mt-2">Scheduled for next 30 days</p>
                                     </div>
                                 </div>
