@@ -43,8 +43,8 @@ export const PhmDashboardPage: React.FC = () => {
     const [totalChildren, setTotalChildren] = useState(0);
     const [passwordJustChanged, setPasswordJustChanged] = useState(false);
     const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
-    const [nextClinic, setNextClinic] = useState<any>(null);
-    const [clinicDueChildren, setClinicDueChildren] = useState<number>(0);
+    // const [nextClinic, setNextClinic] = useState<any>(null);
+    // const [clinicDueChildren, setClinicDueChildren] = useState<number>(0);
 
     const phmId = (currentUser as { phmId?: string })?.phmId ?? currentUser?.userId ?? '';
     const areaName = (currentUser as { assignedRegion?: string; areaCode?: string })?.assignedRegion
@@ -71,12 +71,12 @@ export const PhmDashboardPage: React.FC = () => {
                     // Get the next upcoming clinic (sorted by date)
                     const upcoming = clinics.filter(c => new Date(c.clinicDate) >= new Date()).sort((a, b) => new Date(a.clinicDate).getTime() - new Date(b.clinicDate).getTime());
                     if (upcoming.length > 0) {
-                        const clinic = upcoming[0];
-                        setNextClinic(clinic);
+                        // const clinic = upcoming[0];
+                        // setNextClinic(clinic);
                         // Get due children count for the clinic
-                        const dueChildren = await dataService.getClinicDueChildren(clinic.clinicId);
+                        // const dueChildren = await dataService.getClinicDueChildren(clinic.clinicId);
                         if (!cancelled) {
-                            setClinicDueChildren(dueChildren.length);
+                            // setClinicDueChildren(dueChildren.length);
                         }
                     }
                 }
@@ -373,55 +373,55 @@ export const PhmDashboardPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        <div
-                            className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h4 className="font-bold flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-primary">calendar_month</span>
-                                    Next Clinic Day
-                                </h4>
-                            </div>
-                            {nextClinic ? (
-                                <div className="space-y-4">
-                                    <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4 border border-primary/20">
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Scheduled Date</p>
-                                        <p className="text-lg font-bold text-slate-900 dark:text-white">
-                                            {new Date(nextClinic.clinicDate).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Location</p>
-                                            <p className="text-sm text-slate-900 dark:text-white font-medium">{nextClinic.location}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Area</p>
-                                            <p className="text-sm text-slate-900 dark:text-white font-medium">{nextClinic.gnDivision}</p>
-                                        </div>
-                                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">
-                                            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-1">Due Children</p>
-                                            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{clinicDueChildren}</p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => navigate('/clinic-scheduling')}
-                                        className="w-full mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
-                                    >
-                                        View Clinic Details
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm">No upcoming clinics scheduled. Create one to get started.</p>
-                                    <button
-                                        onClick={() => navigate('/clinic-scheduling')}
-                                        className="mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
-                                    >
-                                        Schedule Clinic
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        {/*<div*/}
+                        {/*    className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">*/}
+                        {/*    <div className="flex items-center justify-between">*/}
+                        {/*        <h4 className="font-bold flex items-center gap-2">*/}
+                        {/*            <span className="material-symbols-outlined text-primary">calendar_month</span>*/}
+                        {/*            Next Clinic Day*/}
+                        {/*        </h4>*/}
+                        {/*    </div>*/}
+                        {/*    {nextClinic ? (*/}
+                        {/*        <div className="space-y-4">*/}
+                        {/*            <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4 border border-primary/20">*/}
+                        {/*                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Scheduled Date</p>*/}
+                        {/*                <p className="text-lg font-bold text-slate-900 dark:text-white">*/}
+                        {/*                    {new Date(nextClinic.clinicDate).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}*/}
+                        {/*                </p>*/}
+                        {/*            </div>*/}
+                        {/*            <div className="space-y-3">*/}
+                        {/*                <div>*/}
+                        {/*                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Location</p>*/}
+                        {/*                    <p className="text-sm text-slate-900 dark:text-white font-medium">{nextClinic.location}</p>*/}
+                        {/*                </div>*/}
+                        {/*                <div>*/}
+                        {/*                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Area</p>*/}
+                        {/*                    <p className="text-sm text-slate-900 dark:text-white font-medium">{nextClinic.gnDivision}</p>*/}
+                        {/*                </div>*/}
+                        {/*                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 border border-emerald-200 dark:border-emerald-800">*/}
+                        {/*                    <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-1">Due Children</p>*/}
+                        {/*                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{clinicDueChildren}</p>*/}
+                        {/*                </div>*/}
+                        {/*            </div>*/}
+                        {/*            <button*/}
+                        {/*                onClick={() => navigate('/clinic-scheduling')}*/}
+                        {/*                className="w-full mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"*/}
+                        {/*            >*/}
+                        {/*                View Clinic Details*/}
+                        {/*            </button>*/}
+                        {/*        </div>*/}
+                        {/*    ) : (*/}
+                        {/*        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">*/}
+                        {/*            <p className="text-slate-500 dark:text-slate-400 text-sm">No upcoming clinics scheduled. Create one to get started.</p>*/}
+                        {/*            <button*/}
+                        {/*                onClick={() => navigate('/clinic-scheduling')}*/}
+                        {/*                className="mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"*/}
+                        {/*            >*/}
+                        {/*                Schedule Clinic*/}
+                        {/*            </button>*/}
+                        {/*        </div>*/}
+                        {/*    )}*/}
+                        {/*</div>*/}
 
                         <div
                             className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
