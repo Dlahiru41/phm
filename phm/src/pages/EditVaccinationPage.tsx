@@ -20,10 +20,9 @@ export const EditVaccinationPage: React.FC = () => {
     nextDueDate: '',
     notes: ''
   });
+  const [childId, setChildId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(!!recordId);
-  const [submitting, setSubmitting] = useState(false);
   const [vaccines, setVaccines] = useState<{ vaccineId: string; name: string }[]>([]);
 
   useEffect(() => {
@@ -34,10 +33,11 @@ export const EditVaccinationPage: React.FC = () => {
     if (!recordId) return;
     dataService.getVaccinationRecord(recordId).then((rec) => {
       if (rec) {
+        setChildId(rec.childId);
         setFormData({
           vaccineId: rec.vaccineId,
           doseNumber: rec.doseNumber != null ? String(rec.doseNumber) : '',
-          dateGiven: rec.administeredDate instanceof Date ? rec.administeredDate.toISOString().split('T')[0] : String(rec.administeredDate).split('T')[0],
+          dateGiven: rec.administeredDate.toISOString().split('T')[0],
           batchNumber: rec.batchNumber || '',
           administeredBy: rec.administeredBy || '',
           location: rec.location || '',
@@ -46,7 +46,6 @@ export const EditVaccinationPage: React.FC = () => {
           notes: rec.notes || '',
         });
       }
-      setLoading(false);
     });
   }, [recordId]);
 
@@ -57,9 +56,9 @@ export const EditVaccinationPage: React.FC = () => {
       setError(TranslationService.t('profile.fillAllFields'));
       return;
     }
-    setSubmitting(true);
     try {
-      const ok = await dataService.updateVaccinationRecord(recordId, {
+      const ok = await dataService.createVaccinationRecord({
+        childId: childId!,
         vaccineId: formData.vaccineId,
         administeredDate: formData.dateGiven,
         batchNumber: formData.batchNumber || undefined,
@@ -79,8 +78,6 @@ export const EditVaccinationPage: React.FC = () => {
       }
     } catch {
       setError('Failed to update record. Please try again.');
-    } finally {
-      setSubmitting(false);
     }
   };
 

@@ -16,7 +16,6 @@ interface OtpVerificationModalProps {
 
 export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   isOpen,
-  otpId,
   maskedDestination,
   expiresInSeconds,
   loading = false,

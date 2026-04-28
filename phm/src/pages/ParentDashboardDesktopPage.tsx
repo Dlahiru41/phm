@@ -34,8 +34,7 @@ function daysUntil(dateStr: string | null): number | null {
     d.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const diff = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return diff;
+    return Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 type RecentRecordRow = VaccinationRecord & { childName: string };
@@ -47,7 +46,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
     const [recentRecords, setRecentRecords] = useState<RecentRecordRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [language, setLanguage] = useState(TranslationService.getLanguage());
 
     useEffect(() => {
         let cancelled = false;
@@ -86,7 +84,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
 
         // Listen for language changes
         const handleLanguageChange = () => {
-            setLanguage(TranslationService.getLanguage());
+            // Language changed, component will re-render due to translation service
         };
         window.addEventListener('languagechange', handleLanguageChange);
 
@@ -307,7 +305,7 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                                 <tr key={rec.recordId} className="hover:bg-[#f8fafc] dark:hover:bg-slate-800 transition-colors">
                                                     <td className="px-6 py-4 font-medium">{rec.childName}</td>
                                                     <td className="px-6 py-4">{rec.vaccineName ?? '—'}</td>
-                                                    <td className="px-6 py-4">{formatDate(rec.administeredDate ? (typeof rec.administeredDate === 'string' ? rec.administeredDate : rec.administeredDate.toISOString()) : null)}</td>
+                                                    <td className="px-6 py-4">{formatDate(rec.administeredDate ? rec.administeredDate.toISOString() : null)}</td>
                                                     <td className="px-6 py-4 text-[#4c739a] dark:text-slate-400">{rec.administeredBy || '—'}</td>
                                                     <td className="px-6 py-4">
                                                         <Link to={`/child-profile-schedule?childId=${rec.childId}`} className="text-primary font-bold text-sm hover:underline">

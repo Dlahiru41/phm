@@ -28,7 +28,6 @@ export const RecordVaccinationPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [actionMessage, setActionMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [submittingForm, setSubmittingForm] = useState(false);
@@ -108,7 +107,6 @@ export const RecordVaccinationPage: React.FC = () => {
   const handleTrack = async (record: VaccinationDueRecord, status: 'completed' | 'not_attended') => {
     setSubmittingId(record.scheduleId);
     setError('');
-    setActionMessage('');
 
     const previous = records;
     const optimisticStatus = status === 'completed' ? 'completed' : 'missed';
@@ -126,7 +124,6 @@ export const RecordVaccinationPage: React.FC = () => {
         status,
       });
       if (result !== null) {
-        setActionMessage(status === 'completed' ? 'Vaccination marked completed.' : 'Vaccination marked as not attended.');
         await loadDueRecords();
       } else {
         setRecords(previous);

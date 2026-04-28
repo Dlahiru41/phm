@@ -4,7 +4,7 @@ import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { TranslationService } from '../services/TranslationService';
 
-export type ParentNavKey = 'dashboard' | 'health-records' | 'notifications' | 'profile';
+export type ParentNavKey = 'dashboard' | 'health-records' | 'notifications' | 'profile' | 'settings';
 
 export const ParentSidebar: React.FC<{ activeNav?: ParentNavKey }> = ({ activeNav }) => {
   const navigate = useNavigate();

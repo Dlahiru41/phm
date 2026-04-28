@@ -4,7 +4,7 @@ import { AuthService } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { PhmLayout } from '../components/PhmLayout';
 import { TranslationService } from '../services/TranslationService';
-import type { ClinicSchedule, DueChild, ClinicChild } from '../types/models';
+import type { ClinicSchedule, ClinicChild } from '../types/models';
 
 type CreateVaccinationClinicState = {
   clinicDate: string;
@@ -13,10 +13,6 @@ type CreateVaccinationClinicState = {
   description: string;
 };
 
-type DueChildWithInfo = DueChild & {
-  fullName: string;
-  ageInDays: number;
-};
 
 type ClinicChildWithInfo = ClinicChild & {
   fullName: string;
@@ -31,7 +27,6 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
   const [view, setView] = useState<'list' | 'create' | 'details'>('list');
   const [clinics, setClinics] = useState<ClinicSchedule[]>([]);
   const [selectedClinic, setSelectedClinic] = useState<ClinicSchedule | null>(null);
-  const [dueChildren, setDueChildren] = useState<DueChildWithInfo[]>([]);
   const [clinicChildren, setClinicChildren] = useState<ClinicChildWithInfo[]>([]);
   const [missedAlertedCount, setMissedAlertedCount] = useState<number | null>(null);
   const [cancelledAlertedCount, setCancelledAlertedCount] = useState<number | null>(null);
@@ -132,22 +127,8 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
     setError(null);
 
     try {
-      const children = await dataService.getClinicDueChildren(clinic.clinicId);
       const enrolled = await dataService.getClinicChildren(clinic.clinicId);
 
-      const enriched: DueChildWithInfo[] = children.map((child) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const dob = new Date(child.dateOfBirth);
-        dob.setHours(0, 0, 0, 0);
-        const ageInDays = Math.floor((today.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24));
-
-        return {
-          ...child,
-          fullName: `${child.firstName} ${child.lastName}`,
-          ageInDays,
-        };
-      });
 
       const attendanceState: ClinicChildWithInfo[] = await Promise.all(
         enrolled.map(async (child) => {
@@ -173,7 +154,6 @@ export const VaccinationClinicSchedulePage: React.FC = () => {
         })
       );
 
-      setDueChildren(enriched);
       setClinicChildren(attendanceState);
       setMissedAlertedCount(null);
       setCancelledAlertedCount(null);

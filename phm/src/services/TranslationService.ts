@@ -317,7 +317,6 @@ export interface TranslationKeys {
     // Notifications Additional
     'notification.unread': string;
     'notification.allCaughtUp': string;
-  'notification.markAllAsRead': string;
   'notification.filterAll': string;
 
   // Profile Additional
@@ -900,7 +899,6 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     // Notifications Additional
     'notification.unread': '{count} unread notification(s)',
     'notification.allCaughtUp': 'All caught up!',
-    'notification.markAllAsRead': 'Mark all as read',
     'notification.filterAll': 'All',
 
     // Profile Additional
@@ -1411,7 +1409,6 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     // Notifications Additional
     'notification.unread': 'නොකියවූ දැනුම්දීම් {count} ක් ඇත',
     'notification.allCaughtUp': 'ඔබ සියල්ල කියවා ඇත!',
-    'notification.markAllAsRead': 'සියල්ල කියවූ බව සලකුණු කරන්න',
     'notification.filterAll': 'සියල්ල',
 
     // Profile Additional
@@ -1970,7 +1967,6 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     // Notifications Additional
     'notification.unread': '{count} படிக்காத அறிவிப்பு(கள்)',
     'notification.allCaughtUp': 'எல்லாம் முடிந்தது!',
-    'notification.markAllAsRead': 'அனைத்தையும் படித்ததாகக் குறிக்கவும்',
     'notification.filterAll': 'அனைத்தும்',
 
     // Profile Additional

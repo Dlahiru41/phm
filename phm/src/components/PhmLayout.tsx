@@ -9,7 +9,8 @@ export type PhmNavKey =
   | 'record-vaccination'
   | 'record-growth'
   | 'clinic-scheduling'
-  | 'vaccination-clinic-schedule';
+  | 'vaccination-clinic-schedule'
+  | 'settings';
 
 export const PhmSidebar: React.FC<{ activeNav?: PhmNavKey }> = ({ activeNav }) => {
   const navigate = useNavigate();

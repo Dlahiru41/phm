@@ -45,7 +45,6 @@ export const ParentDashboardMobilePage: React.FC = () => {
     const [dashboard, setDashboard] = useState<ParentDashboard | null>(null);
     const [recentRecords, setRecentRecords] = useState<RecentRecordRow[]>([]);
     const [loading, setLoading] = useState(true);
-    const [language, setLanguage] = useState(TranslationService.getLanguage());
 
     useEffect(() => {
         let cancelled = false;
@@ -80,7 +79,7 @@ export const ParentDashboardMobilePage: React.FC = () => {
 
         // Listen for language changes
         const handleLanguageChange = () => {
-            setLanguage(TranslationService.getLanguage());
+            // Language changed, component will re-render due to translation service
         };
         window.addEventListener('languagechange', handleLanguageChange);
 
@@ -270,7 +269,7 @@ export const ParentDashboardMobilePage: React.FC = () => {
                             <p className="text-[#4c739a] dark:text-slate-400 text-sm py-4">{TranslationService.t('parentDashboard.noRecords')}</p>
                         ) : (
                             recentRecords.map((rec) => {
-                                const dateStr = rec.administeredDate ? (typeof rec.administeredDate === 'string' ? rec.administeredDate : rec.administeredDate.toISOString()) : null;
+                                const dateStr = rec.administeredDate ? rec.administeredDate.toISOString() : null;
                                 return (
                                     <button
                                         key={rec.recordId}

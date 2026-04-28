@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { VaccinationCardPayload } from '../types/models';
 import { VaccinationCardService } from '../services/VaccinationCardService';
-import { TranslationService } from '../services/TranslationService';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -398,9 +397,14 @@ export default function VaccinationCardPage() {
     setError(null);
 
     try {
+      if (!cardRef.current) return;
+
       // Hide toolbar during print
-      const toolbar = cardRef.current.parentElement?.querySelector('[style*="space-between"]');
-      const errorDiv = cardRef.current.parentElement?.querySelector('[style*="FCEBEB"]');
+      const toolbarElement = cardRef.current.parentElement?.querySelector('[style*="space-between"]');
+      const errorDivElement = cardRef.current.parentElement?.querySelector('[style*="FCEBEB"]');
+
+      const toolbar = toolbarElement as HTMLElement | null;
+      const errorDiv = errorDivElement as HTMLElement | null;
 
       if (toolbar) toolbar.style.display = 'none';
       if (errorDiv) errorDiv.style.display = 'none';
@@ -444,7 +448,7 @@ export default function VaccinationCardPage() {
 
         // Remove print styles
         document.head.removeChild(printStyle);
-        cardRef.current.id = '';
+        if (cardRef.current) cardRef.current.id = '';
 
         setDownloading(false);
       }, { once: true });
@@ -455,7 +459,7 @@ export default function VaccinationCardPage() {
           if (toolbar) toolbar.style.display = 'flex';
           if (errorDiv) errorDiv.style.display = 'block';
           document.head.removeChild(printStyle);
-          cardRef.current.id = '';
+          if (cardRef.current) cardRef.current.id = '';
           setDownloading(false);
         }
       }, 3000);

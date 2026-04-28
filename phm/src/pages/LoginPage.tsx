@@ -1,4 +1,4 @@
-import React, {useState, FormEvent, useEffect} from 'react';
+import React, {useState, FormEvent} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
 import {AuthService} from '../services/AuthService';
 import {TranslationService, Language} from '../services/TranslationService';
@@ -12,7 +12,6 @@ export const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => TranslationService.getLanguage());
-    const [translationTrigger, setTranslationTrigger] = useState(0);
 
     // Forgot Password States
     const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -30,7 +29,6 @@ export const LoginPage: React.FC = () => {
     const handleLanguageChange = (lang: Language) => {
         TranslationService.setLanguage(lang);
         setSelectedLanguage(lang);
-        setTranslationTrigger(prev => prev + 1);
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {

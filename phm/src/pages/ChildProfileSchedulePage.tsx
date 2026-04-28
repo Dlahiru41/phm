@@ -31,7 +31,6 @@ export const ChildProfileSchedulePage: React.FC = () => {
     const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
     const [records, setRecords] = useState<VaccinationRecord[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'schedule' | 'growth' | 'history'>('schedule');
     const [growthData, setGrowthData] = useState<WHOGrowthPayload | null>(null);
     const [growthLoading, setGrowthLoading] = useState(false);
@@ -46,7 +45,6 @@ export const ChildProfileSchedulePage: React.FC = () => {
         let cancelled = false;
         (async () => {
             setLoading(true);
-            setError(null);
             try {
                 const list = await dataService.getChildrenByParent(currentUser.userId);
                 if (cancelled) return;
@@ -68,7 +66,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                     setRecords([]);
                 }
             } catch {
-                if (!cancelled) setError(TranslationService.t('common.error'));
+                // Error fetching data, silently fail
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -132,7 +130,7 @@ export const ChildProfileSchedulePage: React.FC = () => {
                         <div className="flex items-center gap-8">
                             <div className="flex items-center gap-4 text-primary">
                                 <div className="size-8">
-                                    <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                                         <path clip-rule="evenodd"
                                               d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z"
                                               fill="currentColor" fill-rule="evenodd"></path>

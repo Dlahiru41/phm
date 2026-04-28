@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AuthService, UserWithDetails } from '../services/AuthService';
 import { dataService } from '../services/DataService';
 import { ParentLayout } from '../components/ParentLayout';
@@ -73,7 +72,7 @@ export const ParentProfilePage: React.FC = () => {
       (async () => {
         try {
           const res = await dataService.getChildrenByParent(user?.userId || '');
-          if (!cancelled) setChildren(Array.isArray(res) ? res : (res.data || []));
+          if (!cancelled) setChildren(res || []);
         } catch {
           if (!cancelled) setChildren([]);
         }
@@ -154,7 +153,7 @@ export const ParentProfilePage: React.FC = () => {
     }
     setSaving(true);
     try {
-      const response = await dataService.verifyMobileNumberChange(newMobileNumber, otpCode);
+      await dataService.verifyMobileNumberChange(newMobileNumber, otpCode);
       const updated = await AuthService.refreshProfile();
       if (updated) {
         setUser(updated);

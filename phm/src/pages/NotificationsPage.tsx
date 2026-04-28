@@ -29,35 +29,12 @@ export const NotificationsPage: React.FC = () => {
         source: 'notification',
       }));
 
-      // If parent, also fetch due vaccinations and convert them to notifications
-      if (isParent) {
-        try {
-          const dueVaccinations = await dataService.getDueVaccinations('vaccination');
-          const vaccinationNotifications: CombinedNotification[] = dueVaccinations.map((due) => ({
-            notificationId: `due-vaccination-${due.childId}-${due.vaccineName}`,
-            recipientId: AuthService.getCurrentUser()?.userId || '',
-            type: NotificationType.VACCINATION_DUE,
-            message: due.clinicReminder,
-            relatedChildId: due.childId,
-            sentDate: new Date(),
-            isRead: false,
-            source: 'vaccination_due',
-            vaccinationDueData: due,
-          }));
-          allNotifications = [...allNotifications, ...vaccinationNotifications];
-          // Sort by sentDate descending (most recent first)
-          allNotifications.sort((a, b) => b.sentDate.getTime() - a.sentDate.getTime());
-        } catch (error) {
-          console.error('Error fetching due vaccinations:', error);
-        }
-      }
-
       if (!cancelled) setNotifications(allNotifications);
     })();
     return () => {
       cancelled = true;
     };
-  }, [isParent]);
+  }, []);
 
   const markAsRead = async (notificationId: string) => {
     const ok = await dataService.markNotificationAsRead(notificationId);
@@ -175,12 +152,8 @@ export const NotificationsPage: React.FC = () => {
       return notifications.filter(n => n.type === NotificationType.CLINIC_REMINDER || n.type === NotificationType.NORMAL_CLINIC);
     }
 
-    // For all other filters, EXCLUDE vaccination due and clinic notifications
-    return notifications.filter(n =>
-      n.type === filter &&
-      n.type !== NotificationType.VACCINATION_DUE &&
-      n.type !== NotificationType.VACCINATION_CLINIC
-    );
+    // For all other filters, just match the type
+    return notifications.filter(n => n.type === filter);
   })();
 
   const unreadCount = filteredNotifications.filter((n) => !n.isRead).length;
@@ -394,7 +367,7 @@ export const NotificationsPage: React.FC = () => {
 
   if (isPHM) {
     return (
-        <PhmLayout activeNav="notifications" showBackToDashboard={true}>
+        <PhmLayout activeNav="overview" showBackToDashboard={true}>
           {content}
         </PhmLayout>
     );

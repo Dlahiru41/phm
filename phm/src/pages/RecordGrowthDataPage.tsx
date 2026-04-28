@@ -19,7 +19,6 @@ export const RecordGrowthDataPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const user = AuthService.getCurrentUser();
@@ -44,7 +43,6 @@ export const RecordGrowthDataPage: React.FC = () => {
       setError('Please enter a valid weight (0-100 kg)');
       return;
     }
-    setSubmitting(true);
     try {
       const res = await dataService.createGrowthRecord({
         childId: formData.childId,
@@ -63,8 +61,6 @@ export const RecordGrowthDataPage: React.FC = () => {
       }
     } catch {
       setError('Failed to record growth data. Please try again.');
-    } finally {
-      setSubmitting(false);
     }
   };
 

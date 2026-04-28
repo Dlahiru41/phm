@@ -162,7 +162,6 @@ export const GenerateReportsPage: React.FC = () => {
                 }}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-[#cfdbe7] dark:border-slate-700 text-[#4c739a] dark:text-slate-400 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
-                {TranslationService.t('report.generateAnother')}
               </button>
               <button
                 onClick={() => navigate(embeddedInMoh ? '/moh' : '/moh-analytics-dashboard')}

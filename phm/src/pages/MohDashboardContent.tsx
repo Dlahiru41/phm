@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { mohService } from '../services/MohService';
-import { TranslationService } from '../services/TranslationService';
 
 interface DashboardStats {
   totalChildren: number;
@@ -49,14 +48,13 @@ export const MohDashboardContent: React.FC = () => {
       setLoading(true);
       try {
         // Fetch all dashboard data from real API endpoints
-        const [totalChildren, coverage, missedVaccinations, phmPerformance, recentChildren, gnDistribution] = await Promise.all([
-          mohService.getTotalChildren(),
-          mohService.getVaccinationCoverage(),
-          mohService.getMissedVaccinations(),
-          mohService.getPHMPerformanceSummary(),
-          mohService.getRecentChildren(),
-          mohService.getGNDistribution(),
-        ]);
+      const [coverage, missedVaccinations, phmPerformance, recentChildren, gnDistribution] = await Promise.all([
+        mohService.getVaccinationCoverage(),
+        mohService.getMissedVaccinations(),
+        mohService.getPHMPerformanceSummary(),
+        mohService.getRecentChildren(),
+        mohService.getGNDistribution(),
+      ]);
 
         // Set stats
         if (coverage) {
@@ -139,7 +137,7 @@ export const MohDashboardContent: React.FC = () => {
     ? [...areas].sort((a, b) => b.coveragePercentage - a.coveragePercentage)[0]
     : null;
   const worstArea = areas.length
-    ? [...areas].sort((a, b) => b.missed - a.missed)[0]
+    ? [...areas].sort((a, b) => (b.missed ?? 0) - (a.missed ?? 0))[0]
     : null;
 
   const fmt = (n: number) => n.toLocaleString();
@@ -349,7 +347,7 @@ export const MohDashboardContent: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  {worstArea && worstArea.missed > 0 && (
+                  {worstArea && (worstArea.missed ?? 0) > 0 && (
                     <div className="flex items-start gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                       <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
                         <span className="material-symbols-outlined">schedule</span>
@@ -357,7 +355,7 @@ export const MohDashboardContent: React.FC = () => {
                       <div>
                         <p className="text-sm font-bold dark:text-white">Backlog Warning</p>
                         <p className="text-xs text-slate-500">
-                          {worstArea.areaName} has {fmt(worstArea.missed)} missed vaccinations requiring follow-up.
+                          {worstArea.areaName} has {fmt(worstArea.missed ?? 0)} missed vaccinations requiring follow-up.
                         </p>
                       </div>
                     </div>
@@ -416,8 +414,8 @@ export const MohDashboardContent: React.FC = () => {
                           <span className="text-sm font-bold text-slate-900 dark:text-white">{area.coveragePercentage.toFixed(1)}%</span>
                         </div>
                       </td>
-                      <td className={`py-4 px-4 text-sm font-bold ${area.missed > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                        {fmt(area.missed)}
+                      <td className={`py-4 px-4 text-sm font-bold ${(area.missed ?? 0) > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                        {fmt(area.missed ?? 0)}
                       </td>
                     </tr>
                   );

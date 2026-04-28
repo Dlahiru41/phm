@@ -18,7 +18,6 @@ import {
   ClinicStatus,
   DueChild,
   ClinicChild,
-  VaccinationDue,
   VaccinationDueRecord,
 } from '../types/models';
 
@@ -196,19 +195,6 @@ function clinicChildFromApi(a: any): ClinicChild {
   };
 }
 
-function vaccinationDueFromApi(a: any): VaccinationDue {
-  return {
-    clinicId: a.clinicId,
-    clinicDate: parseDate(a.clinicDate),
-    clinicLocation: a.clinicLocation,
-    childId: a.childId,
-    childName: a.childName,
-    registrationNumber: a.registrationNumber,
-    vaccineName: a.vaccineName,
-    nextDueDate: parseDate(a.nextDueDate),
-    clinicReminder: a.clinicReminder,
-  };
-}
 
 function vaccinationDueRecordFromApi(a: any): VaccinationDueRecord {
   return {
