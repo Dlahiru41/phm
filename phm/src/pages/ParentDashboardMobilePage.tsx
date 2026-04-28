@@ -61,14 +61,6 @@ function calculateAge(dateOfBirth: string | Date | undefined): string {
     }
 }
 
-function daysUntil(dateStr: string | null): number | null {
-    if (!dateStr) return null;
-    const d = new Date(dateStr);
-    d.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
 
 type RecentRecordRow = VaccinationRecord & { childName: string };
 
@@ -208,9 +200,6 @@ export const ParentDashboardMobilePage: React.FC = () => {
                     </div>
                     <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar -mx-4 px-4 snap-x">
                         {children.map((child) => {
-                            const days = daysUntil(child.nextVaccinationDate);
-                            const hasNextDue = child.nextVaccinationDate && child.nextVaccineName;
-                            const isPending = !hasNextDue || (days !== null && days < 0);
                             return (
                                 <div
                                     key={child.childId}
@@ -230,18 +219,18 @@ export const ParentDashboardMobilePage: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className={`rounded-xl p-3 shadow-lg ${isPending ? 'bg-yellow-500 text-white shadow-yellow-500/20' : 'bg-primary text-white shadow-primary/20'}`}>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="material-symbols-outlined text-sm">{isPending ? 'pending_actions' : 'event_upcoming'}</span>
-                                            <p className="text-[10px] font-bold uppercase tracking-wider opacity-90">{isPending ? TranslationService.t('parentDashboard.appointmentPending') : TranslationService.t('parentDashboard.nextDose') + ' ' + TranslationService.t('notification.title')}</p>
-                                        </div>
-                                        <p className="font-bold text-sm leading-tight">{child.nextVaccineName ?? '—'}</p>
-                                        <p className="text-xs font-medium mt-1 opacity-90">
-                                            {hasNextDue && days !== null
-                                                ? (days < 0 ? `${TranslationService.t('parentDashboard.overdue')}: ${formatDate(child.nextVaccinationDate)}` : `${TranslationService.t('parentDashboard.dueIn')}: ${formatDate(child.nextVaccinationDate)} (${TranslationService.t('common.loading')} ${days} ${TranslationService.t('parentDashboard.days')})`)
-                                                : ''}
-                                        </p>
-                                    </div>
+                                    {/*<div className={`rounded-xl p-3 shadow-lg ${isPending ? 'bg-yellow-500 text-white shadow-yellow-500/20' : 'bg-primary text-white shadow-primary/20'}`}>*/}
+                                    {/*    <div className="flex items-center gap-2 mb-1">*/}
+                                    {/*        <span className="material-symbols-outlined text-sm">{isPending ? 'pending_actions' : 'event_upcoming'}</span>*/}
+                                    {/*        <p className="text-[10px] font-bold uppercase tracking-wider opacity-90">{isPending ? TranslationService.t('parentDashboard.appointmentPending') : TranslationService.t('parentDashboard.nextDose') + ' ' + TranslationService.t('notification.title')}</p>*/}
+                                    {/*    </div>*/}
+                                    {/*    <p className="font-bold text-sm leading-tight">{child.nextVaccineName ?? '—'}</p>*/}
+                                    {/*    <p className="text-xs font-medium mt-1 opacity-90">*/}
+                                    {/*        {hasNextDue && days !== null*/}
+                                    {/*            ? (days < 0 ? `${TranslationService.t('parentDashboard.overdue')}: ${formatDate(child.nextVaccinationDate)}` : `${TranslationService.t('parentDashboard.dueIn')}: ${formatDate(child.nextVaccinationDate)} (${TranslationService.t('common.loading')} ${days} ${TranslationService.t('parentDashboard.days')})`)*/}
+                                    {/*            : ''}*/}
+                                    {/*    </p>*/}
+                                    {/*</div>*/}
                                     <button
                                         type="button"
                                         onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}

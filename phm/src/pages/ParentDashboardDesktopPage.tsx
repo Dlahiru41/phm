@@ -61,14 +61,6 @@ function calculateAge(dateOfBirth: string | Date | undefined): string {
     }
 }
 
-function daysUntil(dateStr: string | null): number | null {
-    if (!dateStr) return null;
-    const d = new Date(dateStr);
-    d.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
 
 type RecentRecordRow = VaccinationRecord & { childName: string };
 
@@ -249,9 +241,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {children.map((child) => {
-                                const days = daysUntil(child.nextVaccinationDate);
-                                const hasNextDue = child.nextVaccinationDate && child.nextVaccineName;
-                                const isPending = !hasNextDue || (days !== null && days < 0);
                                 return (
                                     <div
                                         key={child.childId}
@@ -271,21 +260,21 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                             </div>
                                             <span className="material-symbols-outlined text-[#4c739a] cursor-pointer hover:text-primary">more_vert</span>
                                         </div>
-                                        <div
-                                            className={isPending
-                                                ? "bg-[#fffbeb] dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-4"
-                                                : "bg-[#f0f9ff] dark:bg-primary/10 border border-primary/20 rounded-xl p-4"}>
-                                            <div className={`flex items-center gap-3 mb-2 ${isPending ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>
-                                                <span className="material-symbols-outlined text-xl">{isPending ? 'pending_actions' : 'event_upcoming'}</span>
-                                                <p className="text-sm font-bold uppercase tracking-wider">{isPending ? TranslationService.t('parentDashboard.appointmentPending') : TranslationService.t('parentDashboard.nextDose')}</p>
-                                            </div>
-                                            <p className="text-[#0d141b] dark:text-slate-50 font-bold text-lg leading-tight">{child.nextVaccineName ?? '—'}</p>
-                                            <p className={`font-medium text-sm mt-1 ${isPending ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>
-                                                {hasNextDue && days !== null
-                                                    ? (days < 0 ? `${TranslationService.t('parentDashboard.overdue')} (${formatDate(child.nextVaccinationDate)})` : `${TranslationService.t('parentDashboard.dueIn')} ${days} ${TranslationService.t('parentDashboard.days')} (${formatDate(child.nextVaccinationDate)})`)
-                                                    : ''}
-                                            </p>
-                                        </div>
+                                        {/*<div*/}
+                                        {/*    className={isPending*/}
+                                        {/*        ? "bg-[#fffbeb] dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-4"*/}
+                                        {/*        : "bg-[#f0f9ff] dark:bg-primary/10 border border-primary/20 rounded-xl p-4"}>*/}
+                                        {/*    <div className={`flex items-center gap-3 mb-2 ${isPending ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>*/}
+                                        {/*        <span className="material-symbols-outlined text-xl">{isPending ? 'pending_actions' : 'event_upcoming'}</span>*/}
+                                        {/*        <p className="text-sm font-bold uppercase tracking-wider">{isPending ? TranslationService.t('parentDashboard.appointmentPending') : TranslationService.t('parentDashboard.nextDose')}</p>*/}
+                                        {/*    </div>*/}
+                                        {/*    <p className="text-[#0d141b] dark:text-slate-50 font-bold text-lg leading-tight">{child.nextVaccineName ?? '—'}</p>*/}
+                                        {/*    <p className={`font-medium text-sm mt-1 ${isPending ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>*/}
+                                        {/*        {hasNextDue && days !== null*/}
+                                        {/*            ? (days < 0 ? `${TranslationService.t('parentDashboard.overdue')} (${formatDate(child.nextVaccinationDate)})` : `${TranslationService.t('parentDashboard.dueIn')} ${days} ${TranslationService.t('parentDashboard.days')} (${formatDate(child.nextVaccinationDate)})`)*/}
+                                        {/*            : ''}*/}
+                                        {/*    </p>*/}
+                                        {/*</div>*/}
                                         <button
                                             onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}
                                             className="w-full py-3 bg-[#e7edf3] dark:bg-slate-700 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary font-bold rounded-lg transition-colors">
