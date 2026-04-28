@@ -10,6 +10,7 @@ type ParentDashboardChild = {
     childId: string;
     name: string;
     age: string;
+    dateOfBirth?: string;
     nextVaccinationDate: string | null;
     nextVaccineName: string | null;
     vaccinationStatus: string;
@@ -26,6 +27,38 @@ function formatDate(dateStr: string | null): string {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
     return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function calculateAge(dateOfBirth: string | Date | undefined): string {
+    if (!dateOfBirth) return '—';
+    try {
+        const dob = typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
+        if (isNaN(dob.getTime())) return '—';
+
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+
+        // If age is less than 1 year, show in months
+        if (age < 1) {
+            let months = today.getMonth() - dob.getMonth();
+            if (today.getDate() < dob.getDate()) {
+                months--;
+            }
+            if (months < 0) {
+                months += 12;
+            }
+            return `${months}m`;
+        }
+
+        return `${age}y`;
+    } catch {
+        return '—';
+    }
 }
 
 function daysUntil(dateStr: string | null): number | null {
@@ -60,10 +93,20 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                 if (cancelled) return;
                 if (profile) setUser(profile);
                 if (data) {
-                    setDashboard(data);
-                    const childNames = Object.fromEntries(data.children.map((c) => [c.childId, c.name]));
+                    // Enrich children with date of birth
+                    const enrichedChildren = await Promise.all(
+                        data.children.map(async (child) => {
+                            const fullChild = await dataService.getChild(child.childId);
+                            return {
+                                ...child,
+                                dateOfBirth: fullChild?.dateOfBirth ? fullChild.dateOfBirth.toISOString().split('T')[0] : undefined,
+                            };
+                        })
+                    );
+                    setDashboard({ ...data, children: enrichedChildren });
+                    const childNames = Object.fromEntries(enrichedChildren.map((c) => [c.childId, c.name]));
                     const allRecords: RecentRecordRow[] = [];
-                    for (const child of data.children) {
+                    for (const child of enrichedChildren) {
                         const records = await dataService.getVaccinationRecordsByChild(child.childId);
                         for (const r of records) {
                             allRecords.push({ ...r, childName: childNames[r.childId] ?? child.name });
@@ -220,7 +263,10 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                                      style={{ backgroundImage: "url('https://via.placeholder.com/150')" }}></div>
                                                 <div>
                                                     <h3 className="text-lg font-bold">{child.name}</h3>
-                                                    <p className="text-[#4c739a] dark:text-slate-400 text-sm">Age: {child.age}</p>
+                                                    <p className="text-[#4c739a] dark:text-slate-400 text-sm">Age: {calculateAge(child.dateOfBirth)}</p>
+                                                    {child.dateOfBirth && (
+                                                        <p className="text-[#4c739a] dark:text-slate-400 text-sm">DOB: {formatDate(child.dateOfBirth)}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                             <span className="material-symbols-outlined text-[#4c739a] cursor-pointer hover:text-primary">more_vert</span>
