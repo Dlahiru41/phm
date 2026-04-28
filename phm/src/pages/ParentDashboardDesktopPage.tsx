@@ -240,16 +240,6 @@ export const ParentDashboardDesktopPage: React.FC = () => {
                                                     : ''}
                                             </p>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="bg-[#f0f9ff] dark:bg-primary/10 rounded-lg p-3 border border-primary/20">
-                                                <p className="text-xs text-[#4c739a] dark:text-slate-400 font-medium mb-1">{TranslationService.t('parentDashboard.upcoming')}</p>
-                                                <p className="text-lg font-bold text-primary">{child.upcomingCount}</p>
-                                            </div>
-                                            <div className="bg-[#fcebeb] dark:bg-red-900/10 rounded-lg p-3 border border-red-200 dark:border-red-800">
-                                                <p className="text-xs text-[#4c739a] dark:text-slate-400 font-medium mb-1">{TranslationService.t('parentDashboard.missed')}</p>
-                                                <p className="text-lg font-bold text-red-600 dark:text-red-400">{child.missedCount}</p>
-                                            </div>
-                                        </div>
                                         <button
                                             onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}
                                             className="w-full py-3 bg-[#e7edf3] dark:bg-slate-700 hover:bg-primary/20 dark:hover:bg-primary/30 text-primary font-bold rounded-lg transition-colors">

@@ -196,16 +196,6 @@ export const ParentDashboardMobilePage: React.FC = () => {
                                                 : ''}
                                         </p>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div className="bg-[#f0f9ff] dark:bg-primary/10 rounded-lg p-2 border border-primary/20">
-                                            <p className="text-[10px] text-[#4c739a] dark:text-slate-400 font-medium">{TranslationService.t('parentDashboard.upcoming')}</p>
-                                            <p className="text-base font-bold text-primary">{child.upcomingCount}</p>
-                                        </div>
-                                        <div className="bg-[#fcebeb] dark:bg-red-900/10 rounded-lg p-2 border border-red-200 dark:border-red-800">
-                                            <p className="text-[10px] text-[#4c739a] dark:text-slate-400 font-medium">{TranslationService.t('parentDashboard.missed')}</p>
-                                            <p className="text-base font-bold text-red-600 dark:text-red-400">{child.missedCount}</p>
-                                        </div>
-                                    </div>
                                     <button
                                         type="button"
                                         onClick={() => navigate(`/child-profile-schedule?childId=${child.childId}`)}
