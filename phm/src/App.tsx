@@ -28,6 +28,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { VaccineGuidePage } from './pages/VaccineGuidePage';
 import { MohProfilePage } from './pages/MohProfilePage';
 import { MohSystemOverviewReportPage } from './pages/MohSystemOverviewReportPage';
+import { MohVaccinationRecordsPage } from './pages/MohVaccinationRecordsPage';
 
 const App: React.FC = () => {
   return (
@@ -65,6 +66,7 @@ const App: React.FC = () => {
       <Route path="/moh" element={<MohLayout />}>
         <Route index element={<Navigate to="/moh/system-overview" replace />} />
         <Route path="system-overview" element={<MohSystemOverviewReportPage />} />
+        <Route path="vaccination-records" element={<MohVaccinationRecordsPage />} />
         <Route path="reports" element={<GenerateReportsPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="phm-management" element={<MohPhmManagementPage />} />

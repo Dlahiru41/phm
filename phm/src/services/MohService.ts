@@ -192,6 +192,61 @@ export interface SystemOverviewReportResponse {
   generatedAt: string;
 }
 
+// Shared types for vaccination records
+export interface VaccinationRecordListItem {
+  recordId: string;
+  childId?: string;
+  childName?: string;
+  registrationNumber?: string;
+  vaccineId?: string;
+  vaccineName?: string;
+  administeredDate?: string;
+  dueDate?: string;
+  status?: string;
+  areaCode?: string;
+  areaName?: string;
+  batchNumber?: string;
+  administeredBy?: string;
+  location?: string;
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface VaccinationRecordListResponse {
+  items: VaccinationRecordListItem[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages?: number;
+}
+
+export interface VaccinationRecordListParams {
+  page?: number;
+  limit?: number;
+  areaCode?: string;
+  vaccineId?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface VaccinationRecordDeleteResponse {
+  message?: string;
+}
+
+export interface VaccinationRecordStoreItem {
+  recordId: string;
+  childId: string;
+  vaccineId: string;
+  status: string;
+  administeredDate?: string;
+  dueDate?: string;
+  areaCode?: string;
+  areaName?: string;
+  childName?: string;
+  registrationNumber?: string;
+}
+
 /**
  * MOH Dashboard and Reports API Service
  */
@@ -452,6 +507,72 @@ export class MohService {
     } catch (error) {
       console.error(`Error fetching ${type} report data:`, error);
       return [];
+    }
+  }
+
+  // ==========================================
+  // VACCINATION RECORDS ENDPOINTS
+  // ==========================================
+
+  /**
+   * Get MOH vaccination records with filters and pagination
+   */
+  async listMOHVaccinationRecords(params?: VaccinationRecordListParams): Promise<VaccinationRecordListResponse | null> {
+    try {
+      const queryParams: Record<string, string> = {};
+      if (params?.page !== undefined) queryParams.page = params.page.toString();
+      if (params?.limit !== undefined) queryParams.limit = params.limit.toString();
+      if (params?.areaCode) queryParams.areaCode = params.areaCode;
+      if (params?.vaccineId) queryParams.vaccineId = params.vaccineId;
+      if (params?.status) queryParams.status = params.status;
+      if (params?.startDate) queryParams.startDate = params.startDate;
+      if (params?.endDate) queryParams.endDate = params.endDate;
+
+      const response = await api.get<VaccinationRecordListResponse>('/moh/vaccination-records', queryParams);
+      return response ?? null;
+    } catch (error) {
+      console.error('Error fetching MOH vaccination records:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Delete a vaccination record as MOH
+   */
+  async deleteMOHVaccinationRecord(recordId: string): Promise<boolean> {
+    try {
+      await api.delete<VaccinationRecordDeleteResponse>(`/moh/vaccination-records/${recordId}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting MOH vaccination record:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Call the backend MOH vaccination records endpoint directly (absolute URL).
+   * This bypasses building query params from the client and hits the provided URL exactly.
+   */
+  async listMOHVaccinationRecordsRaw(): Promise<VaccinationRecordListResponse | null> {
+    try {
+      // Use relative path so browser requests go through the app origin (/api/v1 -> proxy) and avoid CORS issues
+      const raw = await api.get<any>('/moh/vaccination-records');
+      // Backend returns { data: [...], page, limit, total }
+      if (!raw) return null;
+      const items = Array.isArray(raw.data) ? raw.data : [];
+      const page = raw.page ?? 1;
+      const limit = raw.limit ?? items.length;
+      const total = raw.total ?? items.length;
+      return {
+        items,
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / (limit || total || 1))),
+      } as VaccinationRecordListResponse;
+    } catch (error) {
+      console.error('Error fetching MOH vaccination records (raw):', error);
+      return null;
     }
   }
 }

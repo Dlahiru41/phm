@@ -78,6 +78,10 @@ export const MohLayout: React.FC = () => {
                 <span className="material-symbols-outlined">assessment</span>
                 <span className="text-sm font-medium">{TranslationService.t('moh.systemOverview')}</span>
               </NavLink>
+              <NavLink to="/moh/vaccination-records" className={navLinkClass}>
+                <span className="material-symbols-outlined">vaccines</span>
+                <span className="text-sm font-medium">{TranslationService.t('moh.records.title')}</span>
+              </NavLink>
               <NavLink to="/moh/reports" className={navLinkClass}>
                 <span className="material-symbols-outlined">description</span>
                 <span className="text-sm font-medium">{TranslationService.t('moh.phmReports')}</span>

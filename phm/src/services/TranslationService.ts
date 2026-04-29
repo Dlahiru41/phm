@@ -542,11 +542,33 @@ export interface TranslationKeys {
   'moh.analyticsDashboard': string;
   'moh.dashboardDescription': string;
   'moh.systemOverview': string;
-  'moh.auditLogs': string;
-  'moh.viewProfile': string;
+     'moh.auditLogs': string;
+     'moh.viewProfile': string;
+     'moh.records.title': string;
+     'moh.records.subtitle': string;
+     'moh.records.filtersTitle': string;
+     'moh.records.filtersHint': string;
+     'moh.records.areaCode': string;
+     'moh.records.vaccineId': string;
+     'moh.records.applyFilters': string;
+     'moh.records.resetFilters': string;
+     'moh.records.empty': string;
+     'moh.records.deleteConfirm': string;
+     'moh.records.deleteFailed': string;
+     'moh.records.summary': string;
+     'moh.records.pagination': string;
+     'moh.records.previous': string;
+     'moh.records.next': string;
+     'moh.records.table.child': string;
+     'moh.records.table.regNo': string;
+     'moh.records.table.vaccine': string;
+     'moh.records.table.status': string;
+     'moh.records.table.area': string;
+     'moh.records.table.date': string;
+     'moh.records.table.actions': string;
 
-  // MOH PHM Management
-  'mohPhm.title': string;
+     // MOH PHM Management
+     'mohPhm.title': string;
   'mohPhm.subtitle': string;
   'mohPhm.createAccount': string;
   'mohPhm.createDescription': string;
@@ -1108,11 +1130,33 @@ const translations: Record<Language, Partial<TranslationKeys>> = {
     'moh.analyticsDashboard': 'Officer Analytics Dashboard',
     'moh.dashboardDescription': 'Real-time vaccination coverage and PHM performance across the Western Province.',
     'moh.systemOverview': 'System Overview',
-    'moh.auditLogs': 'Audit Logs',
-    'moh.viewProfile': 'View Profile',
+     'moh.auditLogs': 'Audit Logs',
+     'moh.viewProfile': 'View Profile',
+     'moh.records.title': 'Vaccination Records',
+     'moh.records.subtitle': 'Browse and manage MOH vaccination records across all areas.',
+     'moh.records.filtersTitle': 'Filter records',
+     'moh.records.filtersHint': 'Use the backend list filters to narrow by area, vaccine, status, or date range.',
+     'moh.records.areaCode': 'Area code',
+     'moh.records.vaccineId': 'Vaccine ID',
+     'moh.records.applyFilters': 'Apply filters',
+     'moh.records.resetFilters': 'Reset filters',
+     'moh.records.empty': 'No vaccination records found for the selected filters.',
+     'moh.records.deleteConfirm': 'Delete this vaccination record? This action cannot be undone.',
+     'moh.records.deleteFailed': 'Failed to delete the vaccination record.',
+     'moh.records.summary': 'Showing {count} total records',
+     'moh.records.pagination': 'Page {page} of {totalPages}',
+     'moh.records.previous': 'Previous',
+     'moh.records.next': 'Next',
+     'moh.records.table.child': 'Child',
+     'moh.records.table.regNo': 'Registration No.',
+     'moh.records.table.vaccine': 'Vaccine',
+     'moh.records.table.status': 'Status',
+     'moh.records.table.area': 'Area',
+     'moh.records.table.date': 'Date',
+     'moh.records.table.actions': 'Actions',
 
-    // MOH PHM Management
-    'mohPhm.title': 'PHM Management',
+     // MOH PHM Management
+     'mohPhm.title': 'PHM Management',
     'mohPhm.subtitle': 'Manage PHM areas, officers, and assignments under your region.',
     'mohPhm.createAccount': 'Create PHM Account',
     'mohPhm.createDescription': 'MOH officers can create PHM accounts for their areas. A temporary password will be generated for first login.',
